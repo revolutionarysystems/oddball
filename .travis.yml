@@ -1,0 +1,7 @@
+language: java
+jdk:
+  - openjdk6
+before_install: "git clone http://github.com/revolutionarysystems/travis.git target/travis"
+script: "mvn deploy --settings target/travis/settings.xml"
+env:
+  - secure: "IjriDixwiigJw5KY1fZy6xuMJowe+bA+2r3hlnESoyUX+77T6pXA8PMzQA9ZGkk4a5ggR+1pZjllR66VgU2glXvg9184ZEoBcLeFieK1rJI8UzQFKGKVJTfysc3C4lCiCXaDh/MExeRH78nMrJSvBDpgocwCxX/loRN5ligY0ow="

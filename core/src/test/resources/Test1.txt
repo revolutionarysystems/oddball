@@ -1,0 +1,4 @@
+string:.*
+aString:a.*
+allas:a*
+abc-ish:abc.*

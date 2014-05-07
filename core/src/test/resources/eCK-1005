@@ -1,0 +1,4 @@
+Mybin1:{"tags":"ruleA"}
+Mybin2:{"tags":"ruleB"}
+Mybin3:{"$and" : [{"tags":"ruleA"}, {"tags":"ruleB"}]}
+Mybin4:{"$and" : [{"tags":"WinXX"}, {"tags":"narrow3"}]}

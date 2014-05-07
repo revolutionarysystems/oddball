@@ -1,0 +1,4 @@
+$ruleType:mongo
+ruleA:RuleA.json
+ruleB:{"browser":"chrome"}
+ruleC:{"platform":"windows"}
