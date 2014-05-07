@@ -19,6 +19,11 @@
 			<version>4.10</version>
 			<scope>test</scope>
 		</dependency>
+                <dependency>
+			<groupId>uk.co.revsys.resource-repository</groupId>
+			<artifactId>resource-repository-core</artifactId>
+                        <version>0.1.0-SNAPSHOT</version>
+                </dependency>
 	</dependencies>
 
 </project>

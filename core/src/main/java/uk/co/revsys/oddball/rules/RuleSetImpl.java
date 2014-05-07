@@ -16,6 +16,10 @@ import uk.co.revsys.oddball.cases.Case;
  */
 public class RuleSetImpl implements RuleSet{
     
+    public RuleSetImpl(String name) {
+        this.name = name;
+    }
+
     Set<Rule> rules = new HashSet<Rule>();
 
     String name;

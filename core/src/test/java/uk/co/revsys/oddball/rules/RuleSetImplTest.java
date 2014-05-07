@@ -47,7 +47,7 @@ public class RuleSetImplTest {
     @Test
     public void testAddRule() {
         System.out.println("addRule");
-        RuleSetImpl instance = new RuleSetImpl();
+        RuleSetImpl instance = new RuleSetImpl("Test");
         instance.addRule(new RegExRule(".*", "string"));
         instance.addRule(new RegExRule("a.*", "aString"));
         Set rules = instance.getRules();
@@ -61,7 +61,7 @@ public class RuleSetImplTest {
     public void testAssessCase() {
         System.out.println("assessCase");
         Case aCase = new StringCase("abc123");
-        RuleSetImpl instance = new RuleSetImpl();
+        RuleSetImpl instance = new RuleSetImpl("Test");
         instance.addRule(new RegExRule(".*", "string"));
         instance.addRule(new RegExRule("a.*", "aString"));
         Opinion result = instance.assessCase(aCase);

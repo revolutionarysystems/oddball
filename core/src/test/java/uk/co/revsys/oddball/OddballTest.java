@@ -12,6 +12,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import uk.co.revsys.oddball.cases.Case;
+import uk.co.revsys.oddball.rules.Opinion;
 
 /**
  *
@@ -39,10 +41,21 @@ public class OddballTest {
     public void tearDown() {
     }
 
-    @Test
-    public void testSomeMethod() {
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-    
+
+    /**
+     * Test of assessCase method, of class Oddball.
+     */
+//    @Test
+//    public void testAssessCase() throws Exception {
+//        System.out.println("assessCase");
+//        String ruleSetName = "";
+//        Case aCase = null;
+//        Oddball instance = null;
+//        Opinion expResult = null;
+//        Opinion result = instance.assessCase(ruleSetName, aCase);
+//        assertEquals(expResult, result);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
+//    }
+//    
 }

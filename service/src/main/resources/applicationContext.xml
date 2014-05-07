@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+	<context:annotation-config/>
+
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:resource-repository.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="resourceRepository" class="com.rsl.resource.repository.LocalDiskResourceRepository">
+		<constructor-arg index="0" value="/var/cache/haven"/>
+	</bean>
+	<!--
+	<bean id="resourceRepository" class="com.rsl.resource.repository.JCloudResourceRepository">
+		<constructor-arg index="0" ref="blobStore"/>
+		<constructor-arg index="1" value="osl-resources-mis"/>
+	</bean>
+	
+	<bean id="contextBuilder" class="org.jclouds.ContextBuilder" factory-method="newBuilder">
+        <constructor-arg value="aws-s3"/>
+    </bean>
+
+    <bean id="contextBuilderWithCreds" factory-bean="contextBuilder" factory-method="credentials">
+        <constructor-arg  value="AKIAILHGDOY4RLOMRNAQ"/>
+        <constructor-arg  value="p+PlYgMG/42k7QfpiKB+XovkufhW6hW31cDwRrXB"/>
+    </bean>
+	
+	<bean id="blobStoreContext" factory-bean="contextBuilderWithCreds" factory-method="buildView">
+        <constructor-arg>
+            <value>org.jclouds.blobstore.BlobStoreContext</value>
+        </constructor-arg>
+    </bean>
+ 
+	<bean id="blobStore" factory-bean="blobStoreContext" factory-method="getBlobStore"/>
+	-->
+	<bean id="templateLoader" class="de.neuland.jade4j.spring.template.SpringTemplateLoader">
+		<property name="basePath" value="/WEB-INF/views/" />
+	</bean>
+
+	<bean id="jadeConfiguration" class="de.neuland.jade4j.JadeConfiguration">
+		<property name="prettyPrint" value="false" />
+		<property name="caching" value="false" />
+		<property name="templateLoader" ref="templateLoader" />
+	</bean>
+
+	<bean id="viewResolver" class="de.neuland.jade4j.spring.view.JadeViewResolver">
+		<property name="configuration" ref="jadeConfiguration" />
+		<!-- rendering nice html formatted error pages for development -->
+		<property name="renderExceptions" value="true" />
+	</bean>
+
+</beans>
