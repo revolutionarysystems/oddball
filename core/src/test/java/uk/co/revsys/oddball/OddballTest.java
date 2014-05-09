@@ -6,14 +6,18 @@
 
 package uk.co.revsys.oddball;
 
+import java.io.File;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import uk.co.revsys.oddball.cases.Case;
+import uk.co.revsys.oddball.cases.StringCase;
 import uk.co.revsys.oddball.rules.Opinion;
+import uk.co.revsys.resource.repository.LocalDiskResourceRepository;
+import uk.co.revsys.resource.repository.ResourceRepository;
 
 /**
  *
@@ -45,17 +49,20 @@ public class OddballTest {
     /**
      * Test of assessCase method, of class Oddball.
      */
-//    @Test
-//    public void testAssessCase() throws Exception {
-//        System.out.println("assessCase");
-//        String ruleSetName = "";
-//        Case aCase = null;
-//        Oddball instance = null;
-//        Opinion expResult = null;
-//        Opinion result = instance.assessCase(ruleSetName, aCase);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//    
+    @Test
+    public void testAssessCase() throws Exception {
+        System.out.println("assessCase");
+        String ruleSetName = "Test1.txt";
+        Case aCase = new StringCase("abc123");
+        ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
+        Oddball instance = new Oddball(resourceRepository);
+        Opinion result = instance.assessCase(ruleSetName, aCase);
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("string"));
+        assertTrue(result.getLabel().contains("aString"));
+        assertTrue(result.getLabel().contains("abc-ish"));
+        assertTrue(result.getLabel().contains(";"));
+        assertFalse(result.getLabel().contains("null"));
+    }
+    
 }

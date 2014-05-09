@@ -22,105 +22,44 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.servlet.View;
 import uk.co.revsys.oddball.Oddball;
+import uk.co.revsys.oddball.cases.StringCase;
+import uk.co.revsys.oddball.rules.Opinion;
+import uk.co.revsys.resource.repository.ResourceRepository;
+import uk.co.revsys.resource.repository.model.Directory;
+import uk.co.revsys.resource.repository.model.Resource;
 
 public class OddballServlet extends HttpServlet {
 
 	private Oddball oddball;
+	private ResourceRepository resourceRepository;
 	private JadeViewResolver viewResolver;
-	private DiskFileItemFactory factory;
-	private ServletFileUpload upload;
 
 	@Override
 	public void init() throws ServletException {
 		WebApplicationContext webApplicationContext = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
-		this.oddball = webApplicationContext.getBean(Oddball.class);
+		this.resourceRepository = webApplicationContext.getBean(ResourceRepository.class);
+		this.oddball = new Oddball(resourceRepository);
 		this.viewResolver = webApplicationContext.getBean(JadeViewResolver.class);
-		this.factory = new DiskFileItemFactory();
-		this.upload = new ServletFileUpload(factory);
 	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		try {
 			resp.setHeader("Access-Control-Allow-Origin", "*");
-			String filePath = req.getRequestURI().substring((req.getContextPath() + req.getServletPath()).length() + 1);
-			if (filePath.isEmpty() || filePath.endsWith("/")) {
-				List<Directory> directories = resourceRepository.listDirectories(filePath);
-				List<Resource> resources = resourceRepository.listResources(filePath);
-				Map<String, Object> model = new HashMap<String, Object>();
-				model.put("directories", directories);
-				model.put("resources", resources);
-				String viewType = req.getParameter("view");
-				if (viewType != null && viewType.equals("json")) {
-					resp.getWriter().write(new JSONObject(model).toString());
-					resp.setContentType(MediaType.APPLICATION_JSON.toString());
-				} else {
-					String parentPath = filePath;
-					if (!parentPath.isEmpty()) {
-						parentPath = parentPath.substring(0, parentPath.length() - 1);
-						parentPath = req.getContextPath() + "/" + parentPath.substring(0, parentPath.lastIndexOf("/") + 1);
-					} else {
-						parentPath = req.getContextPath() + "/";
-					}
-					model.put("parentPath", parentPath);
-					View view = viewResolver.resolveViewName("./resources.jade", Locale.getDefault());
-					view.render(model, req, resp);
-				}
-			} else {
-				String resourcePath = filePath.substring(0, filePath.lastIndexOf("/"));
-				String resourceName = filePath.substring(filePath.lastIndexOf("/") + 1);
-				InputStream resourceStream = resourceRepository.read(new Resource(resourcePath, resourceName));
-				IOUtils.copy(resourceStream, resp.getOutputStream());
-			}
+                        String caseStr = req.getParameter("case");
+                        String ruleSet = req.getParameter("ruleSet");
+                        Opinion op = oddball.assessCase(ruleSet, new StringCase(caseStr));
+                        resp.getWriter().write(op.getLabel());
+        		resp.setContentType(MediaType.TEXT_PLAIN.toString());
 		} catch (Exception ex) {
 			throw new ServletException(ex);
 		}
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		try {
-			resp.setHeader("Access-Control-Allow-Origin", "*");
-			String filePath = req.getRequestURI().substring((req.getContextPath() + req.getServletPath()).length() + 1);
-			List<FileItem> items = upload.parseRequest(req);
-			for (FileItem item : items) {
-				if (!item.isFormField()) {
-					String resourcePath;
-					String resourceName;
-					if (filePath.endsWith("/")) {
-						resourcePath = filePath.substring(0, filePath.lastIndexOf("/"));
-						resourceName = item.getName();
-					} else {
-						resourcePath = filePath.substring(0, filePath.lastIndexOf("/"));
-						resourceName = filePath.substring(filePath.lastIndexOf("/") + 1);
-					}
-					Resource resource = new Resource(resourcePath, resourceName);
-					InputStream uploadStream = item.getInputStream();
-					resourceRepository.write(resource, uploadStream);
-					uploadStream.close();
-					resp.getWriter().write(resource.getName() + " uploaded successfully");
-				}
-			}
-		} catch (FileUploadException ex) {
-			throw new ServletException(ex);
-		}
-	}
-
-	@Override
-	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		System.out.println("doDelete");
-		resp.setHeader("Access-Control-Allow-Origin", "*");
-		String filePath = req.getRequestURI().substring((req.getContextPath() + req.getServletPath()).length() + 1);
-		String resourcePath = filePath.substring(0, filePath.lastIndexOf("/"));
-		String resourceName = filePath.substring(filePath.lastIndexOf("/") + 1);
-		resourceRepository.delete(new Resource(resourcePath, resourceName));
-		resp.getWriter().write(resourceName + " deleted successfully");
-	}
-
-	@Override
 	protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.setHeader("Access-Control-Allow-Origin", "*");
-		resp.setHeader("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+		resp.setHeader("Access-Control-Allow-Methods", "GET");
 		super.doOptions(req, resp);
 	}
 

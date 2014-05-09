@@ -65,4 +65,9 @@ public class RegExRule implements Rule {
         this.label = label;
     }
     
+
+    @Override
+    public String toString(){
+        return "Rule-"+label+":"+regex;
+    }
 }

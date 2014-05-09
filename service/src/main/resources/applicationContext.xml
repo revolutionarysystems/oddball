@@ -18,7 +18,7 @@
 	</bean>
 	
 	<bean id="resourceRepository" class="com.rsl.resource.repository.LocalDiskResourceRepository">
-		<constructor-arg index="0" value="/var/cache/haven"/>
+		<constructor-arg index="0" value="/data/test/oddball"/>
 	</bean>
 	<!--
 	<bean id="resourceRepository" class="com.rsl.resource.repository.JCloudResourceRepository">

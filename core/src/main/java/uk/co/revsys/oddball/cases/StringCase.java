@@ -26,4 +26,8 @@ public class StringCase implements Case{
         this.content = content;
     }
     
+    @Override
+    public String toString(){
+        return "Case-"+content;
+    }
 }

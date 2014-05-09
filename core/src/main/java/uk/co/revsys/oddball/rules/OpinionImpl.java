@@ -28,11 +28,13 @@ public class OpinionImpl implements Opinion{
     
     @Override
     public void incorporate(Assessment as) {
-        if (!label.isEmpty()){
-            label+=";";
+        if (as.getLabelStr()!=null){
+            if (!label.isEmpty()){
+                label+=";";
+            }
+            label += as.getLabelStr();
+            evidence.add(as);
         }
-        label += as.getLabelStr();
-        evidence.add(as);
     }
     
 }
