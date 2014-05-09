@@ -48,8 +48,12 @@ public class OddballServlet extends HttpServlet {
 			resp.setHeader("Access-Control-Allow-Origin", "*");
                         String caseStr = req.getParameter("case");
                         String ruleSet = req.getParameter("ruleSet");
-                        Opinion op = oddball.assessCase(ruleSet, new StringCase(caseStr));
-                        resp.getWriter().write(op.getLabel());
+                        if (caseStr!=null && ruleSet!=null){
+                            Opinion op = oddball.assessCase(ruleSet, new StringCase(caseStr));
+                            resp.getWriter().write(op.getLabel());
+                        } else {
+                            resp.getWriter().write("Specify parameters case and ruleSet");
+                        }
         		resp.setContentType(MediaType.TEXT_PLAIN.toString());
 		} catch (Exception ex) {
 			throw new ServletException(ex);
