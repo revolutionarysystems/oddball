@@ -45,6 +45,20 @@ public class Oddball{
         return ruleSet.assessCase(aCase);
         
     }
+
+    public void clearRuleSet(String ruleSetName)throws OddballException{
+        try{
+            RuleSet ruleSet = ruleSets.get(ruleSetName);
+            if (ruleSet == null) {
+                throw new OddballException("No Rule Set named "+ruleSetName+" in repository");
+            } else {
+                ruleSets.remove(ruleSetName);
+            }
+        }
+        catch (Exception e){
+            throw new OddballException("No Rule Set named "+ruleSetName+" in repository");
+        }
+    }
     
     private RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository)throws OddballException{
         try{

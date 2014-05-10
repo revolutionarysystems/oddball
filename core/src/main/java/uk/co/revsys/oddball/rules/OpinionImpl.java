@@ -14,6 +14,10 @@ import java.util.HashSet;
  */
 public class OpinionImpl implements Opinion{
 
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
     String label="";
     
     HashSet<Object> evidence = new HashSet();

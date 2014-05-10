@@ -50,7 +50,7 @@ public class OddballTest {
      * Test of assessCase method, of class Oddball.
      */
     @Test
-    public void testAssessCase() throws Exception {
+    public void testAssessCaseMatch() throws Exception {
         System.out.println("assessCase");
         String ruleSetName = "Test1.txt";
         Case aCase = new StringCase("abc123");
@@ -62,6 +62,24 @@ public class OddballTest {
         assertTrue(result.getLabel().contains("aString"));
         assertTrue(result.getLabel().contains("abc-ish"));
         assertTrue(result.getLabel().contains(";"));
+        assertFalse(result.getLabel().contains("null"));
+    }
+ 
+    /**
+     * Test of assessCase method, of class Oddball.
+     */
+    @Test
+    public void testAssessCaseOddball() throws Exception {
+        System.out.println("assessCase");
+        String ruleSetName = "Test2.txt";
+        Case aCase = new StringCase("b-side");
+        ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
+        Oddball instance = new Oddball(resourceRepository);
+        Opinion result = instance.assessCase(ruleSetName, aCase);
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("*odDball*"));
+        assertFalse(result.getLabel().contains("string"));
+        assertFalse(result.getLabel().contains(";"));
         assertFalse(result.getLabel().contains("null"));
     }
     

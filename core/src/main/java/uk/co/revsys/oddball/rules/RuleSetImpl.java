@@ -36,6 +36,9 @@ public class RuleSetImpl implements RuleSet{
             Assessment as = rule.apply(aCase);
             op.incorporate(as);
         }
+        if (op.getLabel().equals("")){
+            op.setLabel("*odDball*");
+        }
         return op;
     }
 

@@ -14,5 +14,5 @@ public interface Opinion {
     
     public void incorporate(Assessment as);
     public String getLabel();
-
+    public void setLabel(String label); 
 }
