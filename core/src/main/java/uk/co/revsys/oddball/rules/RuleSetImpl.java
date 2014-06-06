@@ -16,13 +16,18 @@ import uk.co.revsys.oddball.cases.Case;
  */
 public class RuleSetImpl implements RuleSet{
     
+
+    public RuleSetImpl() {
+    }
+    
     public RuleSetImpl(String name) {
         this.name = name;
     }
 
     Set<Rule> rules = new HashSet<Rule>();
 
-    String name;
+    private String name;
+    private String ruleType;
 
     @Override
     public void addRule(Rule rule) {
@@ -30,18 +35,22 @@ public class RuleSetImpl implements RuleSet{
     }
 
     @Override
-    public Opinion assessCase(Case aCase) {
+    public Opinion assessCase(Case aCase, String key) {
+        
         Opinion op = new OpinionImpl();
+
+        
         for (Rule rule: rules){
-            Assessment as = rule.apply(aCase);
+            Assessment as = rule.apply(aCase, this, key);
             op.incorporate(as);
         }
-        if (op.getLabel().equals("")){
-            op.setLabel("*odDball*");
+        if (op.getTags().isEmpty()){
+            op.getTags().add("*odDball*");
         }
         return op;
     }
 
+   
     public Set<Rule> getRules() {
         return rules;
     }
@@ -50,5 +59,18 @@ public class RuleSetImpl implements RuleSet{
         return name;
     }
     
+    /**
+     * @return the ruleType
+     */
+    public String getRuleType() {
+        return ruleType;
+    }
+
+    /**
+     * @param ruleType the ruleType to set
+     */
+    public void setRuleType(String ruleType) {
+        this.ruleType = ruleType;
+    }
     
 }

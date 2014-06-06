@@ -1,4 +1,4 @@
-/*
+ /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -14,6 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.StringCase;
+import uk.co.revsys.oddball.util.OddballException;
 
 /**
  *
@@ -49,35 +50,35 @@ public class RegExRuleTest {
         Case aCase = new StringCase("abc123");
         RegExRule instance = new RegExRule(".*", "string");
         Assessment expResult = new Assessment("abc123", ".*", "string");
-        Assessment result = (Assessment) instance.apply(aCase);
+        Assessment result = (Assessment) instance.apply(aCase, null, null);
         assertEquals(expResult.getCaseStr(), result.getCaseStr());
         assertEquals(expResult.getRuleStr(), result.getRuleStr());
         assertEquals(expResult.getLabelStr(), result.getLabelStr());
     }
 
     /**
-     * Test of getRegEx method, of class RegExRule.
+     * Test of getRuleString method, of class RegExRule.
      */
     @Test
-    public void testGetRegEx() {
-        System.out.println("getRegEx");
+    public void testGetRuleString() {
+        System.out.println("getRuleString");
         RegExRule instance = new RegExRule("*", "string");
         String expResult = "*";
-        String result = instance.getRegEx();
+        String result = instance.getRuleString();
         assertEquals(expResult, result);
     }
 
     /**
-     * Test of setRegEx method, of class RegExRule.
+     * Test of setRuleString method, of class RegExRule.
      */
     @Test
-    public void testSetRegEx() {
-        System.out.println("setRegEx");
+    public void testSetRuleString()throws OddballException {
+        System.out.println("setRuleString");
         String regEx = "a.*";
         RegExRule instance = new RegExRule(".*", "string");
-        instance.setRegEx(regEx);
+        instance.setRuleString(regEx, null);
         String expResult = "a.*";
-        String result = instance.getRegEx();
+        String result = instance.getRuleString();
         assertEquals(expResult, result);
     }
 

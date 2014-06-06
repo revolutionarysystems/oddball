@@ -64,7 +64,7 @@ public class RuleSetImplTest {
         RuleSetImpl instance = new RuleSetImpl("Test");
         instance.addRule(new RegExRule(".*", "string"));
         instance.addRule(new RegExRule("a.*", "aString"));
-        Opinion result = instance.assessCase(aCase);
+        Opinion result = instance.assessCase(aCase, null);
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("aString"));
         assertTrue(result.getLabel().contains(";"));

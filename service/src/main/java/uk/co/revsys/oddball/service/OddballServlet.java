@@ -2,31 +2,33 @@ package uk.co.revsys.oddball.service;
 
 import de.neuland.jade4j.spring.view.JadeViewResolver;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+//import java.io.InputStream;
+//import java.util.HashMap;
+//import java.util.List;
+//import java.util.Locale;
+//import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.IOUtils;
-import org.json.JSONObject;
+//import org.apache.commons.fileupload.FileItem;
+//import org.apache.commons.fileupload.FileUploadException;
+//import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+//import org.apache.commons.fileupload.servlet.ServletFileUpload;
+//import org.apache.commons.io.IOUtils;
+//import org.json.JSONObject;
 import org.springframework.http.MediaType;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import org.springframework.web.servlet.View;
+//import org.springframework.web.servlet.View;
 import uk.co.revsys.oddball.Oddball;
 import uk.co.revsys.oddball.cases.StringCase;
 import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.resource.repository.ResourceRepository;
-import uk.co.revsys.resource.repository.model.Directory;
-import uk.co.revsys.resource.repository.model.Resource;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
+//import uk.co.revsys.resource.repository.model.Directory;
+//import uk.co.revsys.resource.repository.model.Resource;
 
 public class OddballServlet extends HttpServlet {
 
@@ -52,12 +54,16 @@ public class OddballServlet extends HttpServlet {
                         boolean goodRequest = false;
                         if ((actionStr!=null) && ruleSet!=null && (actionStr.equals("clear"))){
                             oddball.clearRuleSet(ruleSet);
+                            resp.getWriter().write("Rule Set "+ruleSet+" cleared.");
                             goodRequest = true;
                         }
                         if (caseStr!=null && ruleSet!=null){
                             Opinion op = oddball.assessCase(ruleSet, new StringCase(caseStr));
                             resp.getWriter().write(op.getLabel());
                             goodRequest = true;
+                            String tags = op.getLabel();
+                            caseStr = caseStr.replace("\"", "\\\"");
+                            RESULTSLOGGER.log(Priority.INFO, "\"ruleSet\" : \""+ruleSet+"\", "+"\"case\" : \""+caseStr+"\", "+tags.substring(1, tags.length()-1));
                         } 
                         if (!goodRequest) {
                             resp.getWriter().write("Specify parameters ruleSet and case or action");
@@ -75,4 +81,6 @@ public class OddballServlet extends HttpServlet {
 		super.doOptions(req, resp);
 	}
 
+        static final Logger RESULTSLOGGER = Logger.getLogger("oddball-results");
+        
 }

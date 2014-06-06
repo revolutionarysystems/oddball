@@ -19,8 +19,11 @@ public interface RuleSet {
     
     public Set<Rule> getRules();
     
-    public Opinion assessCase(Case aCase);
+    public Opinion assessCase(Case aCase, String key);
     
+    public String getRuleType();
+
+    public void setRuleType(String ruleType);
     
     
 }

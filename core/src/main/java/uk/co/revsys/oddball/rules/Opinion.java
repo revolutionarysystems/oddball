@@ -6,6 +6,8 @@
 
 package uk.co.revsys.oddball.rules;
 
+import java.util.List;
+
 /**
  *
  * @author Andrew
@@ -13,6 +15,7 @@ package uk.co.revsys.oddball.rules;
 public interface Opinion {
     
     public void incorporate(Assessment as);
+    public List<String> getTags();
+    public void setTags(List<String> tags); 
     public String getLabel();
-    public void setLabel(String label); 
 }

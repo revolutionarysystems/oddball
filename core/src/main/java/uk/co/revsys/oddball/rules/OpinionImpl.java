@@ -6,7 +6,9 @@
 
 package uk.co.revsys.oddball.rules;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  *
@@ -14,17 +16,28 @@ import java.util.HashSet;
  */
 public class OpinionImpl implements Opinion{
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setTags(List<String> tags) {
+        this.tags = tags;
     }
 
-    String label="";
+    List<String> tags= new ArrayList<String>();
     
     HashSet<Object> evidence = new HashSet();
 
-    public String getLabel() {
-        return label;
+    public List<String> getTags() {
+        return tags;
     }
+
+    public String getLabel() {
+        StringBuffer tagStr = new StringBuffer("{ \"tags\" : [");
+        for (String tag : tags){
+            tagStr.append("\""+tag+"\", ");
+        }
+        tagStr.delete(tagStr.length()-2, tagStr.length());
+        tagStr.append(" ] }");
+        return tagStr.toString();
+    }
+
 
     public HashSet<Object> getEvidence() {
         return evidence;
@@ -33,10 +46,7 @@ public class OpinionImpl implements Opinion{
     @Override
     public void incorporate(Assessment as) {
         if (as.getLabelStr()!=null){
-            if (!label.isEmpty()){
-                label+=";";
-            }
-            label += as.getLabelStr();
+            tags.add(as.getLabelStr());
             evidence.add(as);
         }
     }

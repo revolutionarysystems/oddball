@@ -9,6 +9,8 @@ package uk.co.revsys.oddball.rules;
 import java.util.regex.Pattern;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.StringCase;
+import uk.co.revsys.oddball.util.OddballException;
+import uk.co.revsys.resource.repository.ResourceRepository;
 
 /**
  *
@@ -16,39 +18,42 @@ import uk.co.revsys.oddball.cases.StringCase;
  */
 public class RegExRule implements Rule {
 
-    public RegExRule(String regex, String label) {
-        this.regex = regex;
+    public RegExRule() {
+    }
+    
+    public RegExRule(String ruleString, String label) {
+        this.ruleString = ruleString;
         this.label = label;
     }
     
-    private String regex;
+    private String ruleString;
     
     private String label;
 
     @Override
-    public Assessment apply(Case aCase) {
+    public Assessment apply(Case aCase, RuleSet ruleSet, String key) {
         String content = ((StringCase)aCase).getContent();
-        Pattern p = Pattern.compile(regex);
+        Pattern p = Pattern.compile(ruleString);
         boolean success = p.matcher(content).matches();
         if (success){
-            return new Assessment(content, regex, label);
+            return new Assessment(content, ruleString, label);
         } else {
-            return new Assessment(content, regex, null);
+            return new Assessment(content, ruleString, null);
         }
     }
 
     /**
-     * @return the regEx
+     * @return the ruleString
      */
-    public String getRegEx() {
-        return regex;
+    public String getRuleString() {
+        return ruleString;
     }
 
     /**
-     * @param regEx the regEx to set
+     * @param ruleString the ruleString to set
      */
-    public void setRegEx(String regEx) {
-        this.regex = regEx;
+    public void setRuleString(String ruleString, ResourceRepository resourceRepository) throws OddballException{
+        this.ruleString = ruleString;
     }
 
     /**
@@ -68,6 +73,6 @@ public class RegExRule implements Rule {
 
     @Override
     public String toString(){
-        return "Rule-"+label+":"+regex;
+        return "Rule-"+label+":"+ruleString;
     }
 }

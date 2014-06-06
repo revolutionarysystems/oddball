@@ -15,6 +15,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.StringCase;
+import uk.co.revsys.oddball.rules.Assessment;
+import uk.co.revsys.oddball.rules.MongoDBHelper;
+import uk.co.revsys.oddball.rules.MongoRule;
 import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.resource.repository.LocalDiskResourceRepository;
 import uk.co.revsys.resource.repository.ResourceRepository;
@@ -61,7 +64,6 @@ public class OddballTest {
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("aString"));
         assertTrue(result.getLabel().contains("abc-ish"));
-        assertTrue(result.getLabel().contains(";"));
         assertFalse(result.getLabel().contains("null"));
     }
  
@@ -79,8 +81,43 @@ public class OddballTest {
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("*odDball*"));
         assertFalse(result.getLabel().contains("string"));
-        assertFalse(result.getLabel().contains(";"));
         assertFalse(result.getLabel().contains("null"));
+    }
+    
+    /**
+     * Test of assessCase method, of class Oddball.
+     */
+    @Test
+    public void testAssessCaseOddballMongo() throws Exception {
+        System.out.println("assessCase");
+        String ruleSetName = "TestMongo.txt";
+        
+        Case aCase = new StringCase("{\"browser\":\"chrome\", \"platform\":\"windows\"}");
+        
+        ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
+        Oddball instance = new Oddball(resourceRepository);
+        Opinion result = instance.assessCase(ruleSetName, aCase);
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("ruleC"));
+        assertTrue(result.getLabel().contains("ruleB"));
+        assertTrue(result.getLabel().contains("ruleA"));
+    }
+    
+    /**
+     * Test of assessCase method, of class Oddball.
+     */
+    @Test
+    public void testAssessCaseOddballMongoOddball() throws Exception {
+        System.out.println("assessCase");
+        String ruleSetName = "TestMongo.txt";
+        
+        Case aCase = new StringCase("{\"browser\":\"firefox\", \"platform\":\"android\"}");
+        
+        ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
+        Oddball instance = new Oddball(resourceRepository);
+        Opinion result = instance.assessCase(ruleSetName, aCase);
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("*odDball*"));
     }
     
 }

@@ -14,7 +14,7 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.rules.Opinion;
-import uk.co.revsys.oddball.rules.RegExRule;
+import uk.co.revsys.oddball.rules.Rule;
 import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.rules.RuleSetImpl;
 import uk.co.revsys.oddball.util.OddballException;
@@ -42,16 +42,14 @@ public class Oddball{
             ruleSet = loadRuleSet(ruleSetName, resourceRepository);
             ruleSets.put(ruleSetName, ruleSet);
         }
-        return ruleSet.assessCase(aCase);
+        return ruleSet.assessCase(aCase, null);
         
     }
 
     public void clearRuleSet(String ruleSetName)throws OddballException{
         try{
             RuleSet ruleSet = ruleSets.get(ruleSetName);
-            if (ruleSet == null) {
-                throw new OddballException("No Rule Set named "+ruleSetName+" in repository");
-            } else {
+            if (ruleSet != null) {
                 ruleSets.remove(ruleSetName);
             }
         }
@@ -62,18 +60,35 @@ public class Oddball{
     
     private RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository)throws OddballException{
         try{
-            RuleSet ruleSet = new RuleSetImpl("ruleSetName");
             Resource resource = new Resource("", ruleSetName);
             InputStream inputStream = resourceRepository.read(resource);
             List<String> rules = IOUtils.readLines(inputStream);
+            String ruleType= "default";
+            if (rules.get(0).contains("$ruleType")){
+                String rule = rules.get(0);
+                String[] parsed = rule.trim().split(":",2);
+                ruleType=parsed[1];
+                rules.remove(rule);
+            }
+            Class<? extends RuleSetImpl> ruleSetClass = new RuleSetMap().get(ruleType);
+            RuleSet ruleSet = (RuleSet) ruleSetClass.newInstance();
+            ruleSet.setRuleType(ruleType);
+            Class ruleClass = new RuleTypeMap().get(ruleType);
             for (String rule : rules){
-                String[] parsed = rule.split(":",2);
-                ruleSet.addRule(new RegExRule(parsed[1],parsed[0]));
+                String[] parsed = rule.trim().split(":",2);
+                Rule ruleInstance = (Rule) ruleClass.newInstance();
+                ruleInstance.setLabel(parsed[0]);
+                ruleInstance.setRuleString(parsed[1], resourceRepository);
+                ruleSet.addRule(ruleInstance);
             }
             return ruleSet;
         }
-        catch (Exception e){
+        catch (java.io.FileNotFoundException e){
             throw new OddballException("No Rule Set named "+ruleSetName+" in repository");
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            throw new OddballException("Rules could not be loaded");
         }
     }
     
