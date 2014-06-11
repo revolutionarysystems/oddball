@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import uk.co.revsys.oddball.cases.Case;
+import uk.co.revsys.oddball.cases.MapCase;
 import uk.co.revsys.oddball.cases.StringCase;
 import uk.co.revsys.oddball.util.OddballException;
 import uk.co.revsys.resource.repository.ResourceRepository;
@@ -36,8 +37,8 @@ public class MongoRule implements Rule {
 
     @Override
     public Assessment apply(Case aCase, RuleSet ruleSet, String key) {
-        String content = ((StringCase)aCase).getContent();
-        if (!ruleString.contains(".json") && testRule(key, ruleString, ((MongoRuleSet)ruleSet).getHelper())){
+        String content = ((MapCase)aCase).getContent();
+        if (!ruleString.contains(".json") && testRule(key, ruleString, ((MongoRuleSet)ruleSet).getAssess())){
             return new Assessment(content, ruleString, label);
         } else {
             return new Assessment(content, ruleString, null);

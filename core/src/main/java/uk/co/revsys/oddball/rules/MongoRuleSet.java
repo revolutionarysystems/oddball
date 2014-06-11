@@ -6,7 +6,11 @@
 
 package uk.co.revsys.oddball.rules;
 
+import java.io.IOException;
+import java.util.Map;
+import org.jongo.FindOne;
 import uk.co.revsys.oddball.cases.Case;
+import uk.co.revsys.oddball.cases.MapCase;
 import uk.co.revsys.oddball.cases.StringCase;
 
 /**
@@ -16,35 +20,34 @@ import uk.co.revsys.oddball.cases.StringCase;
 public class MongoRuleSet extends RuleSetImpl{
 
     public MongoRuleSet() {
-        setHelper(new MongoDBHelper());
+        super();
+        setAssess(new MongoDBHelper("oddball-assess"));
     }
 
-    private MongoDBHelper helper;
+    private MongoDBHelper assess;
 
-    /**
-     * @return the context
-     */
-    public MongoDBHelper getHelper() {
-        return helper;
+    public MongoDBHelper getAssess() {
+        return assess;
     }
 
-    /**
-     * @param context the context to set
-     */
-    public void setHelper(MongoDBHelper helper) {
-        this.helper = helper;
+    public void setAssess(MongoDBHelper assess) {
+        this.assess = assess;
     }
 
     public MongoRuleSet(String name) {
         super(name);
-        setHelper(new MongoDBHelper());
+        setAssess(new MongoDBHelper(name+"-assess"));
     }
     
     @Override
-    public Opinion assessCase(Case aCase, String key) {
-        String caseId = helper.insertCase(((StringCase)aCase).getContent());
-        Opinion op = super.assessCase(aCase, caseId);
-        helper.removeCase(caseId);
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr) throws IOException{
+        String caseStr = aCase.getContent();
+        Case theCase = new MapCase(caseStr);
+        String caseId = assess.insertCase(caseStr);
+        Opinion op = super.assessCase(theCase, caseId, ruleSetStr);
+        String persistCase = op.getEnrichedCase(ruleSetStr, theCase);
+        getPersist().insertCase(persistCase);
+        assess.removeCase(caseId);
         return op;
     }
 

@@ -6,24 +6,31 @@
 
 package uk.co.revsys.oddball.cases;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import uk.co.revsys.oddball.util.JSONUtil;
+
 /**
  *
  * @author Andrew
  */
-public class StringCase implements Case{
+public class MapCase implements Case{
 
-    public StringCase(String content) {
+    public MapCase(String content) throws IOException{
         this.content = content;
+        mapContent = JSONUtil.json2map(content);
     }
     
     private String content;
+    private Map<String, Object> mapContent;
 
     public String getContent() {
         return content;
     }
 
     public String getJSONisedContent(){
-        return "\""+content.replace("\"", "\\\"")+"\"";
+        return content;
     }
     
     public void setContent(String content) {

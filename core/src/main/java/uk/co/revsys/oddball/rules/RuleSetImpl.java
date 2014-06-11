@@ -6,6 +6,7 @@
 
 package uk.co.revsys.oddball.rules;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import uk.co.revsys.oddball.cases.Case;
@@ -18,9 +19,11 @@ public class RuleSetImpl implements RuleSet{
     
 
     public RuleSetImpl() {
+        setPersist(new MongoDBHelper("oddball-persist"));
     }
     
     public RuleSetImpl(String name) {
+        setPersist(new MongoDBHelper(name+"-persist"));
         this.name = name;
     }
 
@@ -28,6 +31,8 @@ public class RuleSetImpl implements RuleSet{
 
     private String name;
     private String ruleType;
+   private MongoDBHelper persist;
+
 
     @Override
     public void addRule(Rule rule) {
@@ -35,7 +40,7 @@ public class RuleSetImpl implements RuleSet{
     }
 
     @Override
-    public Opinion assessCase(Case aCase, String key) {
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr) throws IOException{
         
         Opinion op = new OpinionImpl();
 
@@ -73,4 +78,12 @@ public class RuleSetImpl implements RuleSet{
         this.ruleType = ruleType;
     }
     
+    public MongoDBHelper getPersist() {
+        return persist;
+    }
+
+    public void setPersist(MongoDBHelper persist) {
+        this.persist = persist;
+    }
+
 }

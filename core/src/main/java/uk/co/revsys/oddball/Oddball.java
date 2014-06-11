@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.rules.Opinion;
@@ -42,7 +43,12 @@ public class Oddball{
             ruleSet = loadRuleSet(ruleSetName, resourceRepository);
             ruleSets.put(ruleSetName, ruleSet);
         }
-        return ruleSet.assessCase(aCase, null);
+        try {
+            return ruleSet.assessCase(aCase, null, ruleSetName);
+        } catch (IOException ex){
+            ex.printStackTrace();
+            throw new OddballException();
+        }
         
     }
 
@@ -91,5 +97,36 @@ public class Oddball{
             throw new OddballException("Rules could not be loaded");
         }
     }
+
+    public Iterable<String> findCases(String ruleSetName)throws OddballException{
+        try{
+            RuleSet ruleSet = ruleSets.get(ruleSetName);
+            return ruleSet.getPersist().findCases();
+        } catch (IOException ex){
+            ex.printStackTrace();
+            throw new OddballException();
+        }
+    }
+    
+    public Iterable<String> findCases(String ruleSetName, String query)throws OddballException{
+        try{
+            RuleSet ruleSet = ruleSets.get(ruleSetName);
+            return ruleSet.getPersist().findCases(query);
+        } catch (IOException ex){
+            ex.printStackTrace();
+            throw new OddballException();
+        }
+    }
+    
+    public Iterable<String> findDistinct(String ruleSetName, String field)throws OddballException{
+        try{
+            RuleSet ruleSet = ruleSets.get(ruleSetName);
+            return ruleSet.getPersist().findDistinct(field);
+        } catch (IOException ex){
+            ex.printStackTrace();
+            throw new OddballException();
+        }
+    }
+    
     
 }

@@ -7,6 +7,7 @@
 package uk.co.revsys.oddball;
 
 import java.io.File;
+import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -14,6 +15,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.co.revsys.oddball.cases.Case;
+import uk.co.revsys.oddball.cases.MapCase;
 import uk.co.revsys.oddball.cases.StringCase;
 import uk.co.revsys.oddball.rules.Assessment;
 import uk.co.revsys.oddball.rules.MongoDBHelper;
@@ -60,7 +62,6 @@ public class OddballTest {
         ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
         Oddball instance = new Oddball(resourceRepository);
         Opinion result = instance.assessCase(ruleSetName, aCase);
-        System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("aString"));
         assertTrue(result.getLabel().contains("abc-ish"));
@@ -92,7 +93,7 @@ public class OddballTest {
         System.out.println("assessCase");
         String ruleSetName = "TestMongo.txt";
         
-        Case aCase = new StringCase("{\"browser\":\"chrome\", \"platform\":\"windows\"}");
+        Case aCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"windows\"}");
         
         ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
         Oddball instance = new Oddball(resourceRepository);
@@ -111,7 +112,7 @@ public class OddballTest {
         System.out.println("assessCase");
         String ruleSetName = "TestMongo.txt";
         
-        Case aCase = new StringCase("{\"browser\":\"firefox\", \"platform\":\"android\"}");
+        Case aCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\"}");
         
         ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
         Oddball instance = new Oddball(resourceRepository);
@@ -120,4 +121,79 @@ public class OddballTest {
         assertTrue(result.getLabel().contains("*odDball*"));
     }
     
+    /**
+     * Test of findCases method, of class Oddball.
+     */
+    @Test
+    public void testFindCases() throws Exception {
+        System.out.println("findCases");
+        String ruleSetName = "TestMongo.txt";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\"}");
+        
+        ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
+        Oddball instance = new Oddball(resourceRepository);
+        Opinion result = instance.assessCase(ruleSetName, theCase);
+        instance.assessCase(ruleSetName, theCase);
+        Iterable<String> cases = instance.findCases(ruleSetName);
+        for (String aCase : cases){
+            System.out.println(aCase);
+        }
+        
+        assertTrue(cases.iterator().hasNext());
+    }
+    
+
+    /**
+     * Test of findCases method, of class Oddball.
+     */
+    @Test
+    public void testFindCasesQuery() throws Exception {
+        System.out.println("findCases");
+        String ruleSetName = "TestMongo.txt";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        
+        ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
+        Oddball instance = new Oddball(resourceRepository);
+        Opinion result = instance.assessCase(ruleSetName, theCase);
+        instance.assessCase(ruleSetName, theCase);
+        Iterable<String> cases0 = instance.findCases(ruleSetName, "{}");
+        for (String aCase : cases0){
+            System.out.println(aCase);
+        }
+        Iterable<String> cases = instance.findCases(ruleSetName, "{ \"case.sessionId\" : \"AA11\"}");
+        for (String aCase : cases){
+            System.out.println(aCase);
+        }
+        
+        assertTrue(cases.iterator().hasNext());
+        System.out.println("findCases done");
+    }
+    
+
+    @Test
+    public void testFindDistinctQuery() throws Exception {
+        System.out.println("findDistinct");
+        String ruleSetName = "TestMongo.txt";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\"}");
+        
+        ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
+        Oddball instance = new Oddball(resourceRepository);
+        Opinion result = instance.assessCase(ruleSetName, theCase);
+        Opinion result2 = instance.assessCase(ruleSetName, otherCase);
+        instance.assessCase(ruleSetName, theCase);
+        Iterable<String> cases0 = instance.findCases(ruleSetName, "{}");
+        for (String aCase : cases0){
+            System.out.println(aCase);
+        }
+        Iterable<String> cases = instance.findDistinct(ruleSetName, "case.sessionId");
+        for (String aCase : cases){
+            System.out.println(aCase);
+        }
+        
+        assertTrue(cases.iterator().hasNext());
+    }
+    
+
+
 }

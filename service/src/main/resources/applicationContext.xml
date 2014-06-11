@@ -20,6 +20,18 @@
 	<bean id="resourceRepository" class="uk.co.revsys.resource.repository.LocalDiskResourceRepository">
 		<constructor-arg index="0" value="/data/test/oddball"/>
 	</bean>
+        <bean class="org.apache.wink.spring.Registrar">
+            <property name="classes">
+                <set value-type="java.lang.Class"/>
+            </property>
+            <property name="instances">
+                <set>
+                    <bean class="uk.co.revsys.oddball.service.rest.OddballRestService">
+                        <constructor-arg index="0" ref="resourceRepository"/>
+                    </bean>
+                </set>
+            </property>
+        </bean>
 	<!--
 	<bean id="resourceRepository" class="com.rsl.resource.repository.JCloudResourceRepository">
 		<constructor-arg index="0" ref="blobStore"/>

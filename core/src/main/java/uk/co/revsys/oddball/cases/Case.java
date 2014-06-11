@@ -11,5 +11,8 @@ package uk.co.revsys.oddball.cases;
  * @author Andrew
  */
 public interface Case {
+
+    public String getContent();
+    public String getJSONisedContent();
     
 }

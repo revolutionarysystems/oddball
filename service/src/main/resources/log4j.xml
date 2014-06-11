@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+
+   <appender name="resultsFileAppender" class="org.apache.log4j.RollingFileAppender">
+      <param name="Threshold" value="INFO" />
+      <param name="File" value="/data/oddball/oddball-results.log"/>
+      <layout class="org.apache.log4j.PatternLayout">
+         <!--param name="ConversionPattern" value="%d %-5p  [%c{1}] %m %n" /-->
+         <param name="ConversionPattern" value="{ &quot;timestamp&quot;: &quot;%d&quot;, %m } %n" />
+      </layout>
+   </appender>
+
+   <appender name="logFileAppender" class="org.apache.log4j.RollingFileAppender">
+      <param name="Threshold" value="debug" />
+      <param name="File" value="/data/oddball/oddball-log.log"/>
+      <layout class="org.apache.log4j.PatternLayout">
+         <param name="ConversionPattern" value="%d %-5p  [%c{1}] %m %n" />
+      </layout>
+   </appender>
+
+
+    <logger name="oddball-results" additivity="false">
+            <level value="info" />
+            <appender-ref ref="resultsFileAppender" />
+    </logger>
+    <logger name="oddball" additivity="false">
+            <level value="debug" />
+            <appender-ref ref="logFileAppender" />
+    </logger>
+   <!--root> 
+    <priority value ="debug" /> 
+    <appender-ref ref="fileAppender" /> 
+  </root--> 
+
+</log4j:configuration>

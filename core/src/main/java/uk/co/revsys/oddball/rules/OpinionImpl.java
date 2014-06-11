@@ -6,9 +6,12 @@
 
 package uk.co.revsys.oddball.rules;
 
+import java.lang.Long;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import uk.co.revsys.oddball.cases.Case;
 
 /**
  *
@@ -23,6 +26,8 @@ public class OpinionImpl implements Opinion{
     List<String> tags= new ArrayList<String>();
     
     HashSet<Object> evidence = new HashSet();
+    
+    private long assessTime=0;
 
     public List<String> getTags() {
         return tags;
@@ -38,7 +43,30 @@ public class OpinionImpl implements Opinion{
         return tagStr.toString();
     }
 
+    public String getEnrichedCase(String ruleSet, String caseStr) {
+        String tags = getLabel();
+        caseStr = caseStr.replace("\"", "\\\"");
+        if (assessTime==0){
+            assessTime=new Date().getTime();
+        }
+        String timeStr = Long.toString(assessTime);
+        String enrichedCase =  "{ \"timeStamp\" : \"" + timeStr + "\", " + "\"ruleSet\" : \"" + ruleSet + "\", " + "\"case\" : \"" + caseStr + "\", " + tags.substring(1, tags.length() - 1)+" }";
+        return enrichedCase;
+    }
 
+    public String getEnrichedCase(String ruleSet, Case aCase) {
+        String tags = getLabel();
+        String caseStr = aCase.getJSONisedContent();
+        if (assessTime==0){
+            assessTime=new Date().getTime();
+        }
+        String timeStr = Long.toString(assessTime);
+        String enrichedCase =  "{ \"timeStamp\" : \"" + timeStr + "\", " + "\"ruleSet\" : \"" + ruleSet + "\", " + "\"case\" : " + caseStr + ", " + tags.substring(1, tags.length() - 1)+" }";
+        return enrichedCase;
+    }
+
+
+    
     public HashSet<Object> getEvidence() {
         return evidence;
     }
@@ -49,6 +77,20 @@ public class OpinionImpl implements Opinion{
             tags.add(as.getLabelStr());
             evidence.add(as);
         }
+    }
+
+    /**
+     * @return the assessTime
+     */
+    public long getAssessTime() {
+        return assessTime;
+    }
+
+    /**
+     * @param assessTime the assessTime to set
+     */
+    public void setAssessTime(long assessTime) {
+        this.assessTime = assessTime;
     }
     
 }

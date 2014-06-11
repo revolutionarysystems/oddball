@@ -6,6 +6,7 @@
 
 package uk.co.revsys.oddball.rules;
 
+import java.io.IOException;
 import java.util.Set;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -58,16 +59,17 @@ public class RuleSetImplTest {
      * Test of assessCase method, of class RuleSetImpl.
      */
     @Test
-    public void testAssessCase() {
+    public void testAssessCase() throws IOException{
         System.out.println("assessCase");
         Case aCase = new StringCase("abc123");
         RuleSetImpl instance = new RuleSetImpl("Test");
         instance.addRule(new RegExRule(".*", "string"));
         instance.addRule(new RegExRule("a.*", "aString"));
-        Opinion result = instance.assessCase(aCase, null);
+        Opinion result = instance.assessCase(aCase, null, "Test");
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("aString"));
-        assertTrue(result.getLabel().contains(";"));
+        System.out.println(result.getEnrichedCase("Test", aCase));
+        assertTrue(result.getEnrichedCase("Test", aCase).contains("Test"));
     }
 
 //    /**

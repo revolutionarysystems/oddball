@@ -7,6 +7,7 @@
 package uk.co.revsys.oddball.rules;
 
 import java.util.List;
+import uk.co.revsys.oddball.cases.Case;
 
 /**
  *
@@ -18,4 +19,6 @@ public interface Opinion {
     public List<String> getTags();
     public void setTags(List<String> tags); 
     public String getLabel();
+    public String getEnrichedCase(String ruleSet, String caseStr);
+    public String getEnrichedCase(String ruleSet, Case aCase);
 }

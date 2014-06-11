@@ -7,15 +7,25 @@
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>
+			classpath:META-INF/server/wink-core-context.xml
 			/WEB-INF/classes/applicationContext.xml
 		</param-value>
     </context-param>
-    <servlet>
+    <!--servlet>
         <servlet-name>oddballServlet</servlet-name>
         <servlet-class>uk.co.revsys.oddball.service.OddballServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>oddballServlet</servlet-name>
         <url-pattern>/*</url-pattern>
-    </servlet-mapping>
+    </servlet-mapping-->
+	<servlet>
+		<servlet-name>restServlet</servlet-name>
+		<servlet-class>org.apache.wink.server.internal.servlet.RestServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>restServlet</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
 </web-app>

@@ -6,6 +6,7 @@
 
 package uk.co.revsys.oddball.rules;
 
+import java.io.IOException;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -13,6 +14,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.co.revsys.oddball.cases.Case;
+import uk.co.revsys.oddball.cases.MapCase;
 import uk.co.revsys.oddball.cases.StringCase;
 import uk.co.revsys.oddball.util.OddballException;
 
@@ -45,12 +47,12 @@ public class MongoRuleTest {
      * Test of apply method, of class MongoRule.
      */
     @Test
-    public void testApply() {
+    public void testApply() throws IOException{
         System.out.println("apply");
-        Case aCase = new StringCase("{\"browser\":\"chrome\"}");
+        Case aCase = new MapCase("{\"browser\":\"chrome\"}");
         MongoRule instance = new MongoRule("{\"browser\":\"chrome\"}", "chrome");
         MongoRuleSet mrs = new MongoRuleSet("test");
-        String caseId = mrs.getHelper().insertCase(((StringCase)aCase).getContent());
+        String caseId = mrs.getAssess().insertCase(((MapCase)aCase).getContent());
         Assessment expResult = new Assessment("{\"browser\":\"chrome\"}", "{\"browser\":\"chrome\"}", "chrome");
         Assessment result = (Assessment) instance.apply(aCase, mrs, caseId);
         assertEquals(expResult.getCaseStr(), result.getCaseStr());
@@ -62,15 +64,15 @@ public class MongoRuleTest {
      * Test of apply method, of class MongoRule.
      */
     @Test
-    public void testApplyMismatch() {
+    public void testApplyMismatch() throws IOException {
         System.out.println("apply");
-        Case aCase = new StringCase("{\"browser\":\"IE6\"}");
+        Case aCase = new MapCase("{\"browser\":\"IE6\"}");
         MongoRule instance = new MongoRule("{\"browser\":\"chrome\"}", "chrome");
         MongoRuleSet mrs = new MongoRuleSet("test");
-        String caseId = mrs.getHelper().insertCase(((StringCase)aCase).getContent());
+        String caseId = mrs.getAssess().insertCase(((MapCase)aCase).getContent());
         Assessment expResult = new Assessment("{\"browser\":\"IE6\"}", "{\"browser\":\"chrome\"}", null);
         Assessment result = (Assessment) instance.apply(aCase, mrs, caseId);
-        mrs.getHelper().removeCase(caseId);
+        mrs.getAssess().removeCase(caseId);
         assertEquals(expResult.getCaseStr(), result.getCaseStr());
         assertEquals(expResult.getRuleStr(), result.getRuleStr());
         assertEquals(expResult.getLabelStr(), result.getLabelStr());

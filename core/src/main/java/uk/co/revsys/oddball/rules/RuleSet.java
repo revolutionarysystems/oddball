@@ -6,6 +6,7 @@
 
 package uk.co.revsys.oddball.rules;
 
+import java.io.IOException;
 import java.util.Set;
 import uk.co.revsys.oddball.cases.Case;
 
@@ -19,11 +20,12 @@ public interface RuleSet {
     
     public Set<Rule> getRules();
     
-    public Opinion assessCase(Case aCase, String key);
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr)throws IOException;
     
     public String getRuleType();
 
     public void setRuleType(String ruleType);
     
+    public MongoDBHelper getPersist();
     
 }
