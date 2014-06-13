@@ -13,6 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
+import uk.co.revsys.oddball.bins.Bin;
+import uk.co.revsys.oddball.bins.BinImpl;
+import uk.co.revsys.oddball.bins.BinSet;
+import uk.co.revsys.oddball.bins.BinSetImpl;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.rules.Rule;
@@ -32,9 +36,11 @@ public class Oddball{
 
     ResourceRepository resourceRepository;
     HashMap<String, RuleSet> ruleSets = new HashMap<String, RuleSet> ();
+    BinSet binSet;
     
-    public Oddball(ResourceRepository resourceRepository) {
+    public Oddball(ResourceRepository resourceRepository, String binSetName) throws OddballException {
         this.resourceRepository = resourceRepository;
+        binSet = loadBinSet(binSetName, resourceRepository);
     }
 
     public Opinion assessCase(String ruleSetName, Case aCase)throws OddballException{
@@ -65,39 +71,50 @@ public class Oddball{
     }
     
     private RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository)throws OddballException{
-        try{
-            Resource resource = new Resource("", ruleSetName);
-            InputStream inputStream = resourceRepository.read(resource);
-            List<String> rules = IOUtils.readLines(inputStream);
-            String ruleType= "default";
-            if (rules.get(0).contains("$ruleType")){
-                String rule = rules.get(0);
-                String[] parsed = rule.trim().split(":",2);
-                ruleType=parsed[1];
-                rules.remove(rule);
-            }
-            Class<? extends RuleSetImpl> ruleSetClass = new RuleSetMap().get(ruleType);
-            RuleSet ruleSet = (RuleSet) ruleSetClass.newInstance();
-            ruleSet.setRuleType(ruleType);
-            Class ruleClass = new RuleTypeMap().get(ruleType);
-            for (String rule : rules){
-                String[] parsed = rule.trim().split(":",2);
-                Rule ruleInstance = (Rule) ruleClass.newInstance();
-                ruleInstance.setLabel(parsed[0]);
-                ruleInstance.setRuleString(parsed[1], resourceRepository);
-                ruleSet.addRule(ruleInstance);
-            }
-            return ruleSet;
-        }
-        catch (java.io.FileNotFoundException e){
-            throw new OddballException("No Rule Set named "+ruleSetName+" in repository");
-        }
-        catch (Exception e){
-            e.printStackTrace();
-            throw new OddballException("Rules could not be loaded");
-        }
+        return RuleSetImpl.loadRuleSet(ruleSetName, resourceRepository);
+//        try{
+//            Resource resource = new Resource("", ruleSetName);
+//            InputStream inputStream = resourceRepository.read(resource);
+//            List<String> rules = IOUtils.readLines(inputStream);
+//            String ruleType= "default";
+//            if (rules.get(0).contains("$ruleType")){
+//                String rule = rules.get(0);
+//                String[] parsed = rule.trim().split(":",2);
+//                ruleType=parsed[1];
+//                rules.remove(rule);
+//            }
+//            Class<? extends RuleSetImpl> ruleSetClass = new RuleSetMap().get(ruleType);
+//            RuleSet ruleSet = (RuleSet) ruleSetClass.newInstance();
+//            ruleSet.setRuleType(ruleType);
+//            Class ruleClass = new RuleTypeMap().get(ruleType);
+//            for (String rule : rules){
+//                String[] parsed = rule.trim().split(":",2);
+//                Rule ruleInstance = (Rule) ruleClass.newInstance();
+//                ruleInstance.setLabel(parsed[0]);
+//                ruleInstance.setRuleString(parsed[1], resourceRepository);
+//                ruleSet.addRule(ruleInstance);
+//            }
+//            return ruleSet;
+//        }
+//        catch (java.io.FileNotFoundException e){
+//            throw new OddballException("No Rule Set named "+ruleSetName+" in repository");
+//        }
+//        catch (Exception e){
+//            e.printStackTrace();
+//            throw new OddballException("Rules could not be loaded");
+//        }
     }
 
+    public BinSet loadBinSet(String binSetName, ResourceRepository resourceRepository)throws OddballException{
+        return BinSetImpl.loadBinSet(binSetName, resourceRepository);
+        
+    }
+    
+    public BinSet reloadBinSet()throws OddballException{
+        binSet = BinSetImpl.loadBinSet(binSet.getName(), resourceRepository);
+        return binSet;
+    }
+    
     public Iterable<String> findCases(String ruleSetName)throws OddballException{
         try{
             RuleSet ruleSet = ruleSets.get(ruleSetName);
@@ -128,5 +145,19 @@ public class Oddball{
         }
     }
     
+    public Iterable<String> findCasesInBin(String ruleSetName, String binLabel)throws OddballException{
+        String binQuery = binSet.getBins().get(binLabel).getBinString();
+        try{
+            RuleSet ruleSet = ruleSets.get(ruleSetName);
+            return ruleSet.getPersist().findCases(binQuery);
+        } catch (IOException ex){
+            ex.printStackTrace();
+            throw new OddballException();
+        }
+    }
+
+    public Iterable<String> listBinLabels(){
+        return binSet.listBinLabels();
+    }
     
 }

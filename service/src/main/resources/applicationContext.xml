@@ -28,6 +28,7 @@
                 <set>
                     <bean class="uk.co.revsys.oddball.service.rest.OddballRestService">
                         <constructor-arg index="0" ref="resourceRepository"/>
+                        <constructor-arg index="1" value="ECBins.txt"/>
                     </bean>
                 </set>
             </property>

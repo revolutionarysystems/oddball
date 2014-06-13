@@ -7,6 +7,7 @@
 package uk.co.revsys.oddball;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -14,6 +15,8 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import uk.co.revsys.oddball.bins.Bin;
+import uk.co.revsys.oddball.bins.BinSet;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.MapCase;
 import uk.co.revsys.oddball.cases.StringCase;
@@ -60,7 +63,7 @@ public class OddballTest {
         String ruleSetName = "Test1.txt";
         Case aCase = new StringCase("abc123");
         ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
-        Oddball instance = new Oddball(resourceRepository);
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, aCase);
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("aString"));
@@ -77,7 +80,7 @@ public class OddballTest {
         String ruleSetName = "Test2.txt";
         Case aCase = new StringCase("b-side");
         ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
-        Oddball instance = new Oddball(resourceRepository);
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, aCase);
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("*odDball*"));
@@ -96,7 +99,7 @@ public class OddballTest {
         Case aCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"windows\"}");
         
         ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
-        Oddball instance = new Oddball(resourceRepository);
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, aCase);
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("ruleC"));
@@ -115,7 +118,7 @@ public class OddballTest {
         Case aCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\"}");
         
         ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
-        Oddball instance = new Oddball(resourceRepository);
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, aCase);
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("*odDball*"));
@@ -131,7 +134,7 @@ public class OddballTest {
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\"}");
         
         ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
-        Oddball instance = new Oddball(resourceRepository);
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, theCase);
         instance.assessCase(ruleSetName, theCase);
         Iterable<String> cases = instance.findCases(ruleSetName);
@@ -153,7 +156,7 @@ public class OddballTest {
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
         
         ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
-        Oddball instance = new Oddball(resourceRepository);
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, theCase);
         instance.assessCase(ruleSetName, theCase);
         Iterable<String> cases0 = instance.findCases(ruleSetName, "{}");
@@ -178,7 +181,7 @@ public class OddballTest {
         Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\"}");
         
         ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
-        Oddball instance = new Oddball(resourceRepository);
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, theCase);
         Opinion result2 = instance.assessCase(ruleSetName, otherCase);
         instance.assessCase(ruleSetName, theCase);
@@ -194,6 +197,112 @@ public class OddballTest {
         assertTrue(cases.iterator().hasNext());
     }
     
+
+    @Test
+    public void testLoadBins() throws Exception {
+        System.out.println("loadBins");
+        String binSetName = "TestBins.txt";
+        ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        BinSet binSet = instance.loadBinSet(binSetName, resourceRepository);
+        assertTrue(binSet!=null);
+        assertTrue(binSet.getBins().size()==3);
+        Bin firstBin = binSet.getBins().get("bin1");
+        assertEquals("bin1", firstBin.getLabel());
+    }
+
+    @Test
+    public void testUseBin() throws Exception {
+
+        System.out.println("applyBins");
+        String ruleSetName = "TestMongo.txt";
+        Case aCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"windows\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"IE8\", \"platform\":\"windows\"}");
+        
+        ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+
+        Opinion result = instance.assessCase(ruleSetName, aCase);
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("ruleC"));
+        assertTrue(result.getLabel().contains("ruleB"));
+        assertTrue(result.getLabel().contains("ruleA"));
+        result = instance.assessCase(ruleSetName, anotherCase);
+
+        BinSet binSet = instance.binSet;
+        assertTrue(binSet!=null);
+        assertTrue(binSet.getBins().size()==3);
+        Bin firstBin = binSet.getBins().get("bin1");
+        assertEquals("bin1", firstBin.getLabel());
+        String binQuery = firstBin.getBinString();
+        
+        Iterable<String> cases = instance.findCases(ruleSetName, binQuery);
+        for (String foundCase : cases){
+            System.out.println(foundCase);
+        }
+       
+        assertTrue(cases.iterator().hasNext());
+        
+    }
+
+
+    @Test
+    public void testListBins() throws Exception {
+
+        System.out.println("ListBins");
+        ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        BinSet binSet = instance.binSet;
+        assertTrue(binSet!=null);
+        Collection<String> binLabels = binSet.listBinLabels();
+        assertTrue(binLabels.size()==3);
+        assertTrue(binLabels.contains("bin1"));
+    }
+
+
+    @Test
+    public void testFindCasesInBin() throws Exception {
+
+        System.out.println("applyBins");
+        String ruleSetName = "TestMongo.txt";
+        Case aCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"windows\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\"}");
+        
+        ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+
+        Opinion result = instance.assessCase(ruleSetName, aCase);
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("ruleC"));
+        assertTrue(result.getLabel().contains("ruleB"));
+        assertTrue(result.getLabel().contains("ruleA"));
+        result = instance.assessCase(ruleSetName, anotherCase);
+
+        BinSet binSet = instance.binSet;
+        
+        Iterable<String> cases = instance.findCasesInBin(ruleSetName, "bin1");
+        assertTrue(cases.iterator().hasNext());
+        for (String foundCase : cases){
+            System.out.println("in bin1:");
+            System.out.println(foundCase);
+        }
+       
+        cases = instance.findCasesInBin(ruleSetName, "bin2");
+        assertTrue(cases.iterator().hasNext());
+        for (String foundCase : cases){
+            System.out.println("in bin2:");
+            System.out.println(foundCase);
+        }
+       
+        cases = instance.findCasesInBin(ruleSetName, "bin3");
+        assertTrue(cases.iterator().hasNext());
+        for (String foundCase : cases){
+            System.out.println("in bin3:");
+            System.out.println(foundCase);
+        }
+        
+    }
+
 
 
 }

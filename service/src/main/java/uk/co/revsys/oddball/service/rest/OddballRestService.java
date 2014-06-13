@@ -34,10 +34,10 @@ import uk.co.revsys.resource.repository.ResourceRepository;
 @Path("/")
 public class OddballRestService extends AbstractRestService {
 
-    public OddballRestService(ResourceRepository resourceRepository) {
+    public OddballRestService(ResourceRepository resourceRepository, String binSetName) throws OddballException{
         LOGGER.log(Priority.DEBUG, "Initialising");
         this.resourceRepository = resourceRepository;
-        this.oddball = new Oddball(resourceRepository);
+        this.oddball = new Oddball(resourceRepository, binSetName);
     }
 
     private final Oddball oddball;
@@ -151,27 +151,71 @@ public class OddballRestService extends AbstractRestService {
         return Response.ok(out.toString()).build();
     }
 
+    @GET
+    @Path("/ruleSet/{ruleSet}/bin/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findDistinctBins(@PathParam("ruleSet") String ruleSet) throws OddballException {
+        Iterable<String> binLabels = oddball.listBinLabels(); 
+        StringBuffer out = new StringBuffer("[ ");
+        for (String binLabel : binLabels){
+            out.append("\""+binLabel+"\"");
+            out.append(", ");
+        }
+        if (out.length()>2){
+            out.delete(out.length()-2, out.length());
+        }
+        out.append("]");
+        return Response.ok(out.toString()).build();
+    }
+
+
+    @GET
+    @Path("/ruleSet/{ruleSet}/bin/{binLabel}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findCasesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSet) throws OddballException {
+        Iterable<String> cases = oddball.findCasesInBin(ruleSet, binLabel);
+        StringBuffer out = new StringBuffer("[ ");
+        for (String aCase : cases){
+            out.append(aCase);
+            out.append(", ");
+        }
+        if (out.length()>2){
+            out.delete(out.length()-2, out.length());
+        }
+        out.append("]");
+        return Response.ok(out.toString()).build();
+    }
+
 
     @GET
     @Path("/ruleSet/{ruleSet}")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response applyRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("case") String caseStr, @QueryParam("action") String actionStr) throws OddballException {
-        if (caseStr==null && actionStr==null){
+    public Response applyRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("case") String caseStr) throws OddballException {
+        if (caseStr==null){
             return Response.ok(ruleSet).build();
         } else {
-            if (actionStr!=null && (actionStr.equals("clear"))){
-                oddball.clearRuleSet(ruleSet);
-                return Response.ok("Rule Set "+ruleSet+" cleared.").build();
-            }
-            if (caseStr!=null){
-                Opinion op = oddball.assessCase(ruleSet, new StringCase(caseStr));
-                String enrichedCase =  op.getEnrichedCase(ruleSet, caseStr);
-                RESULTSLOGGER.log(Priority.INFO,enrichedCase);
-                return buildResponse(enrichedCase);
-                //return buildResponse(op.getLabel());
-            }
-            return buildResponse("invalid arguments");
+            Opinion op = oddball.assessCase(ruleSet, new StringCase(caseStr));
+            String enrichedCase =  op.getEnrichedCase(ruleSet, caseStr);
+            RESULTSLOGGER.log(Priority.INFO,enrichedCase);
+            return buildResponse(enrichedCase);
         }
+    }
+
+    @GET
+    @Path("/ruleSet/{ruleSet}/clear")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response clearRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("case") String caseStr) throws OddballException {
+        oddball.clearRuleSet(ruleSet);
+        oddball.reloadBinSet();
+        return Response.ok("Rule Set "+ruleSet+" cleared.").build();
+    }
+
+    @GET
+    @Path("/ruleSet/{ruleSet}/bin/reload")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response reloadBinSet(@PathParam("ruleSet") String ruleSet, @QueryParam("case") String caseStr) throws OddballException {
+        oddball.reloadBinSet();
+        return Response.ok("Bin Set reloaded.").build();
     }
 
 //    @GET
