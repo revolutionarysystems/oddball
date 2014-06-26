@@ -1,30 +1,15 @@
 package uk.co.revsys.oddball.service.rest;
 
 import de.neuland.jade4j.spring.view.JadeViewResolver;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import javax.servlet.ServletException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 import uk.co.revsys.oddball.Oddball;
 import uk.co.revsys.oddball.cases.StringCase;
 import uk.co.revsys.oddball.rules.Opinion;
@@ -41,7 +26,7 @@ public class OddballRestService extends AbstractRestService {
     }
 
     private final Oddball oddball;
-    private ResourceRepository resourceRepository;
+    private final ResourceRepository resourceRepository;
     private JadeViewResolver viewResolver;
 
     @GET
@@ -52,26 +37,11 @@ public class OddballRestService extends AbstractRestService {
     }
 
     @GET
-    @Path("/ruleSet/{ruleSet}/case/")
+    @Path("/{ruleSet}/case/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCases(@PathParam("ruleSet") String ruleSet) throws OddballException {
-        Iterable<String> cases = oddball.findCases(ruleSet);
-        StringBuffer out = new StringBuffer("[ ");
-        for (String aCase : cases){
-            out.append(aCase);
-            out.append(", ");
-        }
-        out.delete(out.length()-2, out.length());
-        out.append("]");
-        return Response.ok(out.toString()).build();
-    }
-
-    @GET
-    @Path("/ruleSet/{ruleSet}/sessionId/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response findDistinctSessionId(@PathParam("ruleSet") String ruleSet) throws OddballException {
-        Iterable<String> cases = oddball.findDistinct(ruleSet, "case.sessionId");
-        StringBuffer out = new StringBuffer("[ ");
+    public Response findCases(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner) throws OddballException {
+        Iterable<String> cases = oddball.findCasesForOwner(ruleSet, owner);
+        StringBuilder out = new StringBuilder("[ ");
         for (String aCase : cases){
             out.append(aCase);
             out.append(", ");
@@ -84,11 +54,11 @@ public class OddballRestService extends AbstractRestService {
     }
 
     @GET
-    @Path("/ruleSet/{ruleSet}/sessionId/{sessionId}/")
+    @Path("/{ruleSet}/sessionId/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCases(@PathParam("sessionId") String sessionId, @PathParam("ruleSet") String ruleSet) throws OddballException {
-        Iterable<String> cases = oddball.findCases(ruleSet, "{ \"case.sessionId\" : \""+sessionId+"\" }");
-        StringBuffer out = new StringBuffer("[ ");
+    public Response findDistinctSessionId(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner) throws OddballException {
+        Iterable<String> cases = oddball.findDistinct(ruleSet, owner, "case.sessionId");
+        StringBuilder out = new StringBuilder("[ ");
         for (String aCase : cases){
             out.append(aCase);
             out.append(", ");
@@ -101,11 +71,11 @@ public class OddballRestService extends AbstractRestService {
     }
 
     @GET
-    @Path("/ruleSet/{ruleSet}/userId/")
+    @Path("/{ruleSet}/sessionId/{sessionId}/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findDistinctUserId(@PathParam("ruleSet") String ruleSet) throws OddballException {
-        Iterable<String> cases = oddball.findDistinct(ruleSet, "case.userId");
-        StringBuffer out = new StringBuffer("[ ");
+    public Response findCasesForSession(@PathParam("sessionId") String sessionId, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner) throws OddballException {
+        Iterable<String> cases = oddball.findQueryCasesForOwner(ruleSet, owner, "{ \"case.sessionId\" : \""+sessionId+"\" }");
+        StringBuilder out = new StringBuilder("[ ");
         for (String aCase : cases){
             out.append(aCase);
             out.append(", ");
@@ -118,11 +88,11 @@ public class OddballRestService extends AbstractRestService {
     }
 
     @GET
-    @Path("/ruleSet/{ruleSet}/userId/{userId}/")
+    @Path("/{ruleSet}/userId/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCasesForUser(@PathParam("userId") String userId, @PathParam("ruleSet") String ruleSet) throws OddballException {
-        Iterable<String> cases = oddball.findCases(ruleSet, "{ \"case.userId\" : \""+userId+"\" }");
-        StringBuffer out = new StringBuffer("[ ");
+    public Response findDistinctUserId(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner) throws OddballException {
+        Iterable<String> cases = oddball.findDistinct(ruleSet, owner, "case.userId");
+        StringBuilder out = new StringBuilder("[ ");
         for (String aCase : cases){
             out.append(aCase);
             out.append(", ");
@@ -135,11 +105,11 @@ public class OddballRestService extends AbstractRestService {
     }
 
     @GET
-    @Path("/ruleSet/{ruleSet}/query/")
+    @Path("/{ruleSet}/userId/{userId}/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCasesForQuery(@QueryParam("query") String query, @PathParam("ruleSet") String ruleSet) throws OddballException {
-        Iterable<String> cases = oddball.findCases(ruleSet, query);
-        StringBuffer out = new StringBuffer("[ ");
+    public Response findCasesForUser(@PathParam("userId") String userId, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner) throws OddballException {
+        Iterable<String> cases = oddball.findQueryCasesForOwner(ruleSet, owner, "{ \"case.userId\" : \""+userId+"\" }");
+        StringBuilder out = new StringBuilder("[ ");
         for (String aCase : cases){
             out.append(aCase);
             out.append(", ");
@@ -152,11 +122,28 @@ public class OddballRestService extends AbstractRestService {
     }
 
     @GET
-    @Path("/ruleSet/{ruleSet}/bin/")
+    @Path("/{ruleSet}/query/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findDistinctBins(@PathParam("ruleSet") String ruleSet) throws OddballException {
-        Iterable<String> binLabels = oddball.listBinLabels(); 
-        StringBuffer out = new StringBuffer("[ ");
+    public Response findCasesForQuery(@QueryParam("query") String query, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner) throws OddballException {
+        Iterable<String> cases = oddball.findQueryCasesForOwner(ruleSet, owner, query);
+        StringBuilder out = new StringBuilder("[ ");
+        for (String aCase : cases){
+            out.append(aCase);
+            out.append(", ");
+        }
+        if (out.length()>2){
+            out.delete(out.length()-2, out.length());
+        }
+        out.append("]");
+        return Response.ok(out.toString()).build();
+    }
+
+    @GET
+    @Path("/{ruleSet}/bin/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findDistinctBins(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner) throws OddballException {
+        Iterable<String> binLabels = oddball.listBinLabels(owner); 
+        StringBuilder out = new StringBuilder("[ ");
         for (String binLabel : binLabels){
             out.append("\""+binLabel+"\"");
             out.append(", ");
@@ -170,11 +157,11 @@ public class OddballRestService extends AbstractRestService {
 
 
     @GET
-    @Path("/ruleSet/{ruleSet}/bin/{binLabel}")
+    @Path("/{ruleSet}/bin/{binLabel}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCasesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSet) throws OddballException {
-        Iterable<String> cases = oddball.findCasesInBin(ruleSet, binLabel);
-        StringBuffer out = new StringBuffer("[ ");
+    public Response findCasesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner) throws OddballException {
+        Iterable<String> cases = oddball.findCasesInBinForOwner(ruleSet, owner, binLabel);
+        StringBuilder out = new StringBuilder("[ ");
         for (String aCase : cases){
             out.append(aCase);
             out.append(", ");
@@ -188,7 +175,7 @@ public class OddballRestService extends AbstractRestService {
 
 
     @GET
-    @Path("/ruleSet/{ruleSet}")
+    @Path("/{ruleSet}")
     @Produces(MediaType.TEXT_PLAIN)
     public Response applyRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("case") String caseStr) throws OddballException {
         if (caseStr==null){
@@ -202,16 +189,15 @@ public class OddballRestService extends AbstractRestService {
     }
 
     @GET
-    @Path("/ruleSet/{ruleSet}/clear")
+    @Path("/{ruleSet}/clear")
     @Produces(MediaType.TEXT_PLAIN)
     public Response clearRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("case") String caseStr) throws OddballException {
         oddball.clearRuleSet(ruleSet);
-        oddball.reloadBinSet();
         return Response.ok("Rule Set "+ruleSet+" cleared.").build();
     }
 
     @GET
-    @Path("/ruleSet/{ruleSet}/bin/reload")
+    @Path("/{ruleSet}/bin/reload")
     @Produces(MediaType.TEXT_PLAIN)
     public Response reloadBinSet(@PathParam("ruleSet") String ruleSet, @QueryParam("case") String caseStr) throws OddballException {
         oddball.reloadBinSet();

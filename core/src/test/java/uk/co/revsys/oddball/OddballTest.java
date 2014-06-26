@@ -137,7 +137,7 @@ public class OddballTest {
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, theCase);
         instance.assessCase(ruleSetName, theCase);
-        Iterable<String> cases = instance.findCases(ruleSetName);
+        Iterable<String> cases = instance.findAllCases(ruleSetName);
         for (String aCase : cases){
             System.out.println(aCase);
         }
@@ -159,11 +159,11 @@ public class OddballTest {
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, theCase);
         instance.assessCase(ruleSetName, theCase);
-        Iterable<String> cases0 = instance.findCases(ruleSetName, "{}");
+        Iterable<String> cases0 = instance.findAllQueryCases(ruleSetName, "{}");
         for (String aCase : cases0){
             System.out.println(aCase);
         }
-        Iterable<String> cases = instance.findCases(ruleSetName, "{ \"case.sessionId\" : \"AA11\"}");
+        Iterable<String> cases = instance.findAllQueryCases(ruleSetName, "{ \"case.sessionId\" : \"AA11\"}");
         for (String aCase : cases){
             System.out.println(aCase);
         }
@@ -185,16 +185,46 @@ public class OddballTest {
         Opinion result = instance.assessCase(ruleSetName, theCase);
         Opinion result2 = instance.assessCase(ruleSetName, otherCase);
         instance.assessCase(ruleSetName, theCase);
-        Iterable<String> cases0 = instance.findCases(ruleSetName, "{}");
+        Iterable<String> cases0 = instance.findAllQueryCases(ruleSetName, "{}");
         for (String aCase : cases0){
             System.out.println(aCase);
         }
-        Iterable<String> cases = instance.findDistinct(ruleSetName, "case.sessionId");
+        Iterable<String> cases = instance.findDistinct(ruleSetName, Oddball.ALL, "case.sessionId");
         for (String aCase : cases){
             System.out.println(aCase);
         }
         
         assertTrue(cases.iterator().hasNext());
+    }
+    
+    @Test
+    public void testFindDistinctQueryForOwner() throws Exception {
+        System.out.println("findDistinctOwner");
+        String ruleSetName = "TestMongo.txt";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"account\":\"Trial\"}");
+        Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\", \"account\":\"Trial\"}");
+        
+        ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("/data/test/oddball"));
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, theCase);
+        Opinion result2 = instance.assessCase(ruleSetName, otherCase);
+        instance.assessCase(ruleSetName, theCase);
+        Iterable<String> cases0 = instance.findAllQueryCases(ruleSetName, "{}");
+        for (String aCase : cases0){
+            System.out.println(aCase);
+        }
+        Iterable<String> cases = instance.findDistinct(ruleSetName, "Trial", "case.sessionId");
+        for (String aCase : cases){
+            System.out.println(aCase);
+        }
+        
+        assertTrue(cases.iterator().hasNext());
+        cases = instance.findDistinct(ruleSetName, "Real", "case.sessionId");
+        for (String aCase : cases){
+            System.out.println(aCase);
+        }
+        
+        assertFalse(cases.iterator().hasNext());
     }
     
 
@@ -236,7 +266,7 @@ public class OddballTest {
         assertEquals("bin1", firstBin.getLabel());
         String binQuery = firstBin.getBinString();
         
-        Iterable<String> cases = instance.findCases(ruleSetName, binQuery);
+        Iterable<String> cases = instance.findAllQueryCases(ruleSetName, binQuery);
         for (String foundCase : cases){
             System.out.println(foundCase);
         }
@@ -257,6 +287,10 @@ public class OddballTest {
         Collection<String> binLabels = binSet.listBinLabels();
         assertTrue(binLabels.size()==3);
         assertTrue(binLabels.contains("bin1"));
+        Collection<String> binLabelsIt = instance.listBinLabels("eCK-1005");
+        System.out.println(binLabelsIt);
+        assertTrue(binLabelsIt.size()==7);
+        assertTrue(binLabelsIt.contains("Mybin1"));
     }
 
 
@@ -280,21 +314,21 @@ public class OddballTest {
 
         BinSet binSet = instance.binSet;
         
-        Iterable<String> cases = instance.findCasesInBin(ruleSetName, "bin1");
+        Iterable<String> cases = instance.findAllCasesInBin(ruleSetName, "bin1");
         assertTrue(cases.iterator().hasNext());
         for (String foundCase : cases){
             System.out.println("in bin1:");
             System.out.println(foundCase);
         }
        
-        cases = instance.findCasesInBin(ruleSetName, "bin2");
+        cases = instance.findAllCasesInBin(ruleSetName, "bin2");
         assertTrue(cases.iterator().hasNext());
         for (String foundCase : cases){
             System.out.println("in bin2:");
             System.out.println(foundCase);
         }
        
-        cases = instance.findCasesInBin(ruleSetName, "bin3");
+        cases = instance.findAllCasesInBin(ruleSetName, "bin3");
         assertTrue(cases.iterator().hasNext());
         for (String foundCase : cases){
             System.out.println("in bin3:");
