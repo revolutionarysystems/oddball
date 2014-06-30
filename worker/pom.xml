@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>oddball-service</artifactId>
-    <packaging>war</packaging>
-    <name>Oddball Service</name>
-    <description>Oddball Service</description>
+    <artifactId>oddball-worker</artifactId>
+    <packaging>jar</packaging>
+    <name>Oddball Worker</name>
+    <description>Oddball Worker</description>
    
     <parent>
         <groupId>uk.co.revsys.oddball</groupId>
@@ -20,7 +20,13 @@
     <dependencies>
         <dependency>
             <groupId>uk.co.revsys.oddball</groupId>
-            <artifactId>oddball-worker</artifactId>
+            <artifactId>oddball-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>uk.co.revsys.oddball</groupId>
+            <artifactId>oddball-consumer-kinesis</artifactId>
             <version>${project.version}</version>
         </dependency>
 		
@@ -29,29 +35,11 @@
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
-		
+        
         <dependency>
-            <groupId>org.apache.wink</groupId>
-            <artifactId>wink-server</artifactId>
-            <version>1.4</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.wink</groupId>
-            <artifactId>wink-spring-support</artifactId>
-            <version>1.4</version>
-        </dependency>
-		
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20140107</version>
-        </dependency>
-		
-        <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <version>1.3.1</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
         </dependency>
         
         <dependency>

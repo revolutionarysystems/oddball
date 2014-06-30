@@ -4,3 +4,8 @@
 /core/src/test/java/uk/co/revsys/resource/repository/JCloudResourceRepositoryTest.java
 /core/src/test/java/uk/co/revsys/resource/repository/LocalDiskResourceRepositoryTest.java
 /bin
+/core - Copy/target/
+/consumer/target/
+/consumer-kinesis/target/
+/service - Copy/target/
+/worker/target/

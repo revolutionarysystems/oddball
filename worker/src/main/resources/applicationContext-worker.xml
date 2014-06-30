@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd http://www.springframework.org/schema/util">
+
+    <context:annotation-config/>
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:oddball.properties</value>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="oddball" class="uk.co.revsys.oddball.Oddball">
+        <constructor-arg index="0" ref="resourceRepository"/>
+        <constructor-arg index="1" value="${default.bins}"/>
+    </bean>
+    
+    <bean id="resourceRepositoryFactory" class="uk.co.revsys.resource.repository.ResourceRepositoryFactory">
+        <constructor-arg index="0">
+            <map key-type="java.lang.String" value-type="uk.co.revsys.resource.repository.ResourceRepositoryBuilder">
+                <entry key="local" value-ref="localDiskResourceRepositoryBuilder"/>
+                <entry key="cloud" value-ref="jCloudResourceRepositoryBuilder"/>
+            </map>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="localDiskResourceRepositoryBuilder" class="uk.co.revsys.resource.repository.LocalDiskResourceRepositoryBuilder">
+        <constructor-arg index="0" value="${resource.container}"/>
+    </bean>
+    
+    <bean id="jCloudResourceRepositoryBuilder" class="uk.co.revsys.resource.repository.cloud.JCloudResourceRepositoryBuilder">
+        <constructor-arg index="0" value="${cloud.type}"/>
+        <constructor-arg index="1" value="${cloud.identity}"/>
+        <constructor-arg index="2" value="${cloud.credential}"/>
+        <constructor-arg index="3" value="${resource.container}"/>
+    </bean>
+	
+    <bean id="resourceRepository" factory-bean="resourceRepositoryFactory" factory-method="build">
+        <constructor-arg index="0" value="${repository.type}"/>
+    </bean>
+    
+    <bean id="consumerManager" class="uk.co.revsys.oddball.consumer.ConsumerManager">
+        <constructor-arg index="0">
+            <map key-type="java.lang.String" value-type="uk.co.revsys.resource.repository.ResourceRepositoryBuilder">
+                <entry key="kinesis" value-ref="kinesisConsumer"/>
+            </map>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="kinesisConsumer" class="uk.co.revsys.oddball.consumer.kinesis.KinesisConsumer">
+        <constructor-arg index="0" ref="kinesisRecordProcessorFactory"/>
+        <constructor-arg index="1" ref="kinesisClientLibConfiguration"/>
+    </bean>
+    
+    <bean id="kinesisRecordProcessorFactory" class="uk.co.revsys.oddball.consumer.kinesis.KinesisRecordProcessorFactory">
+        <constructor-arg index="0" ref="oddball"/>
+        <constructor-arg index="1" ref="ruleSets"/>
+    </bean>
+    
+    <bean id="ruleSets" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="location" value="classpath:rule-sets.properties"/>
+    </bean>
+    
+    <bean id="kinesisClientLibConfiguration" class="uk.co.revsys.oddball.consumer.kinesis.IdGeneratingKinesisClientLibConfiguration">
+        <constructor-arg index="0" value="Oddball"/>
+        <constructor-arg index="1" value="${kinesis.stream}"/>
+        <constructor-arg index="2" ref="awsCredentialsProvider"/>
+    </bean>
+    
+    <bean id="awsCredentialsProvider" class="com.amazonaws.internal.StaticCredentialsProvider">
+        <constructor-arg index="0" ref="awsCredentials"/>
+    </bean>
+    
+    <bean id="awsCredentials" class="com.amazonaws.auth.BasicAWSCredentials">
+        <constructor-arg index="0" value="${cloud.identity}"/>
+        <constructor-arg index="1" value="${cloud.credential}"/>
+    </bean>
+    
+    <bean id="startConsumers" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetObject" ref="consumerManager"/>
+        <property name="targetMethod" value="run"/>
+        <property name="arguments" value="${consumers}"/>
+    </bean>
+
+</beans>

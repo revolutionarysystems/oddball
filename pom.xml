@@ -12,7 +12,9 @@
 
 	<modules>
 		<module>core</module>
-		<module>service</module>
+        <module>consumer-kinesis</module>
+        <module>worker</module>
+		<module>service</module>        
 	</modules>
 
 	<properties>

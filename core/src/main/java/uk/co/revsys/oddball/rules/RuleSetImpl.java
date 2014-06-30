@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 import uk.co.revsys.oddball.RuleSetMap;
 import uk.co.revsys.oddball.RuleTypeMap;
@@ -120,11 +122,13 @@ public class RuleSetImpl implements RuleSet{
             return ruleSet;
         }
         catch (java.io.FileNotFoundException e){
-            throw new OddballException("No Rule Set named "+ruleSetName+" in repository");
-        }
-        catch (Exception e){
-            e.printStackTrace();
-            throw new OddballException("Rules could not be loaded");
+            throw new OddballException("No Rule Set named "+ruleSetName+" in repository", e);
+        } catch (IOException ex) {
+            throw new OddballException("Unable to load Rule Set " + ruleSetName + ": " + ex.getMessage());
+        } catch (InstantiationException ex) {
+            throw new OddballException("Unable to load Rule Set " + ruleSetName + ": " + ex.getMessage());
+        } catch (IllegalAccessException ex) {
+            throw new OddballException("Unable to load Rule Set " + ruleSetName + ": " + ex.getMessage());
         }
     }
     

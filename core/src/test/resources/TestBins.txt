@@ -1,0 +1,3 @@
+bin1:{"tags":"ruleA"}
+bin2:{"tags":"ruleB"}
+bin3:{"$and" : [{"tags":"ruleA"}, {"tags":"ruleB"}]}

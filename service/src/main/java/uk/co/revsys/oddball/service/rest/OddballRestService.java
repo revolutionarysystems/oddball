@@ -1,6 +1,5 @@
 package uk.co.revsys.oddball.service.rest;
 
-import de.neuland.jade4j.spring.view.JadeViewResolver;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -14,20 +13,16 @@ import uk.co.revsys.oddball.Oddball;
 import uk.co.revsys.oddball.cases.StringCase;
 import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.util.OddballException;
-import uk.co.revsys.resource.repository.ResourceRepository;
 
 @Path("/")
 public class OddballRestService extends AbstractRestService {
 
-    public OddballRestService(ResourceRepository resourceRepository, String binSetName) throws OddballException{
-        LOGGER.log(Priority.DEBUG, "Initialising");
-        this.resourceRepository = resourceRepository;
-        this.oddball = new Oddball(resourceRepository, binSetName);
+    public OddballRestService(Oddball oddball) throws OddballException{
+        LOGGER.debug("Initialising");
+        this.oddball = oddball;
     }
 
     private final Oddball oddball;
-    private final ResourceRepository resourceRepository;
-    private JadeViewResolver viewResolver;
 
     @GET
     @Path("/")

@@ -1,0 +1,25 @@
+doctype html
+html
+  head
+    title Resource Repository
+  body
+    table
+      thead
+      tr
+        td Name
+        td Last Modified
+        td Size
+      tbody
+      tr#parentPath.directory
+        td
+          a(href="#{parentPath}") ..
+      for directory in directories
+        tr.directory
+          td
+            a(href="#{directory.name}/") #{directory.name}
+      for resource in resources
+        tr.resource
+          td
+            a(href="#{resource.name}") #{resource.name}
+          td #{resource.lastModified}
+          td #{resource["size"]}
