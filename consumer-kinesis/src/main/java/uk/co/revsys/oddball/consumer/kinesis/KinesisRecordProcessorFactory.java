@@ -18,7 +18,6 @@ public class KinesisRecordProcessorFactory implements IRecordProcessorFactory{
     
     @Override
     public IRecordProcessor createProcessor() {
-        System.out.println("createProcessor");
         return new KinesisRecordProcessor(oddball, ruleSets);
     }
 

@@ -33,7 +33,6 @@ public class KinesisRecordProcessor implements IRecordProcessor {
     private final CharsetDecoder decoder = Charset.forName("UTF-8").newDecoder();
 
     public KinesisRecordProcessor(Oddball oddball, Map<String, List<String>> ruleSets) {
-        System.out.println("processor");
         this.oddball = oddball;
         this.ruleSets = ruleSets;
     }

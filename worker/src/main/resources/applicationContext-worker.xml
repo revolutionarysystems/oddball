@@ -65,7 +65,7 @@
         <constructor-arg index="1" ref="ruleSets"/>
     </bean>
     
-    <bean id="ruleSets" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+    <bean id="ruleSets" class="uk.co.revsys.oddball.worker.PropertyListMapFactoryBean">
         <property name="location" value="classpath:rule-sets.properties"/>
     </bean>
     
