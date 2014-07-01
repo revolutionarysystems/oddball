@@ -3,6 +3,13 @@
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
 
+    <appender name="console" class="org.apache.log4j.ConsoleAppender">
+		<param name="Threshold" value="DEBUG" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%-5p %d{dd MMM HH:mm:ss} %C#%M:%L thread:%t [%m]%n" />
+		</layout>
+	</appender>
+    
    <appender name="resultsFileAppender" class="org.apache.log4j.RollingFileAppender">
       <param name="Threshold" value="INFO" />
       <param name="File" value="/data/oddball/oddball-results.log"/>
@@ -29,9 +36,8 @@
             <level value="debug" />
             <appender-ref ref="logFileAppender" />
     </logger>
-   <!--root> 
-    <priority value ="debug" /> 
-    <appender-ref ref="fileAppender" /> 
-  </root--> 
+   <root>
+		<appender-ref ref="console"/>
+	</root>
 
 </log4j:configuration>
