@@ -196,8 +196,8 @@ public class OddballTest {
     public void testFindDistinctQueryForOwner() throws Exception {
         System.out.println("findDistinctOwner");
         String ruleSetName = "TestMongo.txt";
-        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"account\":\"Trial\"}");
-        Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\", \"account\":\"Trial\"}");
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"accountId\":\"Trial\"}");
+        Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\", \"accountId\":\"Trial\"}");
         
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, theCase);

@@ -74,6 +74,7 @@ public class KinesisRecordProcessor implements IRecordProcessor {
         for (Record record : records) {
             boolean processedSuccessfully = false;
             String data = null;
+            LOG.debug("Processing record");
             for (int i = 0; i < numRetries; i++) {
                 try {
                     data = decoder.decode(record.getData()).toString();
@@ -83,7 +84,9 @@ public class KinesisRecordProcessor implements IRecordProcessor {
                     if (recordRuleSets == null) {
                         LOG.error("No rule sets found for " + partitionKey);
                     } else {
+                        LOG.debug("Rule sets found for " + partitionKey+" = "+recordRuleSets);
                         for(String ruleSet: recordRuleSets){
+                            LOG.debug("Assessing " + ruleSet);
                             oddball.assessCase(ruleSet, new StringCase(data));
                         }
                         processedSuccessfully = true;

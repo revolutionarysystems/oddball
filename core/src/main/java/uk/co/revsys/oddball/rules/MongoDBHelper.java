@@ -51,8 +51,15 @@ public class MongoDBHelper {
         return db.getName();
     }
     
-    public String insertCase(String content){
+    public String insertCase(String content) throws IOException{
+        // jongo interprets # as parameter.
+        content = content.replace("#", "(hash)");
         WriteResult wr = cases.insert(content);
+        if (content.contains("{}")||content.contains(":  }")){
+            LOGGER.debug("Writing empty or bad json object");
+            LOGGER.debug(content);
+        }
+        //cases.getDBCollection().insert(new BasicDBObject(JSONUtil.json2map(content)));
         // When supported by fongo
         //System.out.println(wr.getUpsertedId());
         //return wr.getUpsertedId().toString();
@@ -95,7 +102,13 @@ public class MongoDBHelper {
         Iterable<Map> foundCases = found.as(Map.class);
         ArrayList<String> caseList = new ArrayList<String>();
         for (Map foundCase : foundCases){
-            caseList.add(JSONUtil.map2json(foundCase));
+            String json = JSONUtil.map2json(foundCase); 
+            if (json.contains(":  }")){
+                LOGGER.debug("Reading bad json object");
+                LOGGER.debug(json);
+                json=json.replace(":  }", ": {}");
+            }
+            caseList.add(json);
         }
         return caseList;
     }
@@ -120,7 +133,13 @@ public class MongoDBHelper {
         Iterable<Map> foundCases = found.as(Map.class);
         ArrayList<String> caseList = new ArrayList<String>();
         for (Map foundCase : foundCases){
-            caseList.add(JSONUtil.map2json(foundCase));
+            String json = JSONUtil.map2json(foundCase); 
+            if (json.contains(":  }")){
+                LOGGER.warn("Reading bad json object");
+                LOGGER.warn(json);
+                json=json.replace(":  }", ": {}");
+            }
+            caseList.add(json);
         }
         return caseList;
     }
@@ -145,7 +164,7 @@ public class MongoDBHelper {
     }
 
 
-    public static String OWNERPROPERTY="account";
+    public static String OWNERPROPERTY="accountId";
     
 
     static final Logger LOGGER = Logger.getLogger("oddball");
