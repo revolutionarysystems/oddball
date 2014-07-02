@@ -47,16 +47,23 @@ public class Oddball{
         binSet = loadBinSet(binSetName, resourceRepository);
     }
 
-    public Opinion assessCase(String ruleSetName, Case aCase)throws OddballException{
+    private RuleSet ensureRuleSet(String ruleSetName)throws OddballException{
         RuleSet ruleSet = ruleSets.get(ruleSetName);
         if (ruleSet == null){
             ruleSet = loadRuleSet(ruleSetName, resourceRepository);
             ruleSets.put(ruleSetName, ruleSet);
         }
+        return ruleSet;
+    }
+    
+    public Opinion assessCase(String ruleSetName, Case aCase)throws OddballException{
+        LOGGER.debug("assessing: case = "+aCase.getJSONisedContent());
+        RuleSet ruleSet = ensureRuleSet(ruleSetName);
         try {
             return ruleSet.assessCase(aCase, null, ruleSetName);
         } catch (IOException ex){
             ex.printStackTrace();
+            LOGGER.debug("case = "+aCase.getJSONisedContent());
             throw new OddballException();
         }
         
@@ -91,7 +98,7 @@ public class Oddball{
     
     public Iterable<String> findAllCases(String ruleSetName)throws OddballException{
         try{
-            RuleSet ruleSet = ruleSets.get(ruleSetName);
+            RuleSet ruleSet = ensureRuleSet(ruleSetName);
             return ruleSet.getPersist().findCasesForOwner(Oddball.ALL);
         } catch (IOException ex){
             ex.printStackTrace();
@@ -101,7 +108,7 @@ public class Oddball{
     
     public Iterable<String> findCasesForOwner(String ruleSetName, String owner)throws OddballException{
         try{
-            RuleSet ruleSet = ruleSets.get(ruleSetName);
+            RuleSet ruleSet = ensureRuleSet(ruleSetName);
             return ruleSet.getPersist().findCasesForOwner(owner);
         } catch (IOException ex){
             ex.printStackTrace();
@@ -111,7 +118,7 @@ public class Oddball{
 
     public Iterable<String> findAllQueryCases(String ruleSetName, String query)throws OddballException{
         try{
-            RuleSet ruleSet = ruleSets.get(ruleSetName);
+            RuleSet ruleSet = ensureRuleSet(ruleSetName);
             return ruleSet.getPersist().findCasesForOwner(Oddball.ALL, query);
         } catch (IOException ex){
             ex.printStackTrace();
@@ -123,7 +130,7 @@ public class Oddball{
     
     public Iterable<String> findQueryCasesForOwner(String ruleSetName, String owner, String query)throws OddballException{
         try{
-            RuleSet ruleSet = ruleSets.get(ruleSetName);
+            RuleSet ruleSet = ensureRuleSet(ruleSetName);
             return ruleSet.getPersist().findCasesForOwner(owner, query);
         } catch (IOException ex){
             ex.printStackTrace();
@@ -133,7 +140,7 @@ public class Oddball{
     
     public Iterable<String> findDistinct(String ruleSetName, String owner, String field)throws OddballException{
         try{
-            RuleSet ruleSet = ruleSets.get(ruleSetName);
+            RuleSet ruleSet = ensureRuleSet(ruleSetName);
             return ruleSet.getPersist().findDistinct(owner, field);
         } catch (IOException ex){
             ex.printStackTrace();
