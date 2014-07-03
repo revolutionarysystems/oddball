@@ -17,6 +17,7 @@ import com.mongodb.WriteResult;
 import de.undercouch.bson4jackson.types.ObjectId;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
@@ -144,14 +145,22 @@ public class MongoDBHelper {
         return caseList;
     }
 
-    public Iterable<String> findDistinct(String owner, String field) throws IOException{
+    public Iterable<String> findDistinct(String owner, String field, String recent) throws IOException{
         
-        BasicDBObject query=null;
+        BasicDBObject query=new BasicDBObject();
         if (!owner.equals(Oddball.ALL)){
             query = new BasicDBObject("case."+OWNERPROPERTY, owner);
         }
-        
-        
+        if (recent!=null){
+            int minutes = Integer.parseInt(recent);
+            long millis = minutes * 60 * 1000;
+            long now = Calendar.getInstance().getTimeInMillis();
+            long cutoff = now - millis; 
+            BasicDBObject subQuery = new BasicDBObject("$gt", Long.toString(cutoff));
+            query.append("timeStamp", subQuery);
+        }
+        System.out.println(">>> query");
+        System.out.println(query);
         List foundCases = cases.getDBCollection().distinct(field, query);
         System.out.println(foundCases);
         //Iterable<String> foundCases = found.as(String.class);

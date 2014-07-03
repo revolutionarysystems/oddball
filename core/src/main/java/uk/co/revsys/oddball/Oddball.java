@@ -138,10 +138,10 @@ public class Oddball{
         }
     }
     
-    public Iterable<String> findDistinct(String ruleSetName, String owner, String field)throws OddballException{
+    public Iterable<String> findDistinct(String ruleSetName, String owner, String field, String recent)throws OddballException{
         try{
             RuleSet ruleSet = ensureRuleSet(ruleSetName);
-            return ruleSet.getPersist().findDistinct(owner, field);
+            return ruleSet.getPersist().findDistinct(owner, field, recent);
         } catch (IOException ex){
             ex.printStackTrace();
             throw new OddballException();

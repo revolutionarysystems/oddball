@@ -51,8 +51,8 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/sessionId/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findDistinctSessionId(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner) throws OddballException {
-        Iterable<String> cases = oddball.findDistinct(ruleSet, owner, "case.sessionId");
+    public Response findDistinctSessionId(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("recent") String recent) throws OddballException {
+        Iterable<String> cases = oddball.findDistinct(ruleSet, owner, "case.sessionId", recent);
         StringBuilder out = new StringBuilder("[ ");
         for (String aCase : cases){
             out.append(aCase);
@@ -85,8 +85,8 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/userId/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findDistinctUserId(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner) throws OddballException {
-        Iterable<String> cases = oddball.findDistinct(ruleSet, owner, "case.userId");
+    public Response findDistinctUserId(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("recent") String recent) throws OddballException {
+        Iterable<String> cases = oddball.findDistinct(ruleSet, owner, "case.userId",recent);
         StringBuilder out = new StringBuilder("[ ");
         for (String aCase : cases){
             out.append(aCase);
