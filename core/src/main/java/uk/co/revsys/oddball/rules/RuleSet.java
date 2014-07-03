@@ -17,6 +17,7 @@ import uk.co.revsys.oddball.cases.Case;
 public interface RuleSet {
     
     public void addRule(Rule rule);
+    public void addPrefix(String prefix);
     
     public Set<Rule> getRules();
     

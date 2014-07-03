@@ -71,7 +71,7 @@
     </bean>
     
     <bean id="kinesisClientLibConfiguration" class="uk.co.revsys.oddball.consumer.kinesis.IdGeneratingKinesisClientLibConfiguration">
-        <constructor-arg index="0" value="Oddball"/>
+        <constructor-arg index="0" value="Evenball"/>
         <constructor-arg index="1" value="${kinesis.stream}"/>
         <constructor-arg index="2" ref="awsCredentialsProvider"/>
     </bean>

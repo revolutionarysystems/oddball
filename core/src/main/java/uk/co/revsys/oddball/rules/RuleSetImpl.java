@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import uk.co.revsys.oddball.RuleSetMap;
 import uk.co.revsys.oddball.RuleTypeMap;
@@ -38,6 +39,7 @@ public class RuleSetImpl implements RuleSet{
     }
 
     Set<Rule> rules = new HashSet<Rule>();
+    Set<String> prefixes = new HashSet<String>();
 
     private String name;
     private String ruleType;
@@ -47,6 +49,11 @@ public class RuleSetImpl implements RuleSet{
     @Override
     public void addRule(Rule rule) {
         rules.add(rule);
+    }
+
+    @Override
+    public void addPrefix(String prefix) {
+        prefixes.add(prefix);
     }
 
     @Override
@@ -61,6 +68,18 @@ public class RuleSetImpl implements RuleSet{
         }
         if (op.getTags().isEmpty()){
             op.getTags().add("*odDball*");
+        }
+        for (String prefix:prefixes){
+            boolean found = false;
+            for (String tag: op.getTags()){
+                if (tag.indexOf(prefix)==0){
+                    found=true;
+                    break;
+                }
+            }
+            if (!found){
+                op.getTags().add(prefix+"odDball");
+            }
         }
         return op;
     }
@@ -112,12 +131,30 @@ public class RuleSetImpl implements RuleSet{
             RuleSet ruleSet = (RuleSet) ruleSetClass.newInstance();
             ruleSet.setRuleType(ruleType);
             Class ruleClass = new RuleTypeMap().get(ruleType);
+            String prefix = "";
+            System.out.println("Loading rules:"+ruleSetName);
             for (String rule : rules){
-                String[] parsed = rule.trim().split(":",2);
-                Rule ruleInstance = (Rule) ruleClass.newInstance();
-                ruleInstance.setLabel(parsed[0]);
-                ruleInstance.setRuleString(parsed[1], resourceRepository);
-                ruleSet.addRule(ruleInstance);
+                String trimRule = rule.trim();
+                System.out.println(trimRule);
+                if ((trimRule.indexOf("#")!=0)&&(!trimRule.equals(""))){
+                    if (Pattern.matches("\\[.*\\]", trimRule)){
+                        System.out.println("=prefix");
+                        prefix = trimRule.substring(1, trimRule.length()-1)+".";
+                        System.out.println(prefix);
+                        if (prefix.equals("other.")){  // prefix heading "[other]" counts as no prefix at all
+                            prefix="";
+                        } else {
+                            ruleSet.addPrefix(prefix);
+                        }
+                    }else if (Pattern.matches(".*:.*", trimRule)){
+                        String[] parsed = trimRule.split(":",2);
+                        Rule ruleInstance = (Rule) ruleClass.newInstance();
+                        ruleInstance.setLabel(prefix+parsed[0]);
+                        ruleInstance.setRuleString(parsed[1], resourceRepository);
+                        System.out.println(ruleInstance.getLabel());
+                        ruleSet.addRule(ruleInstance);
+                    }
+                }
             }
             return ruleSet;
         }

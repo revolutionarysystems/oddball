@@ -92,6 +92,40 @@ public class OddballTest {
      * Test of assessCase method, of class Oddball.
      */
     @Test
+    public void testAssessCaseMatchPrefixRule() throws Exception {
+        System.out.println("assessCase");
+        String ruleSetName = "Test3.txt";
+        Case aCase = new StringCase("abc123");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, aCase);
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("string"));
+        assertTrue(result.getLabel().contains("stringType.aString"));
+        assertTrue(result.getLabel().contains("anotherType.abc-ish"));
+        assertFalse(result.getLabel().contains("null"));
+    }
+ 
+    /**
+     * Test of assessCase method, of class Oddball.
+     */
+    @Test
+    public void testAssessCaseOddballPrefix() throws Exception {
+        System.out.println("assessCase");
+        String ruleSetName = "Test3.txt";
+        Case aCase = new StringCase("b-side");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, aCase);
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("string"));
+        assertFalse(result.getLabel().contains("other.string"));
+        assertTrue(result.getLabel().contains("anotherType.odDball"));
+        assertFalse(result.getLabel().contains("null"));
+    }
+    
+    /**
+     * Test of assessCase method, of class Oddball.
+     */
+    @Test
     public void testAssessCaseOddballMongo() throws Exception {
         System.out.println("assessCase");
         String ruleSetName = "TestMongo.txt";
@@ -142,6 +176,31 @@ public class OddballTest {
         assertTrue(cases.iterator().hasNext());
     }
     
+    /**
+     * Test of findCases method, of class Oddball.
+     */
+    @Test
+    public void testFindCasesQueryBeforeAssess() throws Exception {
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        String ruleSetName = "TestMongo.txt";
+        System.out.println("findCasesBeforeAssess");
+        Iterable<String> cases = instance.findAllCases(ruleSetName);
+        for (String aCase : cases){
+            System.out.println(aCase);
+        }
+        assertFalse(cases.iterator().hasNext());
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\"}");
+        
+        Opinion result = instance.assessCase(ruleSetName, theCase);
+        instance.assessCase(ruleSetName, theCase);
+        Iterable<String> cases2 = instance.findAllCases(ruleSetName);
+        for (String aCase : cases2){
+            System.out.println(aCase);
+        }
+        
+        assertTrue(cases2.iterator().hasNext());
+    }
+    
 
     /**
      * Test of findCases method, of class Oddball.
@@ -184,7 +243,30 @@ public class OddballTest {
         for (String aCase : cases0){
             System.out.println(aCase);
         }
-        Iterable<String> cases = instance.findDistinct(ruleSetName, Oddball.ALL, "case.sessionId");
+        Iterable<String> cases = instance.findDistinct(ruleSetName, Oddball.ALL, "case.sessionId", null);
+        for (String aCase : cases){
+            System.out.println(aCase);
+        }
+        
+        assertTrue(cases.iterator().hasNext());
+    }
+    
+    @Test
+    public void testFindDistinctRecentQuery() throws Exception {
+        System.out.println("findDistinct");
+        String ruleSetName = "TestMongo.txt";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\"}");
+        
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, theCase);
+        Opinion result2 = instance.assessCase(ruleSetName, otherCase);
+        instance.assessCase(ruleSetName, theCase);
+        Iterable<String> cases0 = instance.findAllQueryCases(ruleSetName, "{}");
+        for (String aCase : cases0){
+            System.out.println(aCase);
+        }
+        Iterable<String> cases = instance.findDistinct(ruleSetName, Oddball.ALL, "case.sessionId", "5");
         for (String aCase : cases){
             System.out.println(aCase);
         }
@@ -207,13 +289,43 @@ public class OddballTest {
         for (String aCase : cases0){
             System.out.println(aCase);
         }
-        Iterable<String> cases = instance.findDistinct(ruleSetName, "Trial", "case.sessionId");
+        Iterable<String> cases = instance.findDistinct(ruleSetName, "Trial", "case.sessionId", null);
         for (String aCase : cases){
             System.out.println(aCase);
         }
         
         assertTrue(cases.iterator().hasNext());
-        cases = instance.findDistinct(ruleSetName, "Real", "case.sessionId");
+        cases = instance.findDistinct(ruleSetName, "Real", "case.sessionId", null);
+        for (String aCase : cases){
+            System.out.println(aCase);
+        }
+        
+        assertFalse(cases.iterator().hasNext());
+    }
+    
+
+    @Test
+    public void testFindDistinctRecentQueryForOwner() throws Exception {
+        System.out.println("findDistinctOwner");
+        String ruleSetName = "TestMongo.txt";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"accountId\":\"Trial\"}");
+        Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\", \"accountId\":\"Trial\"}");
+        
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, theCase);
+        Opinion result2 = instance.assessCase(ruleSetName, otherCase);
+        instance.assessCase(ruleSetName, theCase);
+        Iterable<String> cases0 = instance.findAllQueryCases(ruleSetName, "{}");
+        for (String aCase : cases0){
+            System.out.println(aCase);
+        }
+        Iterable<String> cases = instance.findDistinct(ruleSetName, "Trial", "case.sessionId", "5");
+        for (String aCase : cases){
+            System.out.println(aCase);
+        }
+        assertTrue(cases.iterator().hasNext());
+        
+        cases = instance.findDistinct(ruleSetName, "Real", "case.sessionId", "5");
         for (String aCase : cases){
             System.out.println(aCase);
         }

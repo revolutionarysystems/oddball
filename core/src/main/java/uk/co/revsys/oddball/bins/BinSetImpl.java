@@ -91,6 +91,9 @@ public class BinSetImpl implements BinSet{
         catch (java.io.IOException e){
             throw new OddballException("Bins could not be loaded");
         }
+        catch (java.lang.NullPointerException e){
+            throw new OddballException("Bins could not be loaded");
+        }
 //        catch (Exception e){
 //            e.printStackTrace();
 //            throw new OddballException("Bins could not be loaded");

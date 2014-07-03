@@ -34,7 +34,12 @@ public class JSONUtil {
 //                out.append("\""+map2json((Map<String, Object>) map.get(key))+"\" ");
                 out.append(map2json((Map<String, Object>) map.get(key)));
             } else {
-                out.append("\""+map.get(key).toString()+"\" ");
+                try{
+                    out.append("\""+map.get(key).toString()+"\" ");
+                }
+                catch (NullPointerException npe){
+                    out.append("null");
+                }
             }
             out.append(", ");
         }
