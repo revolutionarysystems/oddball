@@ -6,7 +6,6 @@
 
 package uk.co.revsys.oddball.rules;
 
-import java.io.IOException;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -15,8 +14,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.MapCase;
-import uk.co.revsys.oddball.cases.StringCase;
-import uk.co.revsys.oddball.util.OddballException;
 
 /**
  *
@@ -47,7 +44,7 @@ public class MongoRuleTest {
      * Test of apply method, of class MongoRule.
      */
     @Test
-    public void testApply() throws IOException{
+    public void testApply() throws Exception{
         System.out.println("apply");
         Case aCase = new MapCase("{\"browser\":\"chrome\"}");
         MongoRule instance = new MongoRule("{\"browser\":\"chrome\"}", "chrome");
@@ -64,7 +61,7 @@ public class MongoRuleTest {
      * Test of apply method, of class MongoRule.
      */
     @Test
-    public void testApplyMismatch() throws IOException {
+    public void testApplyMismatch() throws Exception {
         System.out.println("apply");
         Case aCase = new MapCase("{\"browser\":\"IE6\"}");
         MongoRule instance = new MongoRule("{\"browser\":\"chrome\"}", "chrome");
@@ -94,7 +91,7 @@ public class MongoRuleTest {
      * Test of setRuleString method, of class MongoRule.
      */
     @Test
-    public void testSetRuleString() throws OddballException{
+    public void testSetRuleString() throws Exception{
         System.out.println("setRuleString");
         String ruleString = "rule.txt";
         MongoRule instance = new MongoRule();

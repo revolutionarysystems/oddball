@@ -44,7 +44,7 @@ public class MongoRuleSetTest {
     }
 
     @Test
-    public void testAssessCase() throws IOException {
+    public void testAssessCase() throws Exception {
         System.out.println("assessCase");
         Case aCase = new MapCase("{ \"platform\" : \"Win32\", \"userId\" : \"10A\" }");
         MongoRuleSet instance = new MongoRuleSet("Test");

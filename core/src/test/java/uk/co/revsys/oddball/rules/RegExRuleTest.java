@@ -14,7 +14,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.StringCase;
-import uk.co.revsys.oddball.util.OddballException;
 
 /**
  *
@@ -72,7 +71,7 @@ public class RegExRuleTest {
      * Test of setRuleString method, of class RegExRule.
      */
     @Test
-    public void testSetRuleString()throws OddballException {
+    public void testSetRuleString() throws Exception{
         System.out.println("setRuleString");
         String regEx = "a.*";
         RegExRule instance = new RegExRule(".*", "string");

@@ -11,14 +11,12 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import uk.co.revsys.oddball.RuleSetMap;
 import uk.co.revsys.oddball.RuleTypeMap;
 import uk.co.revsys.oddball.cases.Case;
-import uk.co.revsys.oddball.util.OddballException;
+import uk.co.revsys.oddball.cases.InvalidCaseException;
 import uk.co.revsys.resource.repository.ResourceRepository;
 import uk.co.revsys.resource.repository.model.Resource;
 
@@ -57,7 +55,7 @@ public class RuleSetImpl implements RuleSet{
     }
 
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr) throws IOException{
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr) throws InvalidCaseException{
         
         Opinion op = new OpinionImpl();
 
@@ -115,7 +113,7 @@ public class RuleSetImpl implements RuleSet{
         this.persist = persist;
     }
 
-    public static RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository)throws OddballException{
+    public static RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException{
         try{
             Resource resource = new Resource("", ruleSetName);
             InputStream inputStream = resourceRepository.read(resource);
@@ -150,7 +148,7 @@ public class RuleSetImpl implements RuleSet{
                         String[] parsed = trimRule.split(":",2);
                         Rule ruleInstance = (Rule) ruleClass.newInstance();
                         ruleInstance.setLabel(prefix+parsed[0]);
-                        ruleInstance.setRuleString(parsed[1], resourceRepository);
+                        ruleInstance.setRuleString(parsed[1], resourceRepository) ;
                         System.out.println(ruleInstance.getLabel());
                         ruleSet.addRule(ruleInstance);
                     }
@@ -158,14 +156,14 @@ public class RuleSetImpl implements RuleSet{
             }
             return ruleSet;
         }
-        catch (java.io.FileNotFoundException e){
-            throw new OddballException("No Rule Set named "+ruleSetName+" in repository", e);
-        } catch (IOException ex) {
-            throw new OddballException("Unable to load Rule Set " + ruleSetName + ": " + ex.getMessage());
+        catch (IOException ex) {
+            throw new RuleSetNotLoadedException(ruleSetName, ex);
         } catch (InstantiationException ex) {
-            throw new OddballException("Unable to load Rule Set " + ruleSetName + ": " + ex.getMessage());
+            throw new RuleSetNotLoadedException(ruleSetName, ex);
         } catch (IllegalAccessException ex) {
-            throw new OddballException("Unable to load Rule Set " + ruleSetName + ": " + ex.getMessage());
+            throw new RuleSetNotLoadedException(ruleSetName, ex);
+        } catch (RuleNotLoadedException ex) {
+            throw new RuleSetNotLoadedException(ruleSetName, ex);
         }
     }
     

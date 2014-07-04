@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Map;
 import org.jongo.FindOne;
 import uk.co.revsys.oddball.cases.Case;
+import uk.co.revsys.oddball.cases.InvalidCaseException;
 import uk.co.revsys.oddball.cases.MapCase;
 import uk.co.revsys.oddball.cases.StringCase;
 
@@ -40,7 +41,7 @@ public class MongoRuleSet extends RuleSetImpl{
     }
     
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr) throws IOException{
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr) throws InvalidCaseException{
         String caseStr = aCase.getContent();
         Case theCase = new MapCase(caseStr);
         String caseId = assess.insertCase(caseStr);

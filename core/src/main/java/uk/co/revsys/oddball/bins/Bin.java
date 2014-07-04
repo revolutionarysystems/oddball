@@ -6,9 +6,6 @@
 
 package uk.co.revsys.oddball.bins;
 
-import uk.co.revsys.oddball.bins.*;
-import uk.co.revsys.oddball.cases.Case;
-import uk.co.revsys.oddball.util.OddballException;
 import uk.co.revsys.resource.repository.ResourceRepository;
 
 /**
@@ -26,7 +23,7 @@ public interface Bin {
     /**
      * @param binString the binString to set
      */
-    public void setBinString(String binString, ResourceRepository resourceRepository)throws OddballException;
+    public void setBinString(String binString, ResourceRepository resourceRepository);
 
     /**
      * @return the label

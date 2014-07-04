@@ -6,11 +6,6 @@
 
 package uk.co.revsys.oddball.bins;
 
-import uk.co.revsys.oddball.bins.*;
-import java.util.regex.Pattern;
-import uk.co.revsys.oddball.cases.Case;
-import uk.co.revsys.oddball.cases.StringCase;
-import uk.co.revsys.oddball.util.OddballException;
 import uk.co.revsys.resource.repository.ResourceRepository;
 
 /**
@@ -41,7 +36,7 @@ public class BinImpl implements Bin {
     /**
      * @param binString the binString to set
      */
-    public void setBinString(String binString, ResourceRepository resourceRepository) throws OddballException{
+    public void setBinString(String binString, ResourceRepository resourceRepository){
         this.binString = binString;
     }
 
