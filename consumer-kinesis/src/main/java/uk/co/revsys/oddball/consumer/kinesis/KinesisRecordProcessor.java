@@ -12,7 +12,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.Oddball;
 import uk.co.revsys.oddball.cases.StringCase;
 
@@ -21,7 +22,7 @@ public class KinesisRecordProcessor implements IRecordProcessor {
     private final Oddball oddball;
     private final Map<String, List<String>> ruleSets;
 
-    static final Logger LOG = Logger.getLogger("oddball");
+    static final Logger LOG = LoggerFactory.getLogger("oddball");
     private String kinesisShardId;
 
     private static long backoffTime = 3000L;

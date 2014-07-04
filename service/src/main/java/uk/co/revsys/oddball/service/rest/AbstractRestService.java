@@ -1,11 +1,12 @@
 package uk.co.revsys.oddball.service.rest;
 
 import javax.ws.rs.core.Response;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AbstractRestService {
     
-    private static final Logger LOGGER = Logger.getLogger("oddball");
+    private static final Logger LOGGER = LoggerFactory.getLogger("oddball");
     
 	protected Response buildResponse(Object entity) {
 		return Response.ok(entity.toString()).build();

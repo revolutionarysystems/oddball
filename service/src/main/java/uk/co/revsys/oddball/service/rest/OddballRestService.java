@@ -1,6 +1,5 @@
 package uk.co.revsys.oddball.service.rest;
 
-import java.util.logging.Level;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -8,8 +7,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.Oddball;
 import uk.co.revsys.oddball.bins.BinSetNotLoadedException;
 import uk.co.revsys.oddball.bins.UnknownBinException;
@@ -248,7 +247,7 @@ public class OddballRestService extends AbstractRestService {
                 return buildErrorResponse(ex);
             }
             String enrichedCase =  op.getEnrichedCase(ruleSet, caseStr);
-            RESULTSLOGGER.log(Priority.INFO,enrichedCase);
+            RESULTSLOGGER.info(enrichedCase);
             return buildResponse(enrichedCase);
         }
     }
@@ -273,7 +272,7 @@ public class OddballRestService extends AbstractRestService {
         return Response.ok("Bin Set reloaded.").build();
     }
 
-    static final Logger RESULTSLOGGER = Logger.getLogger("oddball-results");
-    static final Logger LOGGER = Logger.getLogger("oddball");
+    static final Logger RESULTSLOGGER = LoggerFactory.getLogger("oddball-results");
+    static final Logger LOGGER = LoggerFactory.getLogger("oddball");
 
 }
