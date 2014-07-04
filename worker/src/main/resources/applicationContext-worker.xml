@@ -34,14 +34,15 @@
     </bean>
     
     <bean id="localDiskResourceRepositoryBuilder" class="uk.co.revsys.resource.repository.LocalDiskResourceRepositoryBuilder">
-        <constructor-arg index="0" value="${resource.container}"/>
+        <constructor-arg index="0" value="${config.path}"/>
     </bean>
     
     <bean id="jCloudResourceRepositoryBuilder" class="uk.co.revsys.resource.repository.cloud.JCloudResourceRepositoryBuilder">
         <constructor-arg index="0" value="${cloud.type}"/>
         <constructor-arg index="1" value="${cloud.identity}"/>
         <constructor-arg index="2" value="${cloud.credential}"/>
-        <constructor-arg index="3" value="${resource.container}"/>
+        <constructor-arg index="3" value="${config.container}"/>
+        <constructor-arg index="4" value="${config.path}"/>
     </bean>
 	
     <bean id="resourceRepository" factory-bean="resourceRepositoryFactory" factory-method="build">
