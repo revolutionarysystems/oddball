@@ -6,8 +6,8 @@
 
 package uk.co.revsys.oddball.rules;
 
+import java.io.IOException;
 import uk.co.revsys.oddball.cases.Case;
-import uk.co.revsys.oddball.util.OddballException;
 import uk.co.revsys.resource.repository.ResourceRepository;
 
 /**
@@ -26,7 +26,7 @@ public interface Rule {
     /**
      * @param ruleString the ruleString to set
      */
-    public void setRuleString(String ruleString, ResourceRepository resourceRepository)throws OddballException;
+    public void setRuleString(String ruleString, ResourceRepository resourceRepository) throws RuleNotLoadedException;
 
     /**
      * @return the label

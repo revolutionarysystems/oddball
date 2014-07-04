@@ -59,7 +59,7 @@ public class RuleSetImplTest {
      * Test of assessCase method, of class RuleSetImpl.
      */
     @Test
-    public void testAssessCase() throws IOException{
+    public void testAssessCase() throws Exception{
         System.out.println("assessCase");
         Case aCase = new StringCase("abc123");
         RuleSetImpl instance = new RuleSetImpl("Test");

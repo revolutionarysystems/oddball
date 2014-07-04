@@ -9,6 +9,8 @@ package uk.co.revsys.oddball.cases;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import uk.co.revsys.oddball.util.JSONUtil;
 
 /**
@@ -17,9 +19,13 @@ import uk.co.revsys.oddball.util.JSONUtil;
  */
 public class MapCase implements Case{
 
-    public MapCase(String content) throws IOException{
+    public MapCase(String content) throws InvalidCaseException{
         this.content = content;
-        mapContent = JSONUtil.json2map(content);
+        try {
+            mapContent = JSONUtil.json2map(content);
+        } catch (IOException ex) {
+            throw new InvalidCaseException("Invalid Map Case", ex);
+        }
     }
     
     private String content;

@@ -9,6 +9,7 @@ package uk.co.revsys.oddball.rules;
 import java.io.IOException;
 import java.util.Set;
 import uk.co.revsys.oddball.cases.Case;
+import uk.co.revsys.oddball.cases.InvalidCaseException;
 
 /**
  *
@@ -21,7 +22,7 @@ public interface RuleSet {
     
     public Set<Rule> getRules();
     
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr)throws IOException;
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr) throws InvalidCaseException;
     
     public String getRuleType();
 

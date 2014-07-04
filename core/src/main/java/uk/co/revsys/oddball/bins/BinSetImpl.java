@@ -3,22 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package uk.co.revsys.oddball.bins;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.apache.commons.io.IOUtils;
-import uk.co.revsys.oddball.bins.*;
-import uk.co.revsys.oddball.cases.Case;
-import uk.co.revsys.oddball.util.OddballException;
 import uk.co.revsys.resource.repository.ResourceRepository;
 import uk.co.revsys.resource.repository.model.Resource;
 
@@ -26,21 +19,18 @@ import uk.co.revsys.resource.repository.model.Resource;
  *
  * @author Andrew
  */
-public class BinSetImpl implements BinSet{
-    
+public class BinSetImpl implements BinSet {
 
     Map<String, Bin> bins = new HashMap<String, Bin>();
 
     private String name;
     private String binType;
 
-
     @Override
     public void addBin(Bin bin) {
-        bins.put(bin.getLabel(),bin);
+        bins.put(bin.getLabel(), bin);
     }
 
-   
     public Map<String, Bin> getBins() {
         return bins;
     }
@@ -48,7 +38,7 @@ public class BinSetImpl implements BinSet{
     public String getName() {
         return name;
     }
-    
+
     /**
      * @return the binType
      */
@@ -62,20 +52,19 @@ public class BinSetImpl implements BinSet{
     public void setBinType(String binType) {
         this.binType = binType;
     }
-    
 
-    public static BinSet loadBinSet(String binSetName, ResourceRepository resourceRepository)throws OddballException{
-        try{
+    public static BinSet loadBinSet(String binSetName, ResourceRepository resourceRepository) throws BinSetNotLoadedException {
+        try {
             Resource resource = new Resource("", binSetName);
             InputStream inputStream = resourceRepository.read(resource);
             List<String> bins = IOUtils.readLines(inputStream);
             BinSet binSet = new BinSetImpl();
             binSet.setName(binSetName);
-            for (String binStr : bins){
+            for (String binStr : bins) {
                 System.out.println("binStr");
                 System.out.println(binStr);
-                String[] parsed = binStr.trim().split(":",2);
-                if (parsed.length!=2){
+                String[] parsed = binStr.trim().split(":", 2);
+                if (parsed.length != 2) {
                     break;
                 }
                 Bin bin = new BinImpl();
@@ -84,25 +73,14 @@ public class BinSetImpl implements BinSet{
                 binSet.addBin(bin);
             }
             return binSet;
+        } catch (IOException ex) {
+            throw new BinSetNotLoadedException(binSetName);
         }
-        catch (java.io.FileNotFoundException e){
-            throw new OddballException("No Bin Set named "+binSetName+" in repository");
-        }
-        catch (java.io.IOException e){
-            throw new OddballException("Bins could not be loaded");
-        }
-        catch (java.lang.NullPointerException e){
-            throw new OddballException("Bins could not be loaded");
-        }
-//        catch (Exception e){
-//            e.printStackTrace();
-//            throw new OddballException("Bins could not be loaded");
-//        }
     }
 
-    public Collection listBinLabels(){
+    public Collection listBinLabels() {
         return bins.keySet();
-    }    
+    }
 
     /**
      * @param name the name to set

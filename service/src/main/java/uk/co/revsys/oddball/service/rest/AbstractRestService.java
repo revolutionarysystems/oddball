@@ -1,42 +1,19 @@
 package uk.co.revsys.oddball.service.rest;
 
-import java.util.HashMap;
 import javax.ws.rs.core.Response;
-//import uk.co.revsys.objectology.serialiser.ObjectMapper;
-//import uk.co.revsys.objectology.serialiser.SerialiserException;
-//import uk.co.revsys.objectology.view.ViewNotFoundException;
+import org.apache.log4j.Logger;
 
 public class AbstractRestService {
-
-//	private final ObjectMapper jsonObjectMapper;
-//	private final HashMap<String, Class> viewMap;
-//
-//	public AbstractRestService(ObjectMapper jsonObjectMapper, HashMap<String, Class> viewMap) {
-//		this.jsonObjectMapper = jsonObjectMapper;
-//		this.viewMap = viewMap;
-//	}
-//
-//	public ObjectMapper getJsonObjectMapper() {
-//		return jsonObjectMapper;
-//	}
-//
-//	public HashMap<String, Class> getViewMap() {
-//		return viewMap;
-//	}
-//
-//	protected Class getView(String viewName) throws ViewNotFoundException {
-//		if (viewName == null) {
-//			viewName = "default";
-//		}
-//		Class view = viewMap.get(viewName);
-//		if (view == null) {
-//			throw new ViewNotFoundException(viewName);
-//		}
-//		return view;
-//	}
-//
+    
+    private static final Logger LOGGER = Logger.getLogger("oddball");
+    
 	protected Response buildResponse(Object entity) {
 		return Response.ok(entity.toString()).build();
 	}
+    
+    protected Response buildErrorResponse(Throwable error){
+        LOGGER.error("Internal Server Error", error);
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(error.getMessage()).build();
+    }
 
 }
