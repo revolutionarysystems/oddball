@@ -5,28 +5,22 @@
  */
 package uk.co.revsys.oddball.rules;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.fakemongo.Fongo;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
-import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
-import de.undercouch.bson4jackson.types.ObjectId;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
-import org.jongo.Distinct;
 import org.jongo.Find;
 import org.jongo.FindOne;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
-import org.jongo.query.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.Oddball;
-import uk.co.revsys.oddball.cases.StringCase;
 import uk.co.revsys.oddball.util.JSONUtil;
 
 /**
@@ -175,6 +169,6 @@ public class MongoDBHelper {
 
     public static String OWNERPROPERTY = "accountId";
 
-    static final Logger LOGGER = Logger.getLogger("oddball");
+    static final Logger LOGGER = LoggerFactory.getLogger("oddball");
 
 }

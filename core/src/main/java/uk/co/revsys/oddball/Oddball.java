@@ -5,17 +5,11 @@
  */
 package uk.co.revsys.oddball;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
-import uk.co.revsys.oddball.bins.Bin;
-import uk.co.revsys.oddball.bins.BinImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.bins.BinSet;
 import uk.co.revsys.oddball.bins.BinSetImpl;
 import uk.co.revsys.oddball.bins.BinSetNotLoadedException;
@@ -24,13 +18,10 @@ import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.InvalidCaseException;
 import uk.co.revsys.oddball.rules.DaoException;
 import uk.co.revsys.oddball.rules.Opinion;
-import uk.co.revsys.oddball.rules.Rule;
 import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.rules.RuleSetImpl;
 import uk.co.revsys.oddball.rules.RuleSetNotLoadedException;
 import uk.co.revsys.resource.repository.ResourceRepository;
-import uk.co.revsys.resource.repository.model.RepositoryItem;
-import uk.co.revsys.resource.repository.model.Resource;
 
 /**
  *
@@ -150,6 +141,6 @@ public class Oddball {
     }
 
     public static final String ALL = "_all";
-    static final Logger LOGGER = Logger.getLogger("oddball");
+    static final Logger LOGGER = LoggerFactory.getLogger("oddball");
 
 }

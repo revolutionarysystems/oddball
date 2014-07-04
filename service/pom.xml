@@ -25,12 +25,6 @@
         </dependency>
 		
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
-        </dependency>
-		
-        <dependency>
             <groupId>org.apache.wink</groupId>
             <artifactId>wink-server</artifactId>
             <version>1.4</version>
@@ -71,6 +65,27 @@
             <artifactId>aws-s3</artifactId>
             <version>1.7.3</version>
         </dependency>
+        
+        <dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>apache-log4j-extras</artifactId>
+			<version>1.1</version>
+			<scope>runtime</scope>
+		</dependency>
         
         <dependency>
             <groupId>junit</groupId>
