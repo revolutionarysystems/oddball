@@ -15,6 +15,7 @@
         <module>consumer-kinesis</module>
         <module>worker</module>
 		<module>service</module>        
+        <module>client-osgi</module>  
 	</modules>
 
 	<properties>
