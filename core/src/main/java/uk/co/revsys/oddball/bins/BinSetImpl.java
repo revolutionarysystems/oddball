@@ -74,7 +74,7 @@ public class BinSetImpl implements BinSet {
             }
             return binSet;
         } catch (IOException ex) {
-            throw new BinSetNotLoadedException(binSetName);
+            throw new BinSetNotLoadedException(binSetName, ex);
         }
     }
 
