@@ -153,7 +153,7 @@ public class Oddball {
         if (options.get("owner")!=null){
             owner = options.get("owner");
         }
-        Iterable<String> result = ruleSet.getPersist().findCasesForOwner(owner);
+        Iterable<String> result = ruleSet.getPersist().findCasesForOwner(owner, query);
         if (options.get("transformer")!=null){
             return transformResults(result, options.get("transformer"));
         } else {
