@@ -38,11 +38,33 @@ public class OpinionImpl implements Opinion{
         for (String tag : tags){
             tagStr.append("\""+tag+"\", ");
         }
-        tagStr.delete(tagStr.length()-2, tagStr.length());
+        if (tagStr.length()>2){
+            tagStr.delete(tagStr.length()-2, tagStr.length());
+        }
         tagStr.append(" ] }");
         return tagStr.toString();
     }
 
+    public String derivedProperties(){
+        StringBuilder propStr = new StringBuilder("{ \"derived\" : {");
+        boolean empty = true;
+        for (String tag: tags){
+            if (tag.contains(".")){
+                String[] parsed = tag.split("\\.",2);
+                propStr.append("\""+parsed[0]+"\"");
+                propStr.append(" : ");
+                propStr.append("\""+parsed[1]+"\"");
+                propStr.append(", ");
+                empty = false;
+            } 
+        }
+        if (!empty){
+            propStr.delete(propStr.length()-2, propStr.length());
+        }
+        propStr.append(" } }");
+        return propStr.toString();
+    }
+    
     public String getEnrichedCase(String ruleSet, String caseStr) {
         String tags = getLabel();
         caseStr = caseStr.replace("\"", "\\\"");
@@ -50,8 +72,15 @@ public class OpinionImpl implements Opinion{
             assessTime=new Date().getTime();
         }
         String timeStr = Long.toString(assessTime);
-        String enrichedCase =  "{ \"timeStamp\" : \"" + timeStr + "\", " + "\"ruleSet\" : \"" + ruleSet + "\", " + "\"case\" : \"" + caseStr + "\", " + tags.substring(1, tags.length() - 1)+" }";
-        return enrichedCase;
+        StringBuilder enrichedCase =  new StringBuilder("{");
+        enrichedCase.append("\"timeStamp\" : \"" + timeStr + "\", ");
+        enrichedCase.append("\"ruleSet\" : \"" + ruleSet + "\", ");
+        enrichedCase.append("\"case\" : " + caseStr + ", ");
+        enrichedCase.append(tags.substring(1, tags.length() - 1)+ ", ");
+        String propStr = derivedProperties();
+        enrichedCase.append(propStr.substring(1, propStr.length() - 1));
+        enrichedCase.append(" }");
+        return enrichedCase.toString();
     }
 
     public String getEnrichedCase(String ruleSet, Case aCase) {
@@ -61,8 +90,17 @@ public class OpinionImpl implements Opinion{
             assessTime=new Date().getTime();
         }
         String timeStr = Long.toString(assessTime);
-        String enrichedCase =  "{ \"timeStamp\" : \"" + timeStr + "\", " + "\"ruleSet\" : \"" + ruleSet + "\", " + "\"case\" : " + caseStr + ", " + tags.substring(1, tags.length() - 1)+" }";
-        return enrichedCase;
+//        String enrichedCase =  "{ \"timeStamp\" : \"" + timeStr + "\", " + "\"ruleSet\" : \"" + ruleSet + "\", " + "\"case\" : " + caseStr + ", " + tags.substring(1, tags.length() - 1)+" }";
+//        return enrichedCase;
+        StringBuilder enrichedCase =  new StringBuilder("{");
+        enrichedCase.append("\"timeStamp\" : \"" + timeStr + "\", ");
+        enrichedCase.append("\"ruleSet\" : \"" + ruleSet + "\", ");
+        enrichedCase.append("\"case\" : " + caseStr + ", ");
+        enrichedCase.append(tags.substring(1, tags.length() - 1)+ ", ");
+        String propStr = derivedProperties();
+        enrichedCase.append(propStr.substring(1, propStr.length() - 1));
+        enrichedCase.append(" }");
+        return enrichedCase.toString();
     }
 
 

@@ -35,6 +35,7 @@ public class KinesisRecordProcessor implements IRecordProcessor {
 
     public KinesisRecordProcessor(Oddball oddball, Map<String, List<String>> ruleSets) {
         this.oddball = oddball;
+        LOG.debug("ruleSets = "+ruleSets.toString());
         this.ruleSets = ruleSets;
     }
 

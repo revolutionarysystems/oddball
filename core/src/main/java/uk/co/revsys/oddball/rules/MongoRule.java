@@ -69,7 +69,8 @@ public class MongoRule implements Rule {
                 StringBuffer ruleStringBuffer = new StringBuffer();
                 for (String line : rulesLines) {
                     ruleStringBuffer.append(line);
-                }   this.ruleString = ruleStringBuffer.toString();
+                }   
+                this.ruleString = ruleStringBuffer.toString();
             } catch (IOException ex) {
                 throw new RuleNotLoadedException(ruleString, ex);
             } finally {

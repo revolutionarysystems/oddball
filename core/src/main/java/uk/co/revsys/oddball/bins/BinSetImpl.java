@@ -61,8 +61,6 @@ public class BinSetImpl implements BinSet {
             BinSet binSet = new BinSetImpl();
             binSet.setName(binSetName);
             for (String binStr : bins) {
-                System.out.println("binStr");
-                System.out.println(binStr);
                 String[] parsed = binStr.trim().split(":", 2);
                 if (parsed.length != 2) {
                     break;
