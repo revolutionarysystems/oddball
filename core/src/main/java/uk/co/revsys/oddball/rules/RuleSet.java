@@ -7,9 +7,11 @@
 package uk.co.revsys.oddball.rules;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.InvalidCaseException;
+import uk.co.revsys.resource.repository.ResourceRepository;
 
 /**
  *
@@ -29,5 +31,14 @@ public interface RuleSet {
     public void setRuleType(String ruleType);
     
     public MongoDBHelper getPersist();
+    
+    public void setRuleClass(Class ruleClass);
+
+    public void setName(String name);
+    
+    public void loadRules(List<String> rules, ResourceRepository resourceRepository) throws RuleSetNotLoadedException;
+
+    public void reloadRules(ResourceRepository resourceRepository) throws RuleSetNotLoadedException;
+
     
 }

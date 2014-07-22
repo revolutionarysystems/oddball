@@ -334,6 +334,18 @@ public class OddballRestService extends AbstractRestService {
     }
 
     @GET
+    @Path("/{ruleSet}/reload")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response reloadRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("case") String caseStr){
+        try {
+            oddball.reloadRuleSet(ruleSet);
+        } catch (RuleSetNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        }
+        return Response.ok("Rule Set "+ruleSet+" reloaded.").build();
+    }
+
+    @GET
     @Path("/{ruleSet}/bin/reload")
     @Produces(MediaType.TEXT_PLAIN)
     public Response reloadBinSet(@PathParam("ruleSet") String ruleSet, @QueryParam("case") String caseStr){
