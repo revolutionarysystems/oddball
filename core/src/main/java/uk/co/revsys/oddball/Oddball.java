@@ -79,6 +79,15 @@ public class Oddball {
         return RuleSetImpl.loadRuleSet(ruleSetName, resourceRepository);
     }
 
+    public RuleSet reloadRuleSet(String ruleSetName) throws RuleSetNotLoadedException {
+        RuleSet ruleSet = ruleSets.get(ruleSetName);
+        if (ruleSet==null){
+            return loadRuleSet(ruleSetName, resourceRepository);
+        }
+        ruleSet.reloadRules(resourceRepository);
+        return ruleSet;
+    }
+
     public BinSet loadBinSet(String binSetName, ResourceRepository resourceRepository) throws BinSetNotLoadedException {
         return BinSetImpl.loadBinSet(binSetName, resourceRepository);
     }
