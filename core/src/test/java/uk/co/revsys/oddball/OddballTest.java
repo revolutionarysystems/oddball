@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -26,6 +27,7 @@ import uk.co.revsys.oddball.rules.Assessment;
 import uk.co.revsys.oddball.rules.MongoDBHelper;
 import uk.co.revsys.oddball.rules.MongoRule;
 import uk.co.revsys.oddball.rules.Opinion;
+import uk.co.revsys.oddball.rules.Rule;
 import uk.co.revsys.resource.repository.LocalDiskResourceRepository;
 import uk.co.revsys.resource.repository.ResourceRepository;
 
@@ -94,6 +96,31 @@ public class OddballTest {
      * Test of assessCase method, of class Oddball.
      */
     @Test
+    public void testAssessCaseOddballAddRule() throws Exception {
+        System.out.println("assessCase");
+        String ruleSetName = "Test2.txt";
+        Case aCase = new StringCase("b-side");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, aCase);
+        System.out.println("#rules");
+        System.out.println(instance.ruleSets.get(ruleSetName).getAllRules().size());
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("*odDball*"));
+        assertFalse(result.getLabel().contains("string"));
+        assertFalse(result.getLabel().contains("null"));
+        instance.addExtraRule(ruleSetName, "", "b-rule", "b-.*", "added");
+        System.out.println("#rules");
+        System.out.println(instance.ruleSets.get(ruleSetName).getAllRules().size());
+        result = instance.assessCase(ruleSetName, aCase);
+        System.out.println(result.getLabel());
+        assertFalse(result.getLabel().contains("*odDball*"));
+        assertTrue(result.getLabel().contains("b-rule"));
+    }
+    
+    /**
+     * Test of assessCase method, of class Oddball.
+     */
+    @Test
     public void testAssessCaseMatchPrefixRule() throws Exception {
         System.out.println("assessCase");
         String ruleSetName = "Test3.txt";
@@ -122,6 +149,30 @@ public class OddballTest {
         assertFalse(result.getLabel().contains("other.string"));
         assertTrue(result.getLabel().contains("anotherType.odDball"));
         assertFalse(result.getLabel().contains("null"));
+    }
+    
+    /**
+     * Test of assessCase method, of class Oddball.
+     */
+    @Test
+    public void testAssessCaseOddballPrefixAddRule() throws Exception {
+        System.out.println("assessCase");
+        String ruleSetName = "Test3.txt";
+        Case aCase = new StringCase("b-side");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, aCase);
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("string"));
+        assertFalse(result.getLabel().contains("other.string"));
+        assertTrue(result.getLabel().contains("anotherType.odDball"));
+        assertFalse(result.getLabel().contains("null"));
+        instance.addExtraRule(ruleSetName, "anotherType.", "b-rule", "b-.*", "added");
+        result = instance.assessCase(ruleSetName, aCase);
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("string"));
+        assertFalse(result.getLabel().contains("other.string"));
+        assertFalse(result.getLabel().contains("anotherType.odDball"));
+        assertTrue(result.getLabel().contains("anotherType.b-rule"));
     }
     
     /**
@@ -479,5 +530,31 @@ public class OddballTest {
     }
 
 
+    /**
+     * Test of assessCase method, of class Oddball.
+     */
+    @Test
+    public void testAddRuleTwice() throws Exception {
+        System.out.println("addRuleTwice");
+        String ruleSetName = "Test2.txt";
+        Case aCase = new StringCase("b-side");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, aCase);
+        Set<Rule> rules = instance.ruleSets.get(ruleSetName).getAllRules();
+        int n = rules.size();
+        System.out.println("Rules before");
+        System.out.println(n);
+        for (Rule rule : rules){
+            System.out.println(rule.toString());
+        }
+        instance.addExtraRule(ruleSetName, "", "b-rule", "b-.*", "added");
+        rules = instance.ruleSets.get(ruleSetName).getAllRules();
+        int m = rules.size();
+        assertTrue((m-n)==1);
+        instance.addExtraRule(ruleSetName, "", "B-rule", "b-.*", "added");
+        rules = instance.ruleSets.get(ruleSetName).getAllRules();
+        int l = rules.size();
+        assertTrue((l-m)==0);
+    }
 
 }

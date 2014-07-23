@@ -20,10 +20,21 @@ import uk.co.revsys.resource.repository.ResourceRepository;
 public interface RuleSet {
     
     public void addRule(Rule rule);
+
+    public void addExtraRule(Rule rule);
+    
+    public Rule createRule(String prefix, String label, String ruleString, String source, ResourceRepository resourceRepository) throws RuleSetNotLoadedException;
+
+    public Rule findExtraRule(String prefix, String ruleString);
+    
+    public void removeExtraRule(Rule rule);
+
     public void addPrefix(String prefix);
     
     public Set<Rule> getRules();
-    
+        
+    public Set<Rule> getAllRules();
+        
     public Opinion assessCase(Case aCase, String key, String ruleSetStr) throws InvalidCaseException;
     
     public String getRuleType();
@@ -31,6 +42,8 @@ public interface RuleSet {
     public void setRuleType(String ruleType);
     
     public MongoDBHelper getPersist();
+    
+    public Class getRuleClass();
     
     public void setRuleClass(Class ruleClass);
 
