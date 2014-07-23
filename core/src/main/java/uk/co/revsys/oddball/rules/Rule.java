@@ -38,4 +38,9 @@ public interface Rule {
      */
     public void setLabel(String label);
 
+    public String getSource();
+
+    public void setSource(String source);
+    
+    public String asJSON()throws IOException;
 }

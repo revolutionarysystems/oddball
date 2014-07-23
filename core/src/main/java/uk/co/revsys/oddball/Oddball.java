@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -25,6 +26,7 @@ import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.InvalidCaseException;
 import uk.co.revsys.oddball.rules.DaoException;
 import uk.co.revsys.oddball.rules.Opinion;
+import uk.co.revsys.oddball.rules.Rule;
 import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.rules.RuleSetImpl;
 import uk.co.revsys.oddball.rules.RuleSetNotLoadedException;
@@ -88,7 +90,44 @@ public class Oddball {
         return ruleSet;
     }
 
-    public BinSet loadBinSet(String binSetName, ResourceRepository resourceRepository) throws BinSetNotLoadedException {
+    public RuleSet addExtraRule(String ruleSetName, String prefix, String label, String ruleString, String source) throws RuleSetNotLoadedException {
+        RuleSet ruleSet = ensureRuleSet(ruleSetName);
+        Rule duplicate = ruleSet.findExtraRule(prefix, ruleString);
+        if (duplicate!=null){
+            ruleSet.removeExtraRule(duplicate);
+        }
+        ruleSet.addExtraRule(ruleSet.createRule(prefix, label, ruleString, source, resourceRepository));
+        return ruleSet;
+    }
+    
+    public Iterable<String> findRules(String ruleSetName, Map<String, String> options) throws RuleSetNotLoadedException, IOException {
+        RuleSet ruleSet = ensureRuleSet(ruleSetName);
+        Set<Rule> rules = ruleSet.getAllRules();
+        ArrayList<String> response = new ArrayList<String>();
+        String prefix = "";
+        String source = "";
+        if (options.get("prefix")!=null){
+            prefix = options.get("prefix");
+        }
+        if (options.get("source")!=null){
+            source = options.get("source");
+        }
+        for (Rule rule : rules){
+            LOGGER.debug("Filtering rules");
+            LOGGER.debug(prefix+" ? "+rule.getLabel());
+            if (prefix.equals("") || rule.getLabel().indexOf(prefix)==0){
+                LOGGER.debug(source+" ? "+rule.getSource());
+                if (source.equals("") || rule.getSource().indexOf(source)==0){
+                    response.add(rule.asJSON());
+                }
+            }
+        }
+        return response;
+        
+    }
+
+        
+public BinSet loadBinSet(String binSetName, ResourceRepository resourceRepository) throws BinSetNotLoadedException {
         return BinSetImpl.loadBinSet(binSetName, resourceRepository);
     }
 

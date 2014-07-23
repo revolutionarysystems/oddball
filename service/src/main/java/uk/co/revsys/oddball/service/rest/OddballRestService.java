@@ -1,7 +1,9 @@
 package uk.co.revsys.oddball.service.rest;
 
+import java.io.IOException;
 import java.util.HashMap;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -57,6 +59,65 @@ public class OddballRestService extends AbstractRestService {
         StringBuilder out = new StringBuilder("[ ");
         for (String aCase : cases){
             out.append(aCase);
+            out.append(", ");
+        }
+        if (out.length()>2){
+            out.delete(out.length()-2, out.length());
+        }
+        out.append("]");
+        return Response.ok(out.toString()).build();
+    }
+
+    @GET
+    @Path("/{ruleSet}/rule/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response showRules(@PathParam("ruleSet") String ruleSet, @QueryParam("transformer") String transformer, @QueryParam("prefix") String prefix, @QueryParam("source") String source){
+        Iterable<String> rules;
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("transformer", transformer);
+        options.put("prefix", prefix);
+        options.put("source", source);
+        try {
+            rules = oddball.findRules(ruleSet, options);
+        } catch (RuleSetNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (IOException ex) {
+            return buildErrorResponse(ex);
+//        } catch (TransformerNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+        }
+        StringBuilder out = new StringBuilder("[ ");
+        for (String rule : rules){
+            out.append(rule);
+            out.append(", ");
+        }
+        if (out.length()>2){
+            out.delete(out.length()-2, out.length());
+        }
+        out.append("]");
+        return Response.ok(out.toString()).build();
+    }
+
+    @POST
+    @Path("/{ruleSet}/rule/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addExtraRule(@PathParam("ruleSet") String ruleSet, @QueryParam("label") String label, @QueryParam("prefix") String prefix, @QueryParam("rule") String ruleString){
+        HashMap<String, String> options = new HashMap<String, String>();
+        Iterable<String> rules;
+        options.put("prefix", prefix);
+        try {
+            oddball.addExtraRule(ruleSet, prefix, label, ruleString, "inserted");
+            rules = oddball.findRules(ruleSet, options);
+        } catch (RuleSetNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (IOException ex) {
+            return buildErrorResponse(ex);
+//        } catch (TransformerNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+        }
+        StringBuilder out = new StringBuilder("[ ");
+        for (String rule : rules){
+            out.append(rule);
             out.append(", ");
         }
         if (out.length()>2){

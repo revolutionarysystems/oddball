@@ -39,6 +39,7 @@ public class RuleSetImpl implements RuleSet{
     }
 
     Set<Rule> rules = new HashSet<Rule>();
+    Set<Rule> extraRules = new HashSet<Rule>();
     Set<String> prefixes = new HashSet<String>();
 
     private String name;
@@ -49,6 +50,28 @@ public class RuleSetImpl implements RuleSet{
     @Override
     public void addRule(Rule rule) {
         rules.add(rule);
+    }
+
+    @Override
+    public Rule findExtraRule(String prefix, String ruleString){
+        Rule foundRule = null;
+        for (Rule rule : extraRules){
+            if ((prefix.equals("") || (rule.getLabel().indexOf(prefix)==0)) && rule.getRuleString().equals(ruleString)){
+                foundRule = rule;
+                break;
+            }
+        }
+        return foundRule;
+    }
+    
+    @Override
+    public void addExtraRule(Rule rule) {
+        extraRules.add(rule);
+    }
+
+    @Override
+    public void removeExtraRule(Rule rule) {
+        extraRules.remove(rule);
     }
 
     @Override
@@ -67,7 +90,18 @@ public class RuleSetImpl implements RuleSet{
             op.incorporate(as);
         }
         if (op.getTags().isEmpty()){
-            op.getTags().add("*odDball*");
+            boolean found = false;
+            for (Rule rule:extraRules){
+                Assessment as = rule.apply(aCase, this, key);
+                if (as.getLabelStr()!=null){
+                    op.incorporate(as);
+                    found=true;
+                    break;
+                }
+            }
+            if (!found){
+                op.getTags().add("*odDball*");
+            }
         }
         for (String prefix:prefixes){
             boolean found = false;
@@ -75,6 +109,18 @@ public class RuleSetImpl implements RuleSet{
                 if (tag.indexOf(prefix)==0){
                     found=true;
                     break;
+                }
+            }
+            if (!found){
+                for (Rule rule:extraRules){
+                    if (rule.getLabel().indexOf(prefix)==0){
+                        Assessment as = rule.apply(aCase, this, key);
+                        if (as.getLabelStr()!=null){
+                            op.incorporate(as);
+                            found=true;
+                            break;
+                        }
+                    }
                 }
             }
             if (!found){
@@ -86,7 +132,15 @@ public class RuleSetImpl implements RuleSet{
 
    
     public Set<Rule> getRules() {
-        return rules;
+        Set<Rule> result = rules;
+        return result;
+    }
+
+    public Set<Rule> getAllRules() {
+        Set<Rule> result = new HashSet<Rule>();
+        result.addAll(rules);
+        result.addAll(extraRules);
+        return result;
     }
 
     public String getName() {
@@ -119,40 +173,44 @@ public class RuleSetImpl implements RuleSet{
         this.persist = persist;
     }
 
-    public void loadRules(List<String> rules, ResourceRepository resourceRepository) throws RuleSetNotLoadedException{
-        this.getRules().clear();
-        this.prefixes.clear();
+    public Rule createRule(String prefix, String label, String ruleString, String source, ResourceRepository resourceRepository) throws RuleSetNotLoadedException{
         try{
-            String prefix = "";
-            for (String rule : rules){
-                String trimRule = rule.trim();
-                System.out.println(trimRule);
-                if ((trimRule.indexOf("#")!=0)&&(!trimRule.equals(""))){
-                    if (Pattern.matches("\\[.*\\]", trimRule)){
-                        System.out.println("=prefix");
-                        prefix = trimRule.substring(1, trimRule.length()-1)+".";
-                        System.out.println(prefix);
-                        if (prefix.equals("other.")){  // prefix heading "[other]" counts as no prefix at all
-                            prefix="";
-                        } else {
-                            this.addPrefix(prefix);
-                        }
-                    }else if (Pattern.matches(".*:.*", trimRule)){
-                        String[] parsed = trimRule.split(":",2);
-                        Rule ruleInstance = (Rule) ruleClass.newInstance();
-                        ruleInstance.setLabel(prefix+parsed[0]);
-                        ruleInstance.setRuleString(parsed[1], resourceRepository) ;
-                        System.out.println(ruleInstance.getLabel());
-                        this.addRule(ruleInstance);
-                    }
-                }
-            }
+            Rule ruleInstance = (Rule) ruleClass.newInstance();
+            ruleInstance.setLabel(prefix+label);
+            ruleInstance.setRuleString(ruleString, resourceRepository) ;
+            ruleInstance.setSource(source) ;
+            return ruleInstance;
         } catch (InstantiationException ex) {
             throw new RuleSetNotLoadedException(name, ex);
         } catch (IllegalAccessException ex) {
             throw new RuleSetNotLoadedException(name, ex);
         } catch (RuleNotLoadedException ex) {
             throw new RuleSetNotLoadedException(name, ex);
+        }
+        
+    }
+    
+    public void loadRules(List<String> rules, ResourceRepository resourceRepository) throws RuleSetNotLoadedException{
+        this.getRules().clear();
+        this.extraRules.clear();
+        this.prefixes.clear();
+        String prefix = "";
+        for (String rule : rules){
+            String trimRule = rule.trim();
+            if ((trimRule.indexOf("#")!=0)&&(!trimRule.equals(""))){
+                if (Pattern.matches("\\[.*\\]", trimRule)){
+                    prefix = trimRule.substring(1, trimRule.length()-1)+".";
+                    if (prefix.equals("other.")){  // prefix heading "[other]" counts as no prefix at all
+                        prefix="";
+                    } else {
+                        this.addPrefix(prefix);
+                    }
+                }else if (Pattern.matches(".*:.*", trimRule)){
+                    String[] parsed = trimRule.split(":",2);
+                    Rule ruleInstance = createRule(prefix, parsed[0], parsed[1], "config", resourceRepository);
+                    this.addRule(ruleInstance);
+                }
+            }
         }
     }
     
@@ -184,7 +242,6 @@ public class RuleSetImpl implements RuleSet{
             Class ruleClass = new RuleTypeMap().get(ruleType);
             ruleSet.setName(ruleSetName);
             ruleSet.setRuleClass(ruleClass);
-            System.out.println("Loading rules:"+ruleSetName);
             ruleSet.loadRules(rules, resourceRepository);
             
             return ruleSet;

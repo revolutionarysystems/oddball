@@ -58,7 +58,6 @@ public class JSONUtil {
         }
         out.delete(out.length()-2, out.length());
         out.append(" }");
-        System.out.println(out);
         return out.toString();
     }
     

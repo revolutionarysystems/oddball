@@ -7,12 +7,14 @@ package uk.co.revsys.oddball.rules;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.MapCase;
+import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.resource.repository.ResourceRepository;
 import uk.co.revsys.resource.repository.model.Resource;
 
@@ -20,19 +22,14 @@ import uk.co.revsys.resource.repository.model.Resource;
  *
  * @author Andrew
  */
-public class MongoRule implements Rule {
+public class MongoRule extends RuleImpl {
 
     public MongoRule() {
     }
 
     public MongoRule(String ruleString, String label) {
-        this.ruleString = ruleString;
-        this.label = label;
+        super(ruleString, label);
     }
-
-    private String ruleString;
-
-    private String label;
 
     @Override
     public Assessment apply(Case aCase, RuleSet ruleSet, String key) {
@@ -50,15 +47,9 @@ public class MongoRule implements Rule {
     }
 
     /**
-     * @return the ruleString
-     */
-    public String getRuleString() {
-        return ruleString;
-    }
-
-    /**
      * @param ruleString the ruleString to set
      */
+    @Override
     public void setRuleString(String ruleString, ResourceRepository resourceRepository) throws RuleNotLoadedException {
         if (ruleString.contains(".json") && (resourceRepository != null)) {
             InputStream inputStream = null;
@@ -85,22 +76,4 @@ public class MongoRule implements Rule {
         }
     }
 
-    /**
-     * @return the label
-     */
-    public String getLabel() {
-        return label;
-    }
-
-    /**
-     * @param label the label to set
-     */
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    @Override
-    public String toString() {
-        return "Rule-" + label + ":" + ruleString;
-    }
 }
