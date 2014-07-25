@@ -223,13 +223,13 @@ public BinSet loadBinSet(String binSetName, ResourceRepository resourceRepositor
         }
     }
 
-    public Iterable<String> findDistinct(String ruleSetName, String field, String recent, Map<String, String> options) throws RuleSetNotLoadedException, DaoException {
+    public Iterable<String> findDistinct(String ruleSetName, String field, String recent, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, IOException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.ALL;
         if (options.get("owner")!=null){
             owner = options.get("owner");
         }
-        return ruleSet.getPersist().findDistinct(owner, field, recent);
+        return ruleSet.getPersist().findDistinctQuery(owner, "{}", field, recent);
     }
 
     public Iterable<String> findCasesInBin(String ruleSetName, String binLabel, Map<String, String> options) throws UnknownBinException, RuleSetNotLoadedException, DaoException, BinSetNotLoadedException, TransformerNotLoadedException {
@@ -248,6 +248,33 @@ public BinSet loadBinSet(String binSetName, ResourceRepository resourceRepositor
             throw new UnknownBinException(binLabel);
         }
         return findQueryCases(ruleSetName, binQuery, options);
+    }
+
+    public Iterable<String> findDistinctPropertyInBin(String ruleSetName, String binLabel, Map<String, String> options) throws UnknownBinException, RuleSetNotLoadedException, DaoException, BinSetNotLoadedException, TransformerNotLoadedException, IOException {
+        RuleSet ruleSet = ensureRuleSet(ruleSetName);
+        String binQuery = null;
+        String owner = Oddball.ALL;
+        String property = "_id";
+        String recent = "60";
+        if (options.get("owner")!=null){
+            owner = options.get("owner");
+        }
+        if (options.get("property")!=null){
+            property = options.get("property");
+        }
+        if (options.get("recent")!=null){
+            recent = options.get("recent");
+        }
+        BinSet ownerBinSet = loadPrivateBinSet(owner);
+        if (ownerBinSet != null && ownerBinSet.getBins().get(binLabel) != null) {
+            binQuery = ownerBinSet.getBins().get(binLabel).getBinString();
+        } else {
+            binQuery = binSet.getBins().get(binLabel).getBinString();
+        }
+        if (binQuery == null) {
+            throw new UnknownBinException(binLabel);
+        }
+        return ruleSet.getPersist().findDistinctQuery(owner, binQuery, property, recent);
     }
 
     public Collection<String> listBinLabels(String owner) throws BinSetNotLoadedException {

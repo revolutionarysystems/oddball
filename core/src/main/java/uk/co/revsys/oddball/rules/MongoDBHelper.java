@@ -169,8 +169,8 @@ public class MongoDBHelper {
     }
 
 
-    public Iterable<String> findDistinct(String owner, String field, String recent) throws DaoException {
-        BasicDBObject query = new BasicDBObject();
+    public Iterable<String> findDistinctQuery(String owner, String queryString, String field, String recent) throws DaoException, IOException {
+        BasicDBObject query = new BasicDBObject(JSONUtil.json2map(queryString));
         if (!owner.equals(Oddball.ALL)) {
             query = new BasicDBObject("case." + OWNERPROPERTY, owner);
         }
@@ -182,6 +182,9 @@ public class MongoDBHelper {
             BasicDBObject subQuery = new BasicDBObject("$gt", Long.toString(cutoff));
             query.append("timeStamp", subQuery);
         }
+        System.out.println("findDistinctQuery:");
+        System.out.println(field);
+        System.out.println(query);
         List foundCases = cases.getDBCollection().distinct(field, query);
         //Iterable<String> foundCases = found.as(String.class);
 

@@ -529,6 +529,52 @@ public class OddballTest {
         
     }
 
+    @Test
+    public void testFindDistictPropertyInBin() throws Exception {
+
+        System.out.println("applyBins");
+        String ruleSetName = "TestMongo.txt";
+        Case aCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"windows\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\"}");
+        Case yetAnotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\"}");
+        
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+
+        Opinion result = instance.assessCase(ruleSetName, aCase);
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("ruleB"));
+        instance.assessCase(ruleSetName, anotherCase);
+        instance.assessCase(ruleSetName, yetAnotherCase);
+
+        BinSet binSet = instance.binSet;
+        
+        HashMap<String, String> options = new HashMap<String, String>();
+        Iterable<String> cases = instance.findCasesInBin(ruleSetName, "bin2", options);
+        assertTrue(cases.iterator().hasNext());
+        int count=0;
+        for (String foundCase : cases){
+            System.out.println("in bin2:");
+            System.out.println(foundCase);
+            count++;
+        }
+        assertTrue(count==3);
+
+        options.put("property", "case.platform");
+        Iterable<String> platforms = instance.findDistinctPropertyInBin(ruleSetName, "bin2", options);
+        assertTrue(platforms.iterator().hasNext());
+        count=0;
+        for (String platform : platforms){
+            System.out.println("in bin2:");
+            System.out.println(platform);
+            count++;
+        }
+        assertTrue(count==2);
+        
+        
+        
+    }
+
+
 
     /**
      * Test of assessCase method, of class Oddball.
