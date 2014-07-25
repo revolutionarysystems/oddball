@@ -141,6 +141,8 @@ public class OddballRestService extends AbstractRestService {
             return buildErrorResponse(ex);
         } catch (DaoException ex) {
             return buildErrorResponse(ex);
+        } catch (IOException ex) {
+            return buildErrorResponse(ex);
         }
         StringBuilder out = new StringBuilder("[ ");
         for (String aCase : cases){
@@ -214,6 +216,8 @@ public class OddballRestService extends AbstractRestService {
         try {
             cases = oddball.findDistinct(ruleSet, "case.userId",recent, options);
         } catch (RuleSetNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (IOException ex) {
             return buildErrorResponse(ex);
         } catch (DaoException ex) {
             return buildErrorResponse(ex);
@@ -348,6 +352,43 @@ public class OddballRestService extends AbstractRestService {
         } catch (TransformerNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (DaoException ex) {
+            return buildErrorResponse(ex);
+        } catch (BinSetNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        }
+        StringBuilder out = new StringBuilder("[ ");
+        for (String aCase : cases){
+            out.append(aCase);
+            out.append(", ");
+        }
+        if (out.length()>2){
+            out.delete(out.length()-2, out.length());
+        }
+        out.append("]");
+        return Response.ok(out.toString()).build();
+    }
+
+
+    @GET
+    @Path("/{ruleSet}/bin/{binLabel}/distinct")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findDistinctPropertiesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("property") String property, @QueryParam("recent") String recent){
+        Iterable<String> cases;
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", owner);
+        options.put("property", property);
+        options.put("recent", recent);
+        try {
+            cases = oddball.findDistinctPropertyInBin(ruleSet, binLabel, options);
+        } catch (UnknownBinException ex) {
+            return buildErrorResponse(ex);
+        } catch (RuleSetNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (TransformerNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (DaoException ex) {
+            return buildErrorResponse(ex);
+        } catch (IOException ex) {
             return buildErrorResponse(ex);
         } catch (BinSetNotLoadedException ex) {
             return buildErrorResponse(ex);
