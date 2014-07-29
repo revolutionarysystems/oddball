@@ -43,4 +43,6 @@ public interface Rule {
     public void setSource(String source);
     
     public String asJSON()throws IOException;
+
+    public String asRuleConfig()throws IOException;
 }

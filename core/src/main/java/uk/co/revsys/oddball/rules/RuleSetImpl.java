@@ -8,6 +8,7 @@ package uk.co.revsys.oddball.rules;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -207,8 +208,19 @@ public class RuleSetImpl implements RuleSet{
                     }
                 }else if (Pattern.matches(".*:.*", trimRule)){
                     String[] parsed = trimRule.split(":",2);
-                    Rule ruleInstance = createRule(prefix, parsed[0], parsed[1], "config", resourceRepository);
-                    this.addRule(ruleInstance);
+                    String source = "config";
+                    String label = parsed[0];
+                    if (Pattern.matches(".*;.*", label)){
+                        String[] parsedLabel = label.split(";",2);
+                        source = parsedLabel[1];
+                        label = parsedLabel[0];
+                    }
+                    Rule ruleInstance = createRule(prefix, label, parsed[1], source, resourceRepository);
+                    if (source.equals("config")){
+                        this.addRule(ruleInstance);
+                    } else {
+                        this.addExtraRule(ruleInstance);
+                    }
                 }
             }
         }
@@ -216,9 +228,15 @@ public class RuleSetImpl implements RuleSet{
     
     public static List<String> getRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException{
         try{
-            Resource resource = new Resource("", ruleSetName);
-            InputStream inputStream = resourceRepository.read(resource);
-            List<String> rules = IOUtils.readLines(inputStream);
+            List<Resource> resources = resourceRepository.listResources(".");
+            List<String> rules = new ArrayList<String>();
+            for (Resource resource : resources){
+                if (resource.getName().indexOf(ruleSetName)==0){
+//                    Resource resource = new Resource("", ruleSetName);
+                    InputStream inputStream = resourceRepository.read(resource);
+                    rules.addAll(IOUtils.readLines(inputStream));
+                }
+            }
             return rules;
         }
         catch (IOException ex) {
@@ -253,24 +271,12 @@ public class RuleSetImpl implements RuleSet{
     }
 
     public void reloadRules(ResourceRepository resourceRepository) throws RuleSetNotLoadedException{
-        LOGGER.debug("Reloading rules for "+getName());
-        for (Rule rule : this.getRules()){
-            LOGGER.debug(rule.getRuleString());
-        }
         List<String> rules = getRuleSet(getName(), resourceRepository);
         if (rules.get(0).contains("$ruleType")){
             String rule = rules.get(0);
             rules.remove(rule);
         }
-        LOGGER.debug("Rules found for "+getName());
-        for (String line : rules){
-            LOGGER.debug(line);
-        }
         loadRules(rules, resourceRepository);
-        LOGGER.debug("Rules loaded for "+getName());
-        for (Rule rule : this.getRules()){
-            LOGGER.debug(rule.getRuleString());
-        }
     }
     
     /**

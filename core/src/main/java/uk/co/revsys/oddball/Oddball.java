@@ -5,6 +5,7 @@
  */
 package uk.co.revsys.oddball;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -60,7 +61,6 @@ public class Oddball {
     }
 
     public Opinion assessCase(String ruleSetName, Case aCase) throws RuleSetNotLoadedException, InvalidCaseException {
-        LOGGER.debug("assessing: case = " + aCase.getJSONisedContent());
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         return ruleSet.assessCase(aCase, null, ruleSetName);
 
@@ -113,11 +113,8 @@ public class Oddball {
             source = options.get("source");
         }
         for (Rule rule : rules){
-            LOGGER.debug("Filtering rules");
-            LOGGER.debug(prefix+" ? "+rule.getLabel());
-            if (prefix.equals("") || rule.getLabel().indexOf(prefix)==0){
-                LOGGER.debug(source+" ? "+rule.getSource());
-                if (source.equals("") || rule.getSource().indexOf(source)==0){
+            if (prefix.equals("ALL") || rule.getLabel().indexOf(prefix)==0){
+                if (source.equals("ALL") || rule.getSource().indexOf(source)==0){
                     response.add(rule.asJSON());
                 }
             }
@@ -126,6 +123,58 @@ public class Oddball {
         
     }
 
+    public Iterable<String> saveRules(String ruleSetName, Map<String, String> options) throws RuleSetNotLoadedException, IOException {
+        RuleSet ruleSet = ensureRuleSet(ruleSetName);
+        Set<Rule> rules = ruleSet.getAllRules();
+        ArrayList<String> response = new ArrayList<String>();
+        String prefix = "ALL";
+        String source = "ALL";
+        if (options.get("prefix")!=null){
+            prefix = options.get("prefix");
+        }
+        if (options.get("source")!=null){
+            source = options.get("source");
+        }
+        String fileName = ruleSetName;
+        fileName = fileName + "."+prefix;
+        fileName = fileName + "."+source;
+        
+        StringBuilder lines = new StringBuilder("");
+        for (Rule rule : rules){
+            if (prefix.equals("ALL") || rule.getLabel().indexOf(prefix)==0){
+                if (source.equals("ALL") || rule.getSource().indexOf(source)==0){
+                    lines.append(rule.asRuleConfig());
+                }
+            }
+        }
+        System.out.println("Rule lines");
+        System.out.println(lines);
+        
+        InputStream is = new ByteArrayInputStream(lines.toString().getBytes("UTF-8"));
+        Resource resource = new Resource("", fileName);
+
+        try {
+            resourceRepository.delete(resource);
+        } 
+        catch (java.io.FileNotFoundException ex){}
+        catch (java.io.IOException ex){}
+        
+        resourceRepository.write(resource, is);
+        System.out.println("");
+        
+        for (Rule rule : rules){
+            if (prefix.equals("ALL") || rule.getLabel().indexOf(prefix)==0){
+                if (source.equals("ALL") || rule.getSource().indexOf(source)==0){
+                    response.add(rule.asJSON());
+                }
+            }
+        }
+        return response;
+        
+    }
+
+    
+    
         
 public BinSet loadBinSet(String binSetName, ResourceRepository resourceRepository) throws BinSetNotLoadedException {
         return BinSetImpl.loadBinSet(binSetName, resourceRepository);

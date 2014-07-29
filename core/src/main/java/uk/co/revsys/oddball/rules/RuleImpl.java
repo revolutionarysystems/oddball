@@ -96,5 +96,43 @@ public abstract class RuleImpl implements Rule {
         return JSONUtil.map2json(mapRule);
     }
 
+    @Override
+    public String asRuleConfig()throws IOException{
+        StringBuilder rule = new StringBuilder("");
+        System.out.println(getLabel());
+        String prefix = this.getPrefix();
+        System.out.println(prefix);
+        if (prefix !=null){
+            rule.append("["+prefix+"]\n");
+        } else {
+            rule.append("[other]\n");
+        }
+        rule.append(getLabelOnly());
+        rule.append(";");
+        rule.append(this.getSource());
+        rule.append(":");
+        rule.append(getRuleString());
+        rule.append("\n");
+        return rule.toString();
+    }
 
+    private String getPrefix(){
+        if (getLabel().indexOf(".")>0){
+            String[] labelParts=getLabel().split("\\.", 2);
+            return labelParts[0];
+        } else {
+            return null;
+        }
+    }
+    
+    private String getLabelOnly(){
+        if (getLabel().indexOf(".")>0){
+            String[] labelParts=getLabel().split("\\.", 2);
+            return labelParts[1];
+        } else {
+            return label;
+        }
+    }
+    
+    
 }
