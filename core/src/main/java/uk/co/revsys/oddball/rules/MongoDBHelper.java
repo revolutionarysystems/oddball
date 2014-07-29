@@ -82,14 +82,11 @@ public class MongoDBHelper {
     public Iterable<String> findCasesForOwner(String owner) throws DaoException {
         try {
             String query = "{}";
-            LOGGER.debug("query =" + query);
             if (!owner.equals(Oddball.ALL)) {
                 Map queryMap = JSONUtil.json2map(query);
                 queryMap.put("case." + OWNERPROPERTY, owner);
-                LOGGER.debug("queryMap =" + queryMap.toString());
                 query = JSONUtil.map2json(queryMap);
             }
-            LOGGER.debug("query =" + query);
             Find found = cases.find(query);
             Iterable<Map> foundCases = found.as(Map.class);
             ArrayList<String> caseList = new ArrayList<String>();
@@ -109,14 +106,12 @@ public class MongoDBHelper {
     }
 
     public Iterable<String> findCasesForOwner(String owner, String query) throws DaoException {
-        LOGGER.debug("query =" + query);
         try {
             if (!owner.equals(Oddball.ALL)) {
                 StringBuilder modQuery = new StringBuilder("{\"case." + OWNERPROPERTY + "\":\"" + owner + "\", ");
                 modQuery.append(query.substring(1));
                 query = modQuery.toString();
             }
-            LOGGER.debug("modQuery =" + query);
             Find found = cases.find(query);
             Iterable<Map> foundCases = found.as(Map.class);
             ArrayList<String> caseList = new ArrayList<String>();
@@ -136,14 +131,12 @@ public class MongoDBHelper {
     }
 
     public String findLatestCaseForOwner(String owner, String query) throws DaoException {
-        LOGGER.debug("query =" + query);
         try {
             if (!owner.equals(Oddball.ALL)) {
                 StringBuilder modQuery = new StringBuilder("{\"case." + OWNERPROPERTY + "\":\"" + owner + "\", ");
                 modQuery.append(query.substring(1));
                 query = modQuery.toString();
             }
-            LOGGER.debug("modQuery =" + query);
             Find found = cases.find(query);
             Iterable<Map> foundCases = found.as(Map.class);
             ArrayList<String> caseList = new ArrayList<String>();

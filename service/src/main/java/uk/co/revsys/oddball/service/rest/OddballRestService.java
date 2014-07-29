@@ -98,6 +98,36 @@ public class OddballRestService extends AbstractRestService {
         return Response.ok(out.toString()).build();
     }
 
+    @GET
+    @Path("/{ruleSet}/rule/save")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response saveRules(@PathParam("ruleSet") String ruleSet, @QueryParam("transformer") String transformer, @QueryParam("prefix") String prefix, @QueryParam("source") String source){
+        Iterable<String> rules;
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("transformer", transformer);
+        options.put("prefix", prefix);
+        options.put("source", source);
+        try {
+            rules = oddball.saveRules(ruleSet, options);
+        } catch (RuleSetNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (IOException ex) {
+            return buildErrorResponse(ex);
+//        } catch (TransformerNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+        }
+        StringBuilder out = new StringBuilder("[ ");
+        for (String rule : rules){
+            out.append(rule);
+            out.append(", ");
+        }
+        if (out.length()>2){
+            out.delete(out.length()-2, out.length());
+        }
+        out.append("]");
+        return Response.ok(out.toString()).build();
+    }
+
     @POST
     @Path("/{ruleSet}/rule/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -372,7 +402,7 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/bin/{binLabel}/distinct")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findDistinctPropertiesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("property") String property, @QueryParam("recent") String recent){
+    public Response findDistinctPropertiesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("property") String property, @QueryParam("r") String recent){
         Iterable<String> cases;
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);

@@ -30,6 +30,7 @@ import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.rules.Rule;
 import uk.co.revsys.resource.repository.LocalDiskResourceRepository;
 import uk.co.revsys.resource.repository.ResourceRepository;
+import uk.co.revsys.resource.repository.model.Resource;
 
 /**
  *
@@ -575,11 +576,7 @@ public class OddballTest {
     }
 
 
-
-    /**
-     * Test of assessCase method, of class Oddball.
-     */
-    @Test
+   @Test
     public void testAddRuleTwice() throws Exception {
         System.out.println("addRuleTwice");
         String ruleSetName = "Test2.txt";
@@ -602,5 +599,75 @@ public class OddballTest {
         int l = rules.size();
         assertTrue((l-m)==0);
     }
+
+
+   @Test
+    public void testFindRules() throws Exception {
+        System.out.println("findRules");
+        String ruleSetName = "Test2.txt";
+        Case aCase = new StringCase("b-side");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, aCase);
+        Set<Rule> rules = instance.ruleSets.get(ruleSetName).getAllRules();
+        int n = rules.size();
+        System.out.println("Rules before");
+        System.out.println(n);
+        for (Rule rule : rules){
+            System.out.println(rule.toString());
+        }
+        instance.addExtraRule(ruleSetName, "initial.", "b-rule", "b-.*", "added");
+        instance.addExtraRule(ruleSetName, "initial.", "B-rule", "B-.*", "added");
+        instance.addExtraRule(ruleSetName, "terminal.", "rule-B", ".*-B", "added");
+        instance.addExtraRule(ruleSetName, "initial.", "bb-rule", "bb-.*", "inserted");
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("prefix", "initial");
+        options.put("source", "added");
+        Iterable<String> foundRules = instance.findRules(ruleSetName, options);
+        int count = 0;
+        for (String foundRule : foundRules){
+            count++;
+            System.out.println("found: "+foundRule);
+        }
+        assertTrue(count==2);
+            
+    }
+
+
+   @Test
+    public void testSaveRules() throws Exception {
+        System.out.println("findRules");
+        String ruleSetName = "Test4.txt";
+        Case aCase = new StringCase("b-side");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, aCase);
+        Set<Rule> rules = instance.ruleSets.get(ruleSetName).getAllRules();
+        int n = rules.size();
+        System.out.println("Rules before");
+        System.out.println(n);
+        for (Rule rule : rules){
+            System.out.println(rule.toString());
+        }
+        instance.addExtraRule(ruleSetName, "initial.", "b-rule", "b-.*", "added");
+        instance.addExtraRule(ruleSetName, "initial.", "B-rule", "B-.*", "added");
+        instance.addExtraRule(ruleSetName, "terminal.", "rule-B", ".*-B", "added");
+        instance.addExtraRule(ruleSetName, "initial.", "bb-rule", "bb-.*", "inserted");
+        instance.addExtraRule(ruleSetName, "", "bb-rule", "aabb-.*", "added");
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("prefix", null);
+        options.put("source", "added");
+        Iterable<String> foundRules = instance.saveRules(ruleSetName, options);
+        int count = 0;
+        for (String foundRule : foundRules){
+            count++;
+            System.out.println("found: "+foundRule);
+        }
+        instance.resourceRepository.delete(new Resource("", "Test4.txt.ALL.added"));
+        assertTrue(count==4);
+        
+            
+    }
+
+
+
 
 }
