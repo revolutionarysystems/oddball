@@ -1,6 +1,7 @@
 package uk.co.revsys.oddball.service.rest;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -42,13 +43,16 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/case/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCases(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
-        Iterable<String> cases;
+    public Response findCases(@PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
+        ArrayList<String> cases= new ArrayList<String>();
         try {
-            cases = oddball.findCases(ruleSet, options);
+            String[] ruleSetNames = ruleSets.split(",");
+            for (String ruleSet : ruleSetNames){
+                cases.addAll(oddball.findCases(ruleSet.trim(), options));
+            }
         } catch (RuleSetNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (TransformerNotLoadedException ex) {
@@ -160,13 +164,16 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/sessionId/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findDistinctSessionId(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("recent") String recent, @QueryParam("transformer") String transformer){
-        Iterable<String> cases;
+    public Response findDistinctSessionId(@PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("recent") String recent, @QueryParam("transformer") String transformer){
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
+        ArrayList<String> cases= new ArrayList<String>();
         try {
-            cases = oddball.findDistinct(ruleSet, "case.sessionId", recent, options);
+            String[] ruleSetNames = ruleSets.split(",");
+            for (String ruleSet : ruleSetNames){
+                cases.addAll(oddball.findDistinct(ruleSet, "case.sessionId", recent, options));
+            }
         } catch (RuleSetNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (DaoException ex) {
@@ -189,13 +196,16 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/sessionId/{sessionId}/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCasesForSession(@PathParam("sessionId") String sessionId, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
+    public Response findCasesForSession(@PathParam("sessionId") String sessionId, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
-        Iterable<String> cases;
+        ArrayList<String> cases= new ArrayList<String>();
         try {
-            cases = oddball.findQueryCases(ruleSet, "{ \"case.sessionId\" : \""+sessionId+"\" }", options);
+            String[] ruleSetNames = ruleSets.split(",");
+            for (String ruleSet : ruleSetNames){
+                cases.addAll(oddball.findQueryCases(ruleSet, "{ \"case.sessionId\" : \""+sessionId+"\" }", options));
+            }
         } catch (RuleSetNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (TransformerNotLoadedException ex) {
@@ -238,13 +248,16 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/userId/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findDistinctUserId(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("recent") String recent, @QueryParam("transformer") String transformer){
-        Iterable<String> cases;
+    public Response findDistinctUserId(@PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("recent") String recent, @QueryParam("transformer") String transformer){
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
+        ArrayList<String> cases= new ArrayList<String>();
         try {
-            cases = oddball.findDistinct(ruleSet, "case.userId",recent, options);
+            String[] ruleSetNames = ruleSets.split(",");
+            for (String ruleSet : ruleSetNames){
+                cases.addAll(oddball.findDistinct(ruleSet, "case.userId",recent, options));
+            }
         } catch (RuleSetNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (IOException ex) {
@@ -267,13 +280,16 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/userId/{userId}/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCasesForUser(@PathParam("userId") String userId, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
-        Iterable<String> cases;
+    public Response findCasesForUser(@PathParam("userId") String userId, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
+        ArrayList<String> cases= new ArrayList<String>();
         try {
-            cases = oddball.findQueryCases(ruleSet, "{ \"case.userId\" : \""+userId+"\" }", options);
+            String[] ruleSetNames = ruleSets.split(",");
+            for (String ruleSet : ruleSetNames){
+                cases.addAll(oddball.findQueryCases(ruleSet, "{ \"case.userId\" : \""+userId+"\" }", options));
+            }
         } catch (RuleSetNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (TransformerNotLoadedException ex) {
@@ -316,13 +332,16 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/query/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCasesForQuery(@QueryParam("query") String query, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
-        Iterable<String> cases;
+    public Response findCasesForQuery(@QueryParam("query") String query, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
+        ArrayList<String> cases= new ArrayList<String>();
         try {
-            cases = oddball.findQueryCases(ruleSet, query, options);
+            String[] ruleSetNames = ruleSets.split(",");
+            for (String ruleSet : ruleSetNames){
+                cases.addAll(oddball.findQueryCases(ruleSet, query, options));
+            }
         } catch (RuleSetNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (TransformerNotLoadedException ex) {
@@ -368,13 +387,16 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/bin/{binLabel}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCasesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
-        Iterable<String> cases;
+    public Response findCasesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
+        ArrayList<String> cases= new ArrayList<String>();
         try {
-            cases = oddball.findCasesInBin(ruleSet, binLabel, options);
+            String[] ruleSetNames = ruleSets.split(",");
+            for (String ruleSet : ruleSetNames){
+                cases.addAll(oddball.findCasesInBin(ruleSet, binLabel, options));
+            }
         } catch (UnknownBinException ex) {
             return buildErrorResponse(ex);
         } catch (RuleSetNotLoadedException ex) {
@@ -402,14 +424,17 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/bin/{binLabel}/distinct")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findDistinctPropertiesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("property") String property, @QueryParam("r") String recent){
-        Iterable<String> cases;
+    public Response findDistinctPropertiesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("property") String property, @QueryParam("r") String recent){
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("property", property);
         options.put("recent", recent);
+        ArrayList<String> cases= new ArrayList<String>();
         try {
-            cases = oddball.findDistinctPropertyInBin(ruleSet, binLabel, options);
+            String[] ruleSetNames = ruleSets.split(",");
+            for (String ruleSet : ruleSetNames){
+                cases.addAll(oddball.findDistinctPropertyInBin(ruleSet, binLabel, options));
+            }
         } catch (UnknownBinException ex) {
             return buildErrorResponse(ex);
         } catch (RuleSetNotLoadedException ex) {
