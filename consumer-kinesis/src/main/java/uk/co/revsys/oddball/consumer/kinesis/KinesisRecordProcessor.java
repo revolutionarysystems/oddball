@@ -72,6 +72,20 @@ public class KinesisRecordProcessor implements IRecordProcessor {
 
     }
 
+    private String extractProperty(String propertyName, String caseString){
+        String quotedName = "\""+propertyName+"\"";
+        int location = caseString.indexOf(quotedName);
+        String a = caseString.substring(location+quotedName.length());
+        String b = a.substring(a.indexOf("\"")+1);
+        String c = b.substring(0, b.indexOf("\""));
+        return c;
+    }
+
+    private String extractPropertyName(String ruleString){
+        return ruleString.substring(ruleString.indexOf("{")+1, ruleString.indexOf("}"));
+    }
+    
+    
     private void processRecordsWithRetries(List<Record> records) {
         for (Record record : records) {
             boolean processedSuccessfully = false;
@@ -88,8 +102,20 @@ public class KinesisRecordProcessor implements IRecordProcessor {
                     } else {
                         LOG.debug("Rule sets found for " + partitionKey+" = "+recordRuleSets);
                         for(String ruleSet: recordRuleSets){
-                            LOG.debug("Assessing " + ruleSet);
-                            oddball.assessCase(ruleSet, new StringCase(data));
+                            if (ruleSet.indexOf("{")>=0){
+                                String placeholder = extractPropertyName(ruleSet);
+                                String replacement = extractProperty(placeholder,data);
+                                ruleSet = ruleSet.replace("{"+placeholder+"}", replacement);
+                                LOG.debug("Assessing " + ruleSet);
+                                try {
+                                    oddball.assessCase(ruleSet, new StringCase(data));
+                                } catch (Throwable t) {
+                                    LOG.warn("Caught throwable attempting ruleSet: "+ruleSet);
+                                }
+                            } else {
+                                LOG.debug("Assessing " + ruleSet);
+                                oddball.assessCase(ruleSet, new StringCase(data));
+                            }
                         }
                         processedSuccessfully = true;
                     }
