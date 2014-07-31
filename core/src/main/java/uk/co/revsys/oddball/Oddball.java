@@ -100,7 +100,7 @@ public class Oddball {
         return ruleSet;
     }
     
-    public Iterable<String> findRules(String ruleSetName, Map<String, String> options) throws RuleSetNotLoadedException, IOException {
+    public Collection<String> findRules(String ruleSetName, Map<String, String> options) throws RuleSetNotLoadedException, IOException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         Set<Rule> rules = ruleSet.getAllRules();
         ArrayList<String> response = new ArrayList<String>();
@@ -123,7 +123,7 @@ public class Oddball {
         
     }
 
-    public Iterable<String> saveRules(String ruleSetName, Map<String, String> options) throws RuleSetNotLoadedException, IOException {
+    public Collection<String> saveRules(String ruleSetName, Map<String, String> options) throws RuleSetNotLoadedException, IOException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         Set<Rule> rules = ruleSet.getAllRules();
         ArrayList<String> response = new ArrayList<String>();
@@ -176,7 +176,7 @@ public class Oddball {
     
     
         
-public BinSet loadBinSet(String binSetName, ResourceRepository resourceRepository) throws BinSetNotLoadedException {
+    public BinSet loadBinSet(String binSetName, ResourceRepository resourceRepository) throws BinSetNotLoadedException {
         return BinSetImpl.loadBinSet(binSetName, resourceRepository);
     }
 
@@ -212,7 +212,7 @@ public BinSet loadBinSet(String binSetName, ResourceRepository resourceRepositor
         }
     }
 
-    private Iterable<String> transformResults(Iterable<String> results, String transformerName) throws TransformerNotLoadedException{
+    private Collection<String> transformResults(Iterable<String> results, String transformerName) throws TransformerNotLoadedException{
         ArrayList<String> transformed = new ArrayList<String>();
         String transformStr = getTransformer(transformerName, resourceRepository);
         JSONTransformer transformer = new JSONTransformer();
@@ -230,29 +230,38 @@ public BinSet loadBinSet(String binSetName, ResourceRepository resourceRepositor
         return transformer.transform(result, transformStr, params);
     }
     
-    public Iterable<String> findCases(String ruleSetName, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, TransformerNotLoadedException {
+    private String getDefaultedTransformer(String ruleSetName, Map<String, String> options){
+        String transformerStr = options.get("transformer");
+        if (transformerStr!=null && transformerStr.equals("default")){
+            return ruleSetName+".default.json";
+        } else {
+            return transformerStr;
+        }
+    }
+    
+    public Collection<String> findCases(String ruleSetName, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, TransformerNotLoadedException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.ALL;
         if (options.get("owner")!=null){
             owner = options.get("owner");
         }
-        Iterable<String> result = ruleSet.getPersist().findCasesForOwner(owner);
+        Collection<String> result = ruleSet.getPersist().findCasesForOwner(owner);
         if (options.get("transformer")!=null){
-            return transformResults(result, options.get("transformer"));
+            return transformResults(result, getDefaultedTransformer(ruleSetName, options));
         } else {
             return result;
         }
     }
 
-    public Iterable<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, TransformerNotLoadedException{
+    public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, TransformerNotLoadedException{
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.ALL;
         if (options.get("owner")!=null){
             owner = options.get("owner");
         }
-        Iterable<String> result = ruleSet.getPersist().findCasesForOwner(owner, query);
+        Collection<String> result = ruleSet.getPersist().findCasesForOwner(owner, query);
         if (options.get("transformer")!=null){
-            return transformResults(result, options.get("transformer"));
+            return transformResults(result,  getDefaultedTransformer(ruleSetName, options));
         } else {
             return result;
         }
@@ -266,13 +275,13 @@ public BinSet loadBinSet(String binSetName, ResourceRepository resourceRepositor
         }
         String result = ruleSet.getPersist().findLatestCaseForOwner(owner, query);
         if (options.get("transformer")!=null){
-            return transformResult(result, options.get("transformer"));
+            return transformResult(result,  getDefaultedTransformer(ruleSetName, options));
         } else {
             return result;
         }
     }
 
-    public Iterable<String> findDistinct(String ruleSetName, String field, String recent, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, IOException {
+    public Collection<String> findDistinct(String ruleSetName, String field, String recent, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, IOException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.ALL;
         if (options.get("owner")!=null){
@@ -281,7 +290,7 @@ public BinSet loadBinSet(String binSetName, ResourceRepository resourceRepositor
         return ruleSet.getPersist().findDistinctQuery(owner, "{}", field, recent);
     }
 
-    public Iterable<String> findCasesInBin(String ruleSetName, String binLabel, Map<String, String> options) throws UnknownBinException, RuleSetNotLoadedException, DaoException, BinSetNotLoadedException, TransformerNotLoadedException {
+    public Collection<String> findCasesInBin(String ruleSetName, String binLabel, Map<String, String> options) throws UnknownBinException, RuleSetNotLoadedException, DaoException, BinSetNotLoadedException, TransformerNotLoadedException {
         String binQuery = null;
         String owner = Oddball.ALL;
         if (options.get("owner")!=null){
@@ -299,7 +308,7 @@ public BinSet loadBinSet(String binSetName, ResourceRepository resourceRepositor
         return findQueryCases(ruleSetName, binQuery, options);
     }
 
-    public Iterable<String> findDistinctPropertyInBin(String ruleSetName, String binLabel, Map<String, String> options) throws UnknownBinException, RuleSetNotLoadedException, DaoException, BinSetNotLoadedException, TransformerNotLoadedException, IOException {
+    public Collection<String> findDistinctPropertyInBin(String ruleSetName, String binLabel, Map<String, String> options) throws UnknownBinException, RuleSetNotLoadedException, DaoException, BinSetNotLoadedException, TransformerNotLoadedException, IOException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String binQuery = null;
         String owner = Oddball.ALL;

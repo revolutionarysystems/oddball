@@ -12,6 +12,7 @@ import com.mongodb.WriteResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.jongo.Find;
@@ -64,6 +65,7 @@ public class MongoDBHelper {
     }
 
     public boolean testCase(String query, String caseId) {
+        
         String queryMod = "{ \"_id\" : \"" + caseId + "\", " + query.substring(1);
         FindOne found = cases.findOne(queryMod);
         return found.as(Map.class) != null;
@@ -79,7 +81,7 @@ public class MongoDBHelper {
         return found.as(Map.class);
     }
 
-    public Iterable<String> findCasesForOwner(String owner) throws DaoException {
+    public Collection<String> findCasesForOwner(String owner) throws DaoException {
         try {
             String query = "{}";
             if (!owner.equals(Oddball.ALL)) {
@@ -105,7 +107,7 @@ public class MongoDBHelper {
         }
     }
 
-    public Iterable<String> findCasesForOwner(String owner, String query) throws DaoException {
+    public Collection<String> findCasesForOwner(String owner, String query) throws DaoException {
         try {
             if (!owner.equals(Oddball.ALL)) {
                 StringBuilder modQuery = new StringBuilder("{\"case." + OWNERPROPERTY + "\":\"" + owner + "\", ");
@@ -162,7 +164,7 @@ public class MongoDBHelper {
     }
 
 
-    public Iterable<String> findDistinctQuery(String owner, String queryString, String field, String recent) throws DaoException, IOException {
+    public Collection<String> findDistinctQuery(String owner, String queryString, String field, String recent) throws DaoException, IOException {
         BasicDBObject query = new BasicDBObject(JSONUtil.json2map(queryString));
         if (!owner.equals(Oddball.ALL)) {
             query = new BasicDBObject("case." + OWNERPROPERTY, owner);

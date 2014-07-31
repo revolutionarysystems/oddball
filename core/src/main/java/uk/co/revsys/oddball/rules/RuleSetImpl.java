@@ -198,7 +198,7 @@ public class RuleSetImpl implements RuleSet{
         String prefix = "";
         for (String rule : rules){
             String trimRule = rule.trim();
-            if ((trimRule.indexOf("#")!=0)&&(!trimRule.equals(""))){
+            if ((trimRule.indexOf("#")!=0)&&(trimRule.indexOf("$")!=0)&&(!trimRule.equals(""))){
                 if (Pattern.matches("\\[.*\\]", trimRule)){
                     prefix = trimRule.substring(1, trimRule.length()-1)+".";
                     if (prefix.equals("other.")){  // prefix heading "[other]" counts as no prefix at all
@@ -231,7 +231,7 @@ public class RuleSetImpl implements RuleSet{
             List<Resource> resources = resourceRepository.listResources(".");
             List<String> rules = new ArrayList<String>();
             for (Resource resource : resources){
-                if (resource.getName().indexOf(ruleSetName)==0){
+                if ((resource.getName().indexOf(ruleSetName)==0) &&(resource.getName().indexOf(".json")==-1)){
 //                    Resource resource = new Resource("", ruleSetName);
                     InputStream inputStream = resourceRepository.read(resource);
                     rules.addAll(IOUtils.readLines(inputStream));
