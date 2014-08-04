@@ -12,6 +12,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.Oddball;
@@ -629,7 +630,11 @@ public class OddballRestService extends AbstractRestService {
     }
     
     private String getAccount(){
-        User user = SecurityUtils.getSubject().getPrincipals().oneByType(User.class);
+        Subject subject = SecurityUtils.getSubject();
+        if(!subject.isAuthenticated()){
+            return null;
+        }
+        User user = subject.getPrincipals().oneByType(User.class);
         if(user!=null){
             return user.getAccount();
         }
