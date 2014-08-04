@@ -150,7 +150,11 @@ public class OddballRestService extends AbstractRestService {
     @POST
     @Path("/{ruleSet}/rule/")
     @Produces(MediaType.APPLICATION_JSON)
+
     public Response insertRule(@PathParam("ruleSet") String ruleSet, @QueryParam("label") String label, @QueryParam("prefix") String prefix, @QueryParam("rule") String ruleString){
+
+
+
         if(!authorisationHandler.isAdministrator()){
             return Response.status(Response.Status.FORBIDDEN).build();
         }
@@ -478,7 +482,11 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/bin/{binLabel}/distinct")
     @Produces(MediaType.APPLICATION_JSON)
+
     public Response findDistinctPropertiesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("property") String property, @QueryParam("recent") String recent){
+
+
+
         owner = getOwner(owner);
         if(owner == null){
             return Response.status(Response.Status.FORBIDDEN).build();
@@ -543,7 +551,11 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/clear")
     @Produces(MediaType.TEXT_PLAIN)
+
     public Response clearRuleSet(@PathParam("ruleSet") String ruleSet){
+
+
+
         if(!authorisationHandler.isAdministrator()){
             return Response.status(Response.Status.FORBIDDEN).build();
         }
@@ -554,7 +566,11 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/reload")
     @Produces(MediaType.TEXT_PLAIN)
+
     public Response reloadRuleSet(@PathParam("ruleSet") String ruleSet){
+
+
+
         if(!authorisationHandler.isAdministrator()){
             return Response.status(Response.Status.FORBIDDEN).build();
         }
