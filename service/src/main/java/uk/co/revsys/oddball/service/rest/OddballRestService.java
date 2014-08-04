@@ -135,7 +135,7 @@ public class OddballRestService extends AbstractRestService {
     @POST
     @Path("/{ruleSet}/rule/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addExtraRule(@PathParam("ruleSet") String ruleSet, @QueryParam("label") String label, @QueryParam("prefix") String prefix, @QueryParam("rule") String ruleString){
+    public Response insertRule(@PathParam("ruleSet") String ruleSet, @QueryParam("label") String label, @QueryParam("prefix") String prefix, @QueryParam("rule") String ruleString){
         HashMap<String, String> options = new HashMap<String, String>();
         Iterable<String> rules;
         options.put("prefix", prefix);
@@ -424,7 +424,7 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/bin/{binLabel}/distinct")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findDistinctPropertiesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("property") String property, @QueryParam("r") String recent){
+    public Response findDistinctPropertiesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("property") String property, @QueryParam("recent") String recent){
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("property", property);
@@ -485,7 +485,7 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/clear")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response clearRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("case") String caseStr){
+    public Response clearRuleSet(@PathParam("ruleSet") String ruleSet){
         oddball.clearRuleSet(ruleSet);
         return Response.ok("Rule Set "+ruleSet+" cleared.").build();
     }
@@ -493,7 +493,7 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/reload")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response reloadRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("case") String caseStr){
+    public Response reloadRuleSet(@PathParam("ruleSet") String ruleSet){
         try {
             oddball.reloadRuleSet(ruleSet);
         } catch (RuleSetNotLoadedException ex) {
