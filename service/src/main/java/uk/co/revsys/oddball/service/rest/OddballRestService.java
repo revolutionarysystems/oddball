@@ -11,6 +11,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.Oddball;
@@ -22,13 +23,17 @@ import uk.co.revsys.oddball.cases.StringCase;
 import uk.co.revsys.oddball.rules.DaoException;
 import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.rules.RuleSetNotLoadedException;
+import uk.co.revsys.user.manager.model.User;
 
 @Path("/")
 public class OddballRestService extends AbstractRestService {
 
-    public OddballRestService(Oddball oddball){
+    private AuthorisationHandler authorisationHandler;
+    
+    public OddballRestService(Oddball oddball, AuthorisationHandler authorisationHandler){
         LOGGER.debug("Initialising");
         this.oddball = oddball;
+        this.authorisationHandler = authorisationHandler;
     }
 
     private final Oddball oddball;
@@ -44,6 +49,10 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/case/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findCases(@PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
+        owner = getOwner(owner);
+        if(owner == null){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
@@ -76,6 +85,9 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/rule/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response showRules(@PathParam("ruleSet") String ruleSet, @QueryParam("transformer") String transformer, @QueryParam("prefix") String prefix, @QueryParam("source") String source){
+        if(!authorisationHandler.isAdministrator()){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         Iterable<String> rules;
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("transformer", transformer);
@@ -106,6 +118,9 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/rule/save")
     @Produces(MediaType.APPLICATION_JSON)
     public Response saveRules(@PathParam("ruleSet") String ruleSet, @QueryParam("transformer") String transformer, @QueryParam("prefix") String prefix, @QueryParam("source") String source){
+        if(!authorisationHandler.isAdministrator()){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         Iterable<String> rules;
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("transformer", transformer);
@@ -136,6 +151,9 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/rule/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response insertRule(@PathParam("ruleSet") String ruleSet, @QueryParam("label") String label, @QueryParam("prefix") String prefix, @QueryParam("rule") String ruleString){
+        if(!authorisationHandler.isAdministrator()){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         HashMap<String, String> options = new HashMap<String, String>();
         Iterable<String> rules;
         options.put("prefix", prefix);
@@ -165,6 +183,10 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/sessionId/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findDistinctSessionId(@PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("recent") String recent, @QueryParam("transformer") String transformer){
+        owner = getOwner(owner);
+        if(owner == null){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
@@ -197,6 +219,10 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/sessionId/{sessionId}/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findCasesForSession(@PathParam("sessionId") String sessionId, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
+        owner = getOwner(owner);
+        if(owner == null){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
@@ -229,6 +255,10 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/sessionId/{sessionId}/latest")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findLatestCaseForSession(@PathParam("sessionId") String sessionId, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
+        owner = getOwner(owner);
+        if(owner == null){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
@@ -249,6 +279,10 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/userId/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findDistinctUserId(@PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("recent") String recent, @QueryParam("transformer") String transformer){
+        owner = getOwner(owner);
+        if(owner == null){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
@@ -281,6 +315,10 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/userId/{userId}/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findCasesForUser(@PathParam("userId") String userId, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
+        owner = getOwner(owner);
+        if(owner == null){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
@@ -313,6 +351,10 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/userId/{userId}/latest")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findLatestCaseForUser(@PathParam("userId") String userId, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
+        owner = getOwner(owner);
+        if(owner == null){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         String caseStr;
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
@@ -333,6 +375,10 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/query/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findCasesForQuery(@QueryParam("query") String query, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
+        owner = getOwner(owner);
+        if(owner == null){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
@@ -365,6 +411,10 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/bin/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findDistinctBins(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner){
+        owner = getOwner(owner);
+        if(owner == null){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         Iterable<String> binLabels; 
         try {
             binLabels = oddball.listBinLabels(owner);
@@ -388,6 +438,10 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/bin/{binLabel}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findCasesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
+        owner = getOwner(owner);
+        if(owner == null){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
@@ -425,6 +479,10 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/bin/{binLabel}/distinct")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findDistinctPropertiesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("property") String property, @QueryParam("recent") String recent){
+        owner = getOwner(owner);
+        if(owner == null){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("property", property);
@@ -486,6 +544,9 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/clear")
     @Produces(MediaType.TEXT_PLAIN)
     public Response clearRuleSet(@PathParam("ruleSet") String ruleSet){
+        if(!authorisationHandler.isAdministrator()){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         oddball.clearRuleSet(ruleSet);
         return Response.ok("Rule Set "+ruleSet+" cleared.").build();
     }
@@ -494,6 +555,9 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/reload")
     @Produces(MediaType.TEXT_PLAIN)
     public Response reloadRuleSet(@PathParam("ruleSet") String ruleSet){
+        if(!authorisationHandler.isAdministrator()){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         try {
             oddball.reloadRuleSet(ruleSet);
         } catch (RuleSetNotLoadedException ex) {
@@ -506,6 +570,9 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/bin/reload")
     @Produces(MediaType.TEXT_PLAIN)
     public Response reloadBinSet(@PathParam("ruleSet") String ruleSet, @QueryParam("case") String caseStr){
+        if(!authorisationHandler.isAdministrator()){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         try {
             oddball.reloadBinSet();
         } catch (BinSetNotLoadedException ex) {
@@ -518,8 +585,39 @@ public class OddballRestService extends AbstractRestService {
     @Path("/transformer/clear")
     @Produces(MediaType.TEXT_PLAIN)
     public Response clearTransformers(){
+        if(!authorisationHandler.isAdministrator()){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         oddball.clearTransformers();
         return Response.ok("Transformers cleared.").build();
+    }
+    
+    private String getOwner(String ownerParam){
+        if(authorisationHandler.isAdministrator()){
+            if(ownerParam == null){
+                String owner = getAccount();
+                if(owner == null){
+                    return "_all";
+                }
+                return owner;
+            }else{
+                return ownerParam;
+            }
+        }else{
+            String owner = getAccount();
+            if(owner == null){
+                return null;
+            }
+            return owner;
+        }
+    }
+    
+    private String getAccount(){
+        User user = SecurityUtils.getSubject().getPrincipals().oneByType(User.class);
+        if(user!=null){
+            return user.getAccount();
+        }
+        return null;
     }
 
     static final Logger RESULTSLOGGER = LoggerFactory.getLogger("oddball-results");

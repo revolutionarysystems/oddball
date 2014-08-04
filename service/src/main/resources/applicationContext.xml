@@ -10,6 +10,8 @@
 
     <context:annotation-config/>
     
+    <import resource="securityContext.xml"/>
+    
     <import resource="classpath:applicationContext-worker.xml"/>
 	
     <bean class="org.apache.wink.spring.Registrar">
@@ -20,9 +22,29 @@
             <set>
                 <bean class="uk.co.revsys.oddball.service.rest.OddballRestService">
                     <constructor-arg index="0" ref="oddball"/>
+                    <constructor-arg index="1" ref="authorisationHandler"/>
                 </bean>
             </set>
         </property>
+    </bean>
+    
+    <bean id="authorisationHandlers" class="java.util.HashMap">
+        <constructor-arg index="0">
+            <map key-type="java.lang.String" value-type="uk.co.revsys.oddball.service.rest.AuthorisationHandler">
+                <entry key="none" value-ref="allowAllAuthorisationHandler"/>
+                <entry key="default" value-ref="defaultAuthorisationHandler"/>
+            </map>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="authorisationHandler" factory-bean="authorisationHandlers" factory-method="get">
+        <constructor-arg index="0" value="${security}"/>
+    </bean>
+    
+    <bean id="allowAllAuthorisationHandler" class="uk.co.revsys.oddball.service.rest.AllowAllAuthorisationHandler"/>
+    
+    <bean id="defaultAuthorisationHandler" class="uk.co.revsys.oddball.service.rest.AuthorisationHandlerImpl">
+        <constructor-arg index="0" value="${security.administrator.role}"/>
     </bean>
 
 </beans>
