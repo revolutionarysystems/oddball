@@ -230,12 +230,17 @@ public class RuleSetImpl implements RuleSet{
         try{
             List<Resource> resources = resourceRepository.listResources(".");
             List<String> rules = new ArrayList<String>();
+            boolean rulesetFound = false;
             for (Resource resource : resources){
                 if ((resource.getName().indexOf(ruleSetName)==0) &&(resource.getName().indexOf(".json")==-1)){
+                    rulesetFound = true;
 //                    Resource resource = new Resource("", ruleSetName);
                     InputStream inputStream = resourceRepository.read(resource);
                     rules.addAll(IOUtils.readLines(inputStream));
                 }
+            }
+            if(!rulesetFound){
+                throw new RuleSetNotLoadedException(ruleSetName);
             }
             return rules;
         }
