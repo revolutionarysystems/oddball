@@ -15,7 +15,7 @@
         <route>
             <from uri="direct-vm://esb.service.oddball.proxy"/>
             <recipientList>
-				<simple>{{service.endpoint}}?bridgeEndpoint=true&amp;throwExceptionOnFailure=false</simple>
+				<simple>{{service.endpoint}}?bridgeEndpoint=true&amp;throwExceptionOnFailure=true</simple>
 			</recipientList>
         </route>
         
