@@ -20,12 +20,7 @@ import uk.co.revsys.oddball.util.JSONUtil;
 public class MapCase implements Case{
 
     public MapCase(String content) throws InvalidCaseException{
-        this.content = content;
-        try {
-            mapContent = JSONUtil.json2map(content);
-        } catch (IOException ex) {
-            throw new InvalidCaseException("Invalid Map Case", ex);
-        }
+        setContent(content);
     }
     
     private String content;
@@ -39,8 +34,13 @@ public class MapCase implements Case{
         return content;
     }
     
-    public void setContent(String content) {
+    public void setContent(String content)  throws InvalidCaseException{
         this.content = content;
+        try {
+            mapContent = JSONUtil.json2map(content);
+        } catch (IOException ex) {
+            throw new InvalidCaseException("Invalid Map Case -"+content, ex);
+        }
     }
     
     @Override

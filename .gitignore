@@ -10,3 +10,4 @@
 /service - Copy/target/
 /worker/target/
 /client-osgi/target
+/camel/target/

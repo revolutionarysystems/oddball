@@ -13,6 +13,7 @@ package uk.co.revsys.oddball.cases;
 public interface Case {
 
     public String getContent();
+    public void setContent(String content) throws InvalidCaseException;
     public String getJSONisedContent();
     
 }

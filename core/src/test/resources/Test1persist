@@ -1,0 +1,5 @@
+$ruleType:regex,localhost,27017
+string:.*
+aString:a.*
+allas:a*
+abc-ish:abc.*

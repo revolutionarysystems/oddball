@@ -1,0 +1,10 @@
+$ruleType:mongo
+[state]
+stateA:{"browser":"firefox"}
+stateB:{"browser":"chrome"}
+stateC:{"browser":"IE"}
+
+[code]
+A:{"browser":"firefox"}
+B:{"browser":"chrome"}
+C:{"browser":"IE"}

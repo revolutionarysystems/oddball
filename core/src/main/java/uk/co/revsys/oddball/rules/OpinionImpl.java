@@ -38,10 +38,10 @@ public class OpinionImpl implements Opinion{
         for (String tag : tags){
             tagStr.append("\""+tag+"\", ");
         }
-        if (tagStr.length()>2){
+        if (tagStr.length()>12){
             tagStr.delete(tagStr.length()-2, tagStr.length());
         }
-        tagStr.append(" ] }");
+        tagStr.append("] }");
         return tagStr.toString();
     }
 
@@ -73,7 +73,7 @@ public class OpinionImpl implements Opinion{
         }
         String timeStr = Long.toString(assessTime);
         StringBuilder enrichedCase =  new StringBuilder("{");
-        enrichedCase.append("\"timeStamp\" : \"" + timeStr + "\", ");
+        enrichedCase.append("\"timestamp\" : \"" + timeStr + "\", ");
         enrichedCase.append("\"ruleSet\" : \"" + ruleSet + "\", ");
         enrichedCase.append("\"case\" : " + caseStr + ", ");
         enrichedCase.append(tags.substring(1, tags.length() - 1)+ ", ");
@@ -90,10 +90,10 @@ public class OpinionImpl implements Opinion{
             assessTime=new Date().getTime();
         }
         String timeStr = Long.toString(assessTime);
-//        String enrichedCase =  "{ \"timeStamp\" : \"" + timeStr + "\", " + "\"ruleSet\" : \"" + ruleSet + "\", " + "\"case\" : " + caseStr + ", " + tags.substring(1, tags.length() - 1)+" }";
+//        String enrichedCase =  "{ \"timestamp\" : \"" + timeStr + "\", " + "\"ruleSet\" : \"" + ruleSet + "\", " + "\"case\" : " + caseStr + ", " + tags.substring(1, tags.length() - 1)+" }";
 //        return enrichedCase;
         StringBuilder enrichedCase =  new StringBuilder("{");
-        enrichedCase.append("\"timeStamp\" : \"" + timeStr + "\", ");
+        enrichedCase.append("\"timestamp\" : \"" + timeStr + "\", ");
         enrichedCase.append("\"ruleSet\" : \"" + ruleSet + "\", ");
         enrichedCase.append("\"case\" : " + caseStr + ", ");
         enrichedCase.append(tags.substring(1, tags.length() - 1)+ ", ");

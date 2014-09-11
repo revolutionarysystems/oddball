@@ -8,13 +8,18 @@ package uk.co.revsys.oddball.rules;
 import com.github.fakemongo.Fongo;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
+import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import org.bson.LazyBSONObject;
+import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.FindOne;
 import org.jongo.Jongo;
@@ -33,8 +38,8 @@ public class MongoDBHelper {
     private MongoCollection cases;
     private DB db;
 
-    public MongoDBHelper(String dbName) {
-        db = new Fongo("Test").getDB(dbName);
+    public MongoDBHelper(String dbName, boolean inMemory, String host, int port) throws UnknownHostException {
+        db = new MongoDBFactory().getDBInstance(dbName, inMemory, host, port);
         Jongo jongo = new Jongo(db);
         cases = jongo.getCollection("cases");
     }
@@ -43,6 +48,10 @@ public class MongoDBHelper {
         return db.getName();
     }
 
+    public void dropCases(){
+        cases.drop();
+    }
+    
     public String insertCase(String content) {
         // jongo interprets # as parameter.
         content = content.replace("#", "(hash)");
@@ -60,13 +69,25 @@ public class MongoDBHelper {
         return (String) found.as(Map.class).get("_id").toString();
     }
 
+    public String checkAlreadyExists(String duplicateQuery){
+        System.out.println(duplicateQuery);
+        FindOne found = cases.findOne(duplicateQuery);
+        if (found.as(Map.class)==null){
+            return null;
+        } else {
+            return (String) found.as(Map.class).get("_id").toString();
+        }
+    }
+    
     public void removeCase(String caseId) {
-        cases.remove("{ \"_id\": \"" + caseId + "\" }");
+//        cases.remove("{ \"_id\": \"" + caseId + "\" }");
+        cases.remove("{_id: #}", new ObjectId(caseId));
+
     }
 
     public boolean testCase(String query, String caseId) {
-        
         String queryMod = "{ \"_id\" : \"" + caseId + "\", " + query.substring(1);
+        LOGGER.debug(queryMod);
         FindOne found = cases.findOne(queryMod);
         return found.as(Map.class) != null;
     }
@@ -108,7 +129,7 @@ public class MongoDBHelper {
     }
 
     public Collection<String> findCasesForOwner(String owner, String query) throws DaoException {
-        try {
+//        try {
             if (!owner.equals(Oddball.ALL)) {
                 StringBuilder modQuery = new StringBuilder("{\"case." + OWNERPROPERTY + "\":\"" + owner + "\", ");
                 modQuery.append(query.substring(1));
@@ -127,65 +148,104 @@ public class MongoDBHelper {
                 caseList.add(json);
             }
             return caseList;
-        } catch (IOException ex) {
-            throw new DaoException("Unable to find cases for owner " + owner, ex);
-        }
+//        } catch (IOException ex) {
+//            throw new DaoException("Unable to find cases for owner " + owner, ex);
+//        }
     }
 
-    public String findLatestCaseForOwner(String owner, String query) throws DaoException {
-        try {
-            if (!owner.equals(Oddball.ALL)) {
-                StringBuilder modQuery = new StringBuilder("{\"case." + OWNERPROPERTY + "\":\"" + owner + "\", ");
-                modQuery.append(query.substring(1));
-                query = modQuery.toString();
-            }
-            Find found = cases.find(query);
+    public Collection<String> findCaseById(String owner, String id) throws DaoException {
+//        try {
+            Find found = cases.find("{_id: #}", new ObjectId(id));
             Iterable<Map> foundCases = found.as(Map.class);
             ArrayList<String> caseList = new ArrayList<String>();
-            long latestTimestamp = 0;
-            Map caseMap = null;
             for (Map foundCase : foundCases) {
-                long timestamp = Long.parseLong((String)foundCase.get("timeStamp"));
-                if (timestamp > latestTimestamp){
-                    caseMap = foundCase;
-                    latestTimestamp = timestamp;
+                String json = JSONUtil.map2json(foundCase);
+                if (json.contains(":  }")) {
+                    LOGGER.warn("Reading bad json object");
+                    LOGGER.warn(json);
+                    json = json.replace(":  }", ": {}");
                 }
+                caseList.add(json);
             }
-            String json = JSONUtil.map2json(caseMap);
-            if (json.contains(":  }")) {
-                LOGGER.warn("Reading bad json object");
-                LOGGER.warn(json);
-                json = json.replace(":  }", ": {}");
-            }
-            return json;
+            return caseList;
+//        } catch (IOException ex) {
+//            throw new DaoException("Unable to find cases for owner " + owner, ex);
+//        }
+    }
+
+    public Collection<String> deleteCaseById(String owner, String id) throws DaoException {
+        cases.remove("{_id: #}", new ObjectId(id));
+        String response = "case removed";
+        ArrayList<String> caseList = new ArrayList<String>();
+        caseList.add(response);
+        return caseList;
+    }
+
+   public String findLatestCaseForOwner(String owner, String queryString, String recent, String since) throws DaoException {
+        try {
+            Collection<String> result = findLatestQuery(owner, queryString, "timestamp", recent, since);
+            return result.iterator().next();
+        } catch (NoSuchElementException ex) {
+            return "{ }";
         } catch (IOException ex) {
             throw new DaoException("Unable to find cases for owner " + owner, ex);
         }
-    }
+   }
 
-
-    public Collection<String> findDistinctQuery(String owner, String queryString, String field, String recent) throws DaoException, IOException {
-        BasicDBObject query = new BasicDBObject(JSONUtil.json2map(queryString));
-        if (!owner.equals(Oddball.ALL)) {
-            query = new BasicDBObject("case." + OWNERPROPERTY, owner);
-        }
-        if (recent != null) {
+    private void addRecentQuery(BasicDBObject query, String recent){
             int minutes = Integer.parseInt(recent);
             long millis = minutes * 60 * 1000;
             long now = Calendar.getInstance().getTimeInMillis();
             long cutoff = now - millis;
             BasicDBObject subQuery = new BasicDBObject("$gt", Long.toString(cutoff));
-            query.append("timeStamp", subQuery);
+            query.append("timestamp", subQuery);
+    }
+   
+    private void addSinceQuery(BasicDBObject query, String since){
+            long cutoff = Long.parseLong(since);
+            BasicDBObject subQuery = new BasicDBObject("$gt", Long.toString(cutoff));
+            query.append("timestamp", subQuery);
+    }
+   
+    public Collection<String> findDistinctQuery(String owner, String queryString, String field, String recent, String since) throws DaoException, IOException {
+        BasicDBObject query = new BasicDBObject(JSONUtil.json2map(queryString));
+        if (!owner.equals(Oddball.ALL)) {
+            //query = new BasicDBObject("case." + OWNERPROPERTY, owner);
+            query.append("case." + OWNERPROPERTY, owner);
         }
-        System.out.println("findDistinctQuery:");
-        System.out.println(field);
-        System.out.println(query);
+        if (recent != null) {
+            addRecentQuery(query, recent);
+        }
+        if (since != null) {
+            addSinceQuery(query, since);
+        }
         List foundCases = cases.getDBCollection().distinct(field, query);
-        //Iterable<String> foundCases = found.as(String.class);
-
         ArrayList<String> caseList = new ArrayList<String>();
         for (Object foundCase : foundCases) {
             caseList.add("\"" + foundCase.toString() + "\"");
+        }
+        return caseList;
+    }
+
+    public Collection<String> findLatestQuery(String owner, String queryString, String field, String recent, String since) throws DaoException, IOException {
+        BasicDBObject query = new BasicDBObject(JSONUtil.json2map(queryString));
+        BasicDBObject sort = new BasicDBObject(field, -1);
+        if (!owner.equals(Oddball.ALL)) {
+            //query = new BasicDBObject("case." + OWNERPROPERTY, owner);
+            query.append("case." + OWNERPROPERTY, owner);
+        }
+        if (recent != null) {
+            addRecentQuery(query, recent);
+        }
+        if (since != null) {
+            addSinceQuery(query, since);
+        }
+        List<DBObject> foundCases = cases.getDBCollection().find(query).sort(sort).limit(1).toArray();
+        ArrayList<String> caseList = new ArrayList<String>();
+        for (DBObject foundCase : foundCases) {
+            Map result = JSONUtil.json2map(foundCase.toString());
+            result.put("_id", foundCase.get("_id").toString());
+            caseList.add(JSONUtil.map2json(result));
         }
         return caseList;
     }

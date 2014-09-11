@@ -58,6 +58,7 @@ public class BinSetImpl implements BinSet {
             Resource resource = new Resource("", binSetName);
             InputStream inputStream = resourceRepository.read(resource);
             List<String> bins = IOUtils.readLines(inputStream);
+            IOUtils.closeQuietly(inputStream);
             BinSet binSet = new BinSetImpl();
             binSet.setName(binSetName);
             for (String binStr : bins) {

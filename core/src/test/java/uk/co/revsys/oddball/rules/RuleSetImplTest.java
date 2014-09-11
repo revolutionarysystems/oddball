@@ -46,9 +46,9 @@ public class RuleSetImplTest {
      * Test of addRule method, of class RuleSetImpl.
      */
     @Test
-    public void testAddRule() {
+    public void testAddRule() throws Exception{
         System.out.println("addRule");
-        RuleSetImpl instance = new RuleSetImpl("Test");
+        RuleSetImpl instance = new RuleSetImpl("Test", true, "", 0);
         instance.addRule(new RegExRule(".*", "string"));
         instance.addRule(new RegExRule("a.*", "aString"));
         Set rules = instance.getRules();
@@ -62,42 +62,32 @@ public class RuleSetImplTest {
     public void testAssessCase() throws Exception{
         System.out.println("assessCase");
         Case aCase = new StringCase("abc123");
-        RuleSetImpl instance = new RuleSetImpl("Test");
+        RuleSetImpl instance = new RuleSetImpl("Test", true, "", 0);
         instance.addRule(new RegExRule(".*", "string"));
         instance.addRule(new RegExRule("a.*", "aString"));
-        Opinion result = instance.assessCase(aCase, null, "Test");
+        Opinion result = instance.assessCase(aCase, null, "Test", RuleSet.ALWAYSPERSIST, null);
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("aString"));
         System.out.println(result.getEnrichedCase("Test", aCase));
         assertTrue(result.getEnrichedCase("Test", aCase).contains("Test"));
     }
 
-//    /**
-//     * Test of getRules method, of class RuleSetImpl.
-//     */
-//    @Test
-//    public void testGetRules() {
-//        System.out.println("getRules");
-//        RuleSetImpl instance = new RuleSetImpl();
-//        Set<Rule> expResult = null;
-//        Set<Rule> result = instance.getRules();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getName method, of class RuleSetImpl.
-//     */
-//    @Test
-//    public void testGetName() {
-//        System.out.println("getName");
-//        RuleSetImpl instance = new RuleSetImpl();
-//        String expResult = "";
-//        String result = instance.getName();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//    
+    /**
+     * Test of assessCase method, of class RuleSetImpl.
+     */
+    @Test
+    public void testAssessCasePersistentDB() throws Exception{
+        System.out.println("assessCase");
+        Case aCase = new StringCase("abc123");
+        RuleSetImpl instance = new RuleSetImpl("ob-regex-tests", false, "localhost", 27017);
+        instance.addRule(new RegExRule(".*", "string"));
+        instance.addRule(new RegExRule("a.*", "aString"));
+        Opinion result = instance.assessCase(aCase, null, "Test", RuleSet.ALWAYSPERSIST, null);
+        assertTrue(result.getLabel().contains("string"));
+        assertTrue(result.getLabel().contains("aString"));
+        System.out.println(result.getEnrichedCase("Test", aCase));
+        assertTrue(result.getEnrichedCase("Test", aCase).contains("Test"));
+        instance.getPersist().dropCases();
+    }
+
 }

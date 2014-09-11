@@ -10,6 +10,7 @@ import com.amazonaws.services.kinesis.model.Record;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -35,7 +36,7 @@ public class KinesisRecordProcessor implements IRecordProcessor {
 
     public KinesisRecordProcessor(Oddball oddball, Map<String, List<String>> ruleSets) {
         this.oddball = oddball;
-        LOG.debug("ruleSets = "+ruleSets.toString());
+        LOG.debug("ruleSets = " + ruleSets.toString());
         this.ruleSets = ruleSets;
     }
 
@@ -72,20 +73,29 @@ public class KinesisRecordProcessor implements IRecordProcessor {
 
     }
 
-    private String extractProperty(String propertyName, String caseString){
-        String quotedName = "\""+propertyName+"\"";
+    private String extractProperty(String propertyName, String caseString) {
+        String quotedName = "\"" + propertyName + "\"";
         int location = caseString.indexOf(quotedName);
-        String a = caseString.substring(location+quotedName.length());
-        String b = a.substring(a.indexOf("\"")+1);
+        String a = caseString.substring(location + quotedName.length());
+        String b = a.substring(a.indexOf("\"") + 1);
         String c = b.substring(0, b.indexOf("\""));
         return c;
     }
 
-    private String extractPropertyName(String ruleString){
-        return ruleString.substring(ruleString.indexOf("{")+1, ruleString.indexOf("}"));
+    private String extractPropertyName(String ruleString) {
+        return ruleString.substring(ruleString.indexOf("{") + 1, ruleString.indexOf("}"));
     }
-    
-    
+
+    private Map splitRuleSetName(String extendedRuleSetName) {
+        HashMap<String, String> result = new HashMap<String, String>();
+        String[] separated = extendedRuleSetName.split(":");
+        result.put("ruleSet", separated[0]);
+        if (separated.length > 1) {
+            result.put("inboundTransformer", separated[1]);
+        }
+        return result;
+    }
+
     private void processRecordsWithRetries(List<Record> records) {
         for (Record record : records) {
             boolean processedSuccessfully = false;
@@ -100,21 +110,24 @@ public class KinesisRecordProcessor implements IRecordProcessor {
                     if (recordRuleSets == null) {
                         LOG.error("No rule sets found for " + partitionKey);
                     } else {
-                        LOG.debug("Rule sets found for " + partitionKey+" = "+recordRuleSets);
-                        for(String ruleSet: recordRuleSets){
-                            if (ruleSet.indexOf("{")>=0){
+                        LOG.debug("Rule sets found for " + partitionKey + " = " + recordRuleSets);
+                        for (String ruleSetName : recordRuleSets) {
+                            Map<String, String> splitRuleSetName= this.splitRuleSetName(ruleSetName);
+                            String ruleSet = splitRuleSetName.get("ruleSet");
+                            String inboundTransformer = splitRuleSetName.get("inboundTransformer");
+                            if (ruleSet.indexOf("{") >= 0) {
                                 String placeholder = extractPropertyName(ruleSet);
-                                String replacement = extractProperty(placeholder,data);
-                                ruleSet = ruleSet.replace("{"+placeholder+"}", replacement);
+                                String replacement = extractProperty(placeholder, data);
+                                ruleSet = ruleSet.replace("{" + placeholder + "}", replacement);
                                 LOG.debug("Assessing " + ruleSet);
                                 try {
-                                    oddball.assessCase(ruleSet, new StringCase(data));
+                                    oddball.assessCase(ruleSet, inboundTransformer, new StringCase(data));
                                 } catch (Throwable t) {
-                                    LOG.warn("Caught throwable attempting ruleSet: "+ruleSet);
+                                    LOG.warn("Caught throwable attempting ruleSet: " + ruleSet);
                                 }
                             } else {
                                 LOG.debug("Assessing " + ruleSet);
-                                oddball.assessCase(ruleSet, new StringCase(data));
+                                oddball.assessCase(ruleSet, inboundTransformer, new StringCase(data));
                             }
                         }
                         processedSuccessfully = true;
