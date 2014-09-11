@@ -7,6 +7,7 @@
 package uk.co.revsys.oddball.rules;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.Map;
 import org.jongo.FindOne;
 import uk.co.revsys.oddball.cases.Case;
@@ -22,7 +23,10 @@ public class MongoRuleSet extends RuleSetImpl{
 
     public MongoRuleSet() {
         super();
-        setAssess(new MongoDBHelper("oddball-assess"));
+        try {
+            setAssess(new MongoDBHelper("oddball-assess", true, "", 0));
+        } 
+        catch (UnknownHostException ex){};   // won't be thrown for in-memory db.
     }
 
     private MongoDBHelper assess;
@@ -35,19 +39,20 @@ public class MongoRuleSet extends RuleSetImpl{
         this.assess = assess;
     }
 
-    public MongoRuleSet(String name) {
-        super(name);
-        setAssess(new MongoDBHelper(name+"-assess"));
+    public MongoRuleSet(String name, boolean inMemory, String host, int port) throws UnknownHostException {
+        super(name, inMemory, host, port);
+        try {
+            setAssess(new MongoDBHelper("oddball-assess", true, "", 0));
+        } 
+        catch (UnknownHostException ex){};   // won't be thrown for in-memory db.
     }
     
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr) throws InvalidCaseException{
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery) throws InvalidCaseException{
         String caseStr = aCase.getContent();
         Case theCase = new MapCase(caseStr);
         String caseId = assess.insertCase(caseStr);
-        Opinion op = super.assessCase(theCase, caseId, ruleSetStr);
-        String persistCase = op.getEnrichedCase(ruleSetStr, theCase);
-        getPersist().insertCase(persistCase);
+        Opinion op = super.assessCase(theCase, caseId, ruleSetStr, persistOption, duplicateQuery);
         assess.removeCase(caseId);
         return op;
     }

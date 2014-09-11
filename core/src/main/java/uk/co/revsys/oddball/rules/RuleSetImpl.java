@@ -8,6 +8,7 @@ package uk.co.revsys.oddball.rules;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -30,12 +31,11 @@ import uk.co.revsys.resource.repository.model.Resource;
 public class RuleSetImpl implements RuleSet{
     
 
-    public RuleSetImpl() {
-        setPersist(new MongoDBHelper("oddball-persist"));
+    public RuleSetImpl(){
     }
     
-    public RuleSetImpl(String name) {
-        setPersist(new MongoDBHelper(name+"-persist"));
+    public RuleSetImpl(String name, boolean inMemory, String host, int port) throws UnknownHostException {
+        setPersist(new MongoDBHelper(name+"-persist", inMemory, host, port));
         this.name = name;
     }
 
@@ -81,7 +81,7 @@ public class RuleSetImpl implements RuleSet{
     }
 
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr) throws InvalidCaseException{
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery) throws InvalidCaseException{
         
         Opinion op = new OpinionImpl();
 
@@ -126,6 +126,24 @@ public class RuleSetImpl implements RuleSet{
             }
             if (!found){
                 op.getTags().add(prefix+"odDball");
+            }
+        }
+        if (op.getLabel().indexOf("*ignore*")>=0){
+            op.getTags().clear();
+        } else {
+            if (persistOption != NEVERPERSIST){
+                String persistCase = op.getEnrichedCase(ruleSetStr, aCase);
+                if (persistOption == UPDATEPERSIST){
+                    String id = getPersist().checkAlreadyExists(duplicateQuery);
+                    LOGGER.debug(duplicateQuery);
+                    LOGGER.debug(id);
+                    if (id !=null){
+                        LOGGER.debug(Boolean.toString(getPersist().testCase("{}", id)));
+                        getPersist().removeCase(id);
+                        LOGGER.debug(Boolean.toString(getPersist().testCase("{}", id)));
+                    }
+                }
+                getPersist().insertCase(persistCase);
             }
         }
         return op;
@@ -248,14 +266,39 @@ public class RuleSetImpl implements RuleSet{
         try{
             List<String> rules = getRuleSet(ruleSetName, resourceRepository);
             String ruleType= "default";
+            String ruleHost= "inMemory";
+            int rulePort= 0;
+            
+            boolean inMemory = true;
             if (rules.get(0).contains("$ruleType")){
                 String rule = rules.get(0);
                 String[] parsed = rule.trim().split(":",2);
                 ruleType=parsed[1];
+                String[] parsedRuleType = ruleType.trim().split(",",3);
+                ruleType= parsedRuleType[0];
+                try {
+                    ruleHost= parsedRuleType[1];
+                    String rulePortStr= parsedRuleType[2];
+                    rulePort = Integer.parseInt(rulePortStr);
+                }
+                catch (Exception e){
+                }
                 rules.remove(rule);
+                if (ruleHost.equals("inMemory")){
+                    inMemory = true;
+                } else {
+                    inMemory = false;
+                }
+                
             }
+            System.out.println("loading rules "+ruleSetName);
+            System.out.println(inMemory);
+            System.out.println(ruleHost);
+            System.out.println(rulePort);
             Class<? extends RuleSetImpl> ruleSetClass = new RuleSetMap().get(ruleType);
             RuleSet ruleSet = (RuleSet) ruleSetClass.newInstance();
+            ruleSet.setPersist(new MongoDBHelper(ruleSetName+"-persist", inMemory, ruleHost, rulePort));
+            
             ruleSet.setRuleType(ruleType);
             Class ruleClass = new RuleTypeMap().get(ruleType);
             ruleSet.setName(ruleSetName);
@@ -266,6 +309,8 @@ public class RuleSetImpl implements RuleSet{
         } catch (InstantiationException ex) {
             throw new RuleSetNotLoadedException(ruleSetName, ex);
         } catch (IllegalAccessException ex) {
+            throw new RuleSetNotLoadedException(ruleSetName, ex);
+        } catch (UnknownHostException ex) {
             throw new RuleSetNotLoadedException(ruleSetName, ex);
         }
     }
@@ -292,7 +337,7 @@ public class RuleSetImpl implements RuleSet{
     public void setRuleClass(Class ruleClass) {
         this.ruleClass = ruleClass;
     }
-    
+
     static final Logger LOGGER = LoggerFactory.getLogger("oddball");
     
 }

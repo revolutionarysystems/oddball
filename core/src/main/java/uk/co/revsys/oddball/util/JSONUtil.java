@@ -27,38 +27,42 @@ public class JSONUtil {
         return map;
     }
     
-    public static String map2json(Map<String, Object> map) throws IOException{
-        StringBuilder out =new StringBuilder("{ ");
-        for (String key : map.keySet()){
-            out.append("\""+key+"\" : ");
-            if (map.get(key) instanceof Map){
-//                out.append("\""+map2json((Map<String, Object>) map.get(key))+"\" ");
-                out.append(map2json((Map<String, Object>) map.get(key)));
-            } else {
-                if (map.get(key) instanceof List){
-                    out.append ("[");
-                    for (Object item : (List) map.get(key)){
-                        out.append("\"");
-                        out.append(item.toString());
-                        out.append("\"");
-                        out.append(", ");
-                    }
-                    out.delete(out.length()-2, out.length());
-                    out.append ("]");
+    public static String map2json(Map<String, Object> map){
+        if (map==null){
+            return "{}";
+        } else {
+            StringBuilder out =new StringBuilder("{ ");
+            for (String key : map.keySet()){
+                out.append("\""+key+"\" : ");
+                if (map.get(key) instanceof Map){
+    //                out.append("\""+map2json((Map<String, Object>) map.get(key))+"\" ");
+                    out.append(map2json((Map<String, Object>) map.get(key)));
                 } else {
-                    try{
-                        out.append("\""+map.get(key).toString()+"\" ");
-                    }
-                    catch (NullPointerException npe){
-                        out.append("null");
+                    if (map.get(key) instanceof List){
+                        out.append ("[");
+                        for (Object item : (List) map.get(key)){
+                            out.append("\"");
+                            out.append(item.toString());
+                            out.append("\"");
+                            out.append(", ");
+                        }
+                        out.delete(out.length()-2, out.length());
+                        out.append ("]");
+                    } else {
+                        try{
+                            out.append("\""+map.get(key).toString().replace("\"", "\\\"")+"\" ");
+                        }
+                        catch (NullPointerException npe){
+                            out.append("null");
+                        }
                     }
                 }
+                out.append(", ");
             }
-            out.append(", ");
+            out.delete(out.length()-2, out.length());
+            out.append(" }");
+            return out.toString();
         }
-        out.delete(out.length()-2, out.length());
-        out.append(" }");
-        return out.toString();
     }
     
     

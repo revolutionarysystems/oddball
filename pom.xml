@@ -11,11 +11,12 @@
 	<name>odDball - Parent POM</name>
 
 	<modules>
-		<module>core</module>
-        <module>consumer-kinesis</module>
-        <module>worker</module>
-		<module>service</module>        
-        <module>client-osgi</module>  
+            <module>core</module>
+            <module>consumer-kinesis</module>
+            <module>worker</module>
+            <module>service</module>        
+            <module>client-osgi</module>  
+            <module>camel</module>  
 	</modules>
 
 	<properties>

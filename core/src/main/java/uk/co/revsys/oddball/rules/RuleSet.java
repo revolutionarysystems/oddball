@@ -35,7 +35,7 @@ public interface RuleSet {
         
     public Set<Rule> getAllRules();
         
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr) throws InvalidCaseException;
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery) throws InvalidCaseException;
     
     public String getRuleType();
 
@@ -53,5 +53,11 @@ public interface RuleSet {
 
     public void reloadRules(ResourceRepository resourceRepository) throws RuleSetNotLoadedException;
 
+    public void setPersist(MongoDBHelper persist);
     
+    public static final int NEVERPERSIST=0;
+    public static final int ALWAYSPERSIST=1;
+    public static final int UPDATEPERSIST=2;
+    
+
 }

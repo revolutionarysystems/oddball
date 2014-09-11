@@ -1,0 +1,13 @@
+	{
+		"$": {
+			"_id": "{{$._id}}",
+			"userId": "{{$.case.userId}}",
+			"sessionId": "{{$.case.sessionId}}",
+			"accountId": "{{$.case.accountId}}",
+			"time": "{{$.timestamp}}",
+			"tagTime": "{{$.timestamp}}",
+			"type": "Test",
+			"state": "{{$.derived.state}}",
+			"code": "{{$.derived.code}}",
+		}
+	}

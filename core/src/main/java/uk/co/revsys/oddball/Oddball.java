@@ -19,6 +19,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.revsys.jsont.JSONTransformer;
+import uk.co.revsys.oddball.aggregator.AggregationException;
+import uk.co.revsys.oddball.aggregator.Aggregator;
 import uk.co.revsys.oddball.bins.BinSet;
 import uk.co.revsys.oddball.bins.BinSetImpl;
 import uk.co.revsys.oddball.bins.BinSetNotLoadedException;
@@ -31,6 +33,7 @@ import uk.co.revsys.oddball.rules.Rule;
 import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.rules.RuleSetImpl;
 import uk.co.revsys.oddball.rules.RuleSetNotLoadedException;
+import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.resource.repository.ResourceRepository;
 import uk.co.revsys.resource.repository.model.Resource;
 
@@ -60,15 +63,23 @@ public class Oddball {
         return ruleSet;
     }
 
-    public Opinion assessCase(String ruleSetName, Case aCase) throws RuleSetNotLoadedException, InvalidCaseException {
+    public Opinion assessCase(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
-        return ruleSet.assessCase(aCase, null, ruleSetName);
+        if (inboundTransformer!=null){
+            aCase.setContent(this.transformCase(aCase.getContent(), inboundTransformer));
+        }
+        return ruleSet.assessCase(aCase, null, ruleSetName, persistOption, duplicateQuery);
 
+    }
+
+    public Opinion assessCase(String ruleSetName, String inboundTransformer, Case aCase) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException {
+        return this.assessCase(ruleSetName, inboundTransformer, aCase, RuleSet.ALWAYSPERSIST, null);
     }
 
     public void clearRuleSet(String ruleSetName) {
         RuleSet ruleSet = ruleSets.get(ruleSetName);
         if (ruleSet != null) {
+            ruleSet.getPersist().dropCases();
             ruleSets.remove(ruleSetName);
         }
     }
@@ -230,6 +241,37 @@ public class Oddball {
         return transformer.transform(result, transformStr, params);
     }
     
+    private String transformCase(String caseStr, String transformerName) throws TransformerNotLoadedException{
+        String transformStr = getTransformer(transformerName, resourceRepository);
+        JSONTransformer transformer = new JSONTransformer();
+        HashMap params = new HashMap();
+        return transformer.transform(caseStr, transformStr, params);
+    }
+    
+    private Collection<String> aggregateResults(Iterable<String> results, Map options) throws AggregationException{
+        ArrayList<String> aggregatedResults = new ArrayList<String>();
+        Class aggregatorClass = new AggregatorMap().get(options.get("aggregator"));
+        try {
+            Aggregator ag = (Aggregator) aggregatorClass.newInstance();
+            ArrayList<Object> aggregated = ag.aggregateCases(results, options);
+            for (Object agg : aggregated){
+                LOGGER.debug("aggregated");
+                LOGGER.debug(((Map)agg).toString());
+                String aggString = JSONUtil.map2json((Map) agg);
+                aggregatedResults.add(aggString);
+            }
+            return aggregatedResults;
+        }
+        catch (InstantiationException e){
+            throw new AggregationException("Could not instantiate aggregator: "+options.get("aggregator"), e);
+        }
+        catch (IllegalAccessException e){
+            throw new AggregationException("Could not instantiate aggregator: "+options.get("aggregator"), e);
+        }
+    }
+    
+
+    
     private String getDefaultedTransformer(String ruleSetName, Map<String, String> options){
         String transformerStr = options.get("transformer");
         if (transformerStr!=null && transformerStr.equals("default")){
@@ -253,7 +295,7 @@ public class Oddball {
         }
     }
 
-    public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, TransformerNotLoadedException{
+    public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException{
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.ALL;
         if (options.get("owner")!=null){
@@ -261,10 +303,30 @@ public class Oddball {
         }
         Collection<String> result = ruleSet.getPersist().findCasesForOwner(owner, query);
         if (options.get("transformer")!=null){
+            result = transformResults(result,  getDefaultedTransformer(ruleSetName, options));
+        }
+        if (options.get("aggregator")!=null){
+            result = aggregateResults(result,  options);
+        }
+        return result;
+    }
+
+    public Collection<String> findCaseById(String ruleSetName, String id, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, TransformerNotLoadedException{
+        RuleSet ruleSet = ensureRuleSet(ruleSetName);
+        String owner = Oddball.ALL;
+        Collection<String> result = ruleSet.getPersist().findCaseById(owner, id);
+        if (options.get("transformer")!=null){
             return transformResults(result,  getDefaultedTransformer(ruleSetName, options));
         } else {
             return result;
         }
+    }
+
+    public Collection<String> deleteCaseById(String ruleSetName, String id, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, TransformerNotLoadedException{
+        RuleSet ruleSet = ensureRuleSet(ruleSetName);
+        String owner = Oddball.ALL;
+        Collection<String> result = ruleSet.getPersist().deleteCaseById(owner, id);
+        return result;
     }
 
     public String findLatestQueryCase(String ruleSetName, String query, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, TransformerNotLoadedException {
@@ -273,7 +335,7 @@ public class Oddball {
         if (options.get("owner")!=null){
             owner = options.get("owner");
         }
-        String result = ruleSet.getPersist().findLatestCaseForOwner(owner, query);
+        String result = ruleSet.getPersist().findLatestCaseForOwner(owner, query, options.get("recent"), options.get("since"));
         if (options.get("transformer")!=null){
             return transformResult(result,  getDefaultedTransformer(ruleSetName, options));
         } else {
@@ -281,16 +343,18 @@ public class Oddball {
         }
     }
 
-    public Collection<String> findDistinct(String ruleSetName, String field, String recent, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, IOException {
+    public Collection<String> findDistinct(String ruleSetName, String field, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, IOException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.ALL;
         if (options.get("owner")!=null){
             owner = options.get("owner");
         }
-        return ruleSet.getPersist().findDistinctQuery(owner, "{}", field, recent);
+        String recent = options.get("recent");
+        String since = options.get("since");
+        return ruleSet.getPersist().findDistinctQuery(owner, "{}", field, recent, since);
     }
 
-    public Collection<String> findCasesInBin(String ruleSetName, String binLabel, Map<String, String> options) throws UnknownBinException, RuleSetNotLoadedException, DaoException, BinSetNotLoadedException, TransformerNotLoadedException {
+    public Collection<String> findCasesInBin(String ruleSetName, String binLabel, Map<String, String> options) throws UnknownBinException, RuleSetNotLoadedException, DaoException, BinSetNotLoadedException, TransformerNotLoadedException, AggregationException {
         String binQuery = null;
         String owner = Oddball.ALL;
         if (options.get("owner")!=null){
@@ -313,7 +377,8 @@ public class Oddball {
         String binQuery = null;
         String owner = Oddball.ALL;
         String property = "_id";
-        String recent = "60";
+        String recent = null;
+        String since = null;
         if (options.get("owner")!=null){
             owner = options.get("owner");
         }
@@ -322,6 +387,9 @@ public class Oddball {
         }
         if (options.get("recent")!=null){
             recent = options.get("recent");
+        }
+        if (options.get("since")!=null){
+            recent = options.get("since");
         }
         BinSet ownerBinSet = loadPrivateBinSet(owner);
         if (ownerBinSet != null && ownerBinSet.getBins().get(binLabel) != null) {
@@ -332,7 +400,7 @@ public class Oddball {
         if (binQuery == null) {
             throw new UnknownBinException(binLabel);
         }
-        return ruleSet.getPersist().findDistinctQuery(owner, binQuery, property, recent);
+        return ruleSet.getPersist().findDistinctQuery(owner, binQuery, property, recent, since);
     }
 
     public Collection<String> listBinLabels(String owner) throws BinSetNotLoadedException {
