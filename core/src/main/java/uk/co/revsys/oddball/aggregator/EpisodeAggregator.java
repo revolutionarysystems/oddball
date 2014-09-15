@@ -33,7 +33,9 @@ public class EpisodeAggregator implements Aggregator{
             timeOutPeriod = Long.parseLong((String)options.get("timeOutPeriod"));
         }
         if (options.containsKey("timeOutReference")){
-            timeOutReference = Long.parseLong((String)options.get("timeOutReference"));
+            try {
+                timeOutReference = Long.parseLong((String)options.get("timeOutReference"));
+            } catch (NumberFormatException e){}
         }
         try {
             for (Episode ep : aggregateEvents(caseStrings, timeOutPeriod, timeOutReference)){

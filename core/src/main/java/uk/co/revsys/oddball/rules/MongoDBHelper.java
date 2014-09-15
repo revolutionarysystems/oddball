@@ -87,7 +87,6 @@ public class MongoDBHelper {
 
     public boolean testCase(String query, String caseId) {
         String queryMod = "{ \"_id\" : \"" + caseId + "\", " + query.substring(1);
-        LOGGER.debug(queryMod);
         FindOne found = cases.findOne(queryMod);
         return found.as(Map.class) != null;
     }
@@ -198,12 +197,17 @@ public class MongoDBHelper {
             long now = Calendar.getInstance().getTimeInMillis();
             long cutoff = now - millis;
             BasicDBObject subQuery = new BasicDBObject("$gt", Long.toString(cutoff));
+//            BasicDBObject subQuery = new BasicDBObject("$gt", cutoff);
             query.append("timestamp", subQuery);
     }
    
     private void addSinceQuery(BasicDBObject query, String since){
-            long cutoff = Long.parseLong(since);
+            long cutoff = 0;
+            try {
+                cutoff = Long.parseLong(since);
+            } catch (java.lang.NumberFormatException e) {}
             BasicDBObject subQuery = new BasicDBObject("$gt", Long.toString(cutoff));
+//            BasicDBObject subQuery = new BasicDBObject("$gt", cutoff);
             query.append("timestamp", subQuery);
     }
    
@@ -245,8 +249,16 @@ public class MongoDBHelper {
         for (DBObject foundCase : foundCases) {
             Map result = JSONUtil.json2map(foundCase.toString());
             result.put("_id", foundCase.get("_id").toString());
-            caseList.add(JSONUtil.map2json(result));
+            String json = JSONUtil.map2json(result);
+            if (json.contains(":  }")) {
+                LOGGER.debug("Reading bad json object");
+                LOGGER.debug(json);
+                json = json.replace(":  }", ": {}");
+            }
+            caseList.add(json);
         }
+        
+        
         return caseList;
     }
 

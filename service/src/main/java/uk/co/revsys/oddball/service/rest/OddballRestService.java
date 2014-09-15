@@ -70,9 +70,6 @@ public class OddballRestService extends AbstractRestService {
         } else {
             Opinion op;
             try {
-                LOGGER.debug("persist options");
-                LOGGER.debug(Integer.toString(persistOption));
-                LOGGER.debug(duplicateRule);
                 op = oddball.assessCase(ruleSet, inboundTransformer, new StringCase(caseStr), persistOption, duplicateRule);
             } catch (RuleSetNotLoadedException ex) {
                 return buildErrorResponse(ex);
