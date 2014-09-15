@@ -255,8 +255,6 @@ public class Oddball {
             Aggregator ag = (Aggregator) aggregatorClass.newInstance();
             ArrayList<Object> aggregated = ag.aggregateCases(results, options);
             for (Object agg : aggregated){
-                LOGGER.debug("aggregated");
-                LOGGER.debug(((Map)agg).toString());
                 String aggString = JSONUtil.map2json((Map) agg);
                 aggregatedResults.add(aggString);
             }

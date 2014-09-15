@@ -135,12 +135,8 @@ public class RuleSetImpl implements RuleSet{
                 String persistCase = op.getEnrichedCase(ruleSetStr, aCase);
                 if (persistOption == UPDATEPERSIST){
                     String id = getPersist().checkAlreadyExists(duplicateQuery);
-                    LOGGER.debug(duplicateQuery);
-                    LOGGER.debug(id);
                     if (id !=null){
-                        LOGGER.debug(Boolean.toString(getPersist().testCase("{}", id)));
                         getPersist().removeCase(id);
-                        LOGGER.debug(Boolean.toString(getPersist().testCase("{}", id)));
                     }
                 }
                 getPersist().insertCase(persistCase);
