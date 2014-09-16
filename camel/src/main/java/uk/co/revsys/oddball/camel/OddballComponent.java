@@ -10,6 +10,9 @@ public class OddballComponent extends HttpProxyComponent{
     @Override
     protected void populateMappings(Map<String, Class<? extends Processor>> mappings) {
         mappings.put("retrieve", RetrieveProcessor.class);
+        mappings.put("retrieveForSeries", RetrieveForSeriesProcessor.class);
+        mappings.put("retrieveQuery", RetrieveQueryProcessor.class);
+        mappings.put("insert", InsertProcessor.class);
     }
     
 }
