@@ -1,4 +1,5 @@
-$ruleType:regex,localhost,27017
+$ruleType:regex
+#$ruleType:regex,localhost,27017
 string:.*
 aString:a.*
 allas:a*
