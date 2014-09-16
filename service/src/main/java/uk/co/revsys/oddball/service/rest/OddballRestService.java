@@ -54,7 +54,10 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response applyRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("case") String caseStr, @QueryParam("inboundTransformer") String inboundTransformer, @QueryParam("persist") String persist, @QueryParam("duplicateRule") String duplicateRule){
+    public Response applyRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("ruleSet") String altRuleSet, @QueryParam("case") String caseStr, @QueryParam("inboundTransformer") String inboundTransformer, @QueryParam("persist") String persist, @QueryParam("duplicateRule") String duplicateRule){
+        if (ruleSet == null || ruleSet.equals("null")){
+            ruleSet = altRuleSet;
+        }
         int persistOption = RuleSet.ALWAYSPERSIST;
         if (persist!=null){
             if (persist.equals("never")){
@@ -307,7 +310,10 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/series/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findDistinctSeries(@PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("recent") String recent, @QueryParam("since") String since, @QueryParam("transformer") String transformer){
+    public Response findDistinctSeries(@PathParam("ruleSet") String ruleSets, @QueryParam("ruleSet") String altRuleSets, @QueryParam("account") String owner, @QueryParam("recent") String recent, @QueryParam("since") String since, @QueryParam("transformer") String transformer){
+        if (ruleSets == null || ruleSets.equals("null")){
+            ruleSets = altRuleSets;
+        }
         return findDistinctSeriesService(ruleSets, owner, recent, since, transformer);
     }
 
@@ -406,14 +412,26 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/sessionId/{sessionId}/latest")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findLatestCaseForSession(@PathParam("sessionId") String series, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
+    public Response findLatestCaseForSession(@PathParam("sessionId") String series, @QueryParam("sessionId") String altSeries, @PathParam("ruleSet") String ruleSet, @QueryParam("ruleSet") String altRuleSet, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
+        if (ruleSet == null || ruleSet.equals("null")){
+            ruleSet = altRuleSet;
+        }
+        if (series == null || series.equals("null")){
+            series = altSeries;
+        }
         return findLatestCaseForSeriesService(series, ruleSet, owner, transformer, "sessionId");
     }
 
     @GET
     @Path("/{ruleSet}/series/{series}/latest")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findLatestCaseForSeries(@PathParam("series") String series, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
+    public Response findLatestCaseForSeries(@PathParam("series") String series, @QueryParam("series") String altSeries, @PathParam("ruleSet") String ruleSet, @QueryParam("ruleSet") String altRuleSet, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
+        if (ruleSet == null || ruleSet.equals("null")){
+            ruleSet = altRuleSet;
+        }
+        if (series == null || series.equals("null")){
+            series = altSeries;
+        }
         return findLatestCaseForSeriesService(series, ruleSet, owner, transformer, "series");
     }
     
@@ -585,7 +603,10 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/query/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCasesForQuery(@QueryParam("query") String query, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @Context UriInfo ui){
+    public Response findCasesForQuery(@QueryParam("query") String query, @PathParam("ruleSet") String ruleSets, @QueryParam("ruleSet") String altRuleSets, @QueryParam("account") String owner, @Context UriInfo ui){
+        if (ruleSets == null || ruleSets.equals("null")){
+            ruleSets = altRuleSets;
+        }
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         // options can include owner, transformer, aggregator and aggregator
         HashMap<String, String> options = new HashMap<String, String>();
