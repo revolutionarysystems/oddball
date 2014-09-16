@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0"
+           xmlns:camel="http://camel.apache.org/schema/blueprint"
+           xsi:schemaLocation="
+       http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+       http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.0.0.xsd
+       http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
+
+    <camelContext xmlns="http://camel.apache.org/schema/blueprint">
+
+        <route>
+            <from uri="direct-vm://esb.event.oddball-episodes" />
+            <!--setHeader headerName="timeOutPeriod">
+            	<constant>600000</constant>
+            </setHeader-->
+            <to uri="direct-vm://esb.event.oddball-episodes-recent" />
+            <to uri="direct-vm://esb.event.oddball-episodes-open" />
+        </route>
+
+        <route>
+            <from uri="direct-vm://esb.event.oddball-episodes-open" />
+			<convertBodyTo type="java.lang.String"/>
+    	    <log message="open episodes = ${body}"/>
+			<setHeader headerName="CamelHttpQuery"><simple>ruleSet=${header.episodeRuleSet}&amp;query={"case.status":"open"}&amp;transformer=Episode.catchup.json</simple></setHeader>
+            <to uri="oddball:retrieveQuery"/>
+			<convertBodyTo type="java.lang.String"/>
+    	    <log message="open episodes = ${body}"/>
+            <to uri="bean:jsonPath?method=evaluate(${body}, &quot;$&quot;)"/>
+			<split>
+				<simple>${body}</simple>
+				<convertBodyTo type="java.lang.String"/>
+				<log message="open series = ${body}"/>
+				<setProperty propertyName="startTime">
+					<method ref="jsonPath" method="evaluate(${body}, '$.firstTagTime')"/>
+				</setProperty>
+                <to uri="bean:jsonPath?method=evaluate(${body}, &quot;$.series&quot;)"/>
+       	        <log message="open episode series = ${body}"/>
+				<setHeader headerName="series"><simple>${body}</simple></setHeader>
+				<to uri="direct-vm://esb.event.oddball-series-episodes"/>
+			</split>	
+        </route>
+
+        <route>
+            <from uri="direct-vm://esb.event.oddball-episodes-recent" />
+			<convertBodyTo type="java.lang.String"/>
+    	    <log message="recent episodes = ${body}"/>
+			<setHeader headerName="CamelHttpQuery"><simple>ruleSet=${header.episodeRuleSet}&amp;aggregator=latest&amp;transformer=timestamp.json</simple></setHeader>
+			<to uri="oddball:retrieve?aggregator=latest"/>
+			<convertBodyTo type="java.lang.String"/>
+			<setHeader headerName="since"><constant>0</constant></setHeader>
+			<setHeader headerName="since"><method ref="jsonPath" method="evaluate(${body}, '$.timestamp')"/></setHeader>
+			<setHeader headerName="CamelHttpQuery"><simple>ruleSet=${header.ruleSet}&amp;since=${header.since}</simple></setHeader>
+			<to uri="oddball:retrieve?aggregator=series"/>
+			<convertBodyTo type="java.lang.String"/>
+            <to uri="bean:jsonPath?method=evaluate(${body}, &quot;$&quot;)"/>
+			<split>
+				<simple>${body}</simple>
+				<setHeader headerName="series"><simple>${body}</simple></setHeader>	
+				<setHeader headerName="CamelHttpQuery"><simple>ruleSet=${header.episodeRuleSet}&amp;since=${header.since&amp;series=${header.series}}</simple></setHeader>
+				<to uri="oddball:retrieveForSeries?aggregator=latest"/>
+				<convertBodyTo type="java.lang.String"/>
+				<log message="recent episodes latest = ${body}"/>
+				<doTry>
+					<!-- could be an empty response - no episodes at all -->
+					<setProperty propertyName="startTime">
+						<method ref="jsonPath" method="evaluate(${body}, '$.case.firstTagTime')"/>
+					</setProperty>
+					<doCatch>
+						<exception>java.lang.Exception</exception>
+						<handled><constant>true</constant></handled>
+					</doCatch>
+				</doTry>	
+				<!-- Set body to contain just series -->
+				<setBody><simple>${header.series}</simple></setBody>
+				<to uri="direct-vm://esb.event.oddball-series-episodes"/>
+			</split>	
+        </route>
+
+        <route>
+            <from uri="direct-vm://esb.event.oddball-series-episodes" />
+			<!-- This route derives and injects episodes for these series for activity after "startTime"-->
+    	    <log message="episodes for series = ${header.series}"/>
+			<!-- Derive the episodes-->
+    	    <log message="timeout = ${header.timeOutPeriod}"/>
+	        <setHeader headerName="CamelHttpQuery"><simple>ruleSet=${header.ruleSet}&amp;transformer=default&amp;aggregator=episode&amp;timeOutPeriod=${header.timeOutPeriod}&amp;timeOutReference=${property.since}&amp;query={ "timestamp" : { "$gte" : "${property.startTime}"} , "case.sessionId":"${header.series}" }</simple></setHeader>
+    	    <log message="episode query = ${header.CamelHttpQuery}"/>
+            <to uri="oddball:retrieveQuery"/>
+			<convertBodyTo type="java.lang.String"/>
+			<!-- split the resulting response into individual episodes -->
+			<to uri="bean:jsonPath?method=evaluate(${body}, &quot;$&quot;)"/>
+			<split>
+				<simple>${body}</simple>
+				<!-- get the caseStartTime, the startTime of the episode -->
+				<doTry>
+					<setProperty propertyName="caseStartTime">
+						<method ref="jsonPath" method="evaluate(${body}, '$.startTime')"/>
+					</setProperty>
+					<doCatch>
+						<exception>java.lang.Exception</exception>
+						<handled><constant>true</constant></handled>
+					</doCatch>
+				</doTry>	
+				<convertBodyTo type="java.lang.String"/>
+				<!-- persist the episodes using "update" option, ie replace where series and startTime are exact matches -->
+				<setHeader headerName="CamelHttpQuery">
+					<simple>ruleSet=${header.episodeRuleSet}&amp;case=${body}&amp;persist=update&amp;duplicateRule={"case.series":"${header.series}", "case.startTime":"${property.caseStartTime}"}</simple>
+				</setHeader>
+				<log message="insert querystring = ${header.CamelHttpQuery}"/>
+                <to uri="oddball:insert"/>
+				<log message="insert done"/>
+			</split>
+        </route>
+
+    </camelContext>
+    
+
+    <bean id="oddball" class="uk.co.revsys.oddball.camel.OddballComponent">
+        <property name="baseUrl" value="http://localhost:8080/oddball-service"/>
+    </bean>
+
+    <bean id="jsonPath" class="uk.co.revsys.jsont.JSONPathEvaluator"/>
+
+</blueprint>
