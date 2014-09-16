@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0"
+           xmlns:camel="http://camel.apache.org/schema/blueprint"
+           xsi:schemaLocation="
+       http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+       http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.0.0.xsd
+       http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
+
+    <camelContext xmlns="http://camel.apache.org/schema/blueprint">
+        <route>
+            <from uri="file:///data/oddball/toProcess?delay=1000"/>
+			<convertBodyTo type="java.lang.String"/>
+			<!--log message="input data = ${body}"/-->			
+			<split streaming="true">
+				<tokenize token="\n"/>
+				<convertBodyTo type="java.lang.String"/>
+				<log message="input data = ${body}"/>			
+				<setHeader headerName="regex"><constant>^(?&lt;level&gt;\w*)\s+(?&lt;timestamp&gt;\d\d\s\w{3}\s\d\d:\d\d:\d\d)\s(?&lt;fingerprint&gt;(?&lt;class&gt;.*)#(?&lt;method&gt;\&lt;?\w*\&gt;?)\:(?&lt;line&gt;\d*))\sthread\:(?&lt;sessionId&gt;[^\s]*)\s\[(?&lt;message&gt;.*)\]*</constant></setHeader>
+				<log message="input data = ${header.regex}"/>			
+				<doTry>
+					<to uri="bean:regex2json?method=parseString(${body}, ${header.regex})"/>	
+					<setBody>
+						<groovy>URLEncoder.encode(request.getBody(String.class));</groovy>   
+					</setBody>
+					<setHeader headerName = "CamelHttpMethod"><constant>GET</constant></setHeader>
+					<recipientList>
+						<simple>http://localhost:8080/oddball-service/LogBase?case=${body}&amp;bridgeEndpoint=true</simple>
+					</recipientList>
+					<doCatch>
+						<exception>java.lang.NullPointerException</exception>
+						<handled>
+							<constant>true</constant>
+						</handled>
+						<log message="ignored = ${body}"/>			
+					</doCatch>
+				</doTry>	
+				<log message="output data = ${body}"/>			
+			</split>	
+            <to uri="file:///data/oddball/processed" />
+        </route>
+
+    </camelContext>
+ 
+    <bean id="regex2json" class="uk.co.revsys.jsont.RegexJSONParser"/>
+
+    
+</blueprint>
