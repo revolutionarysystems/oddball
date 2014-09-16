@@ -75,19 +75,19 @@ public class RuleSetImplTest {
     /**
      * Test of assessCase method, of class RuleSetImpl.
      */
-    @Test
-    public void testAssessCasePersistentDB() throws Exception{
-        System.out.println("assessCase");
-        Case aCase = new StringCase("abc123");
-        RuleSetImpl instance = new RuleSetImpl("ob-regex-tests", false, "localhost", 27017);
-        instance.addRule(new RegExRule(".*", "string"));
-        instance.addRule(new RegExRule("a.*", "aString"));
-        Opinion result = instance.assessCase(aCase, null, "Test", RuleSet.ALWAYSPERSIST, null);
-        assertTrue(result.getLabel().contains("string"));
-        assertTrue(result.getLabel().contains("aString"));
-        System.out.println(result.getEnrichedCase("Test", aCase));
-        assertTrue(result.getEnrichedCase("Test", aCase).contains("Test"));
-        instance.getPersist().dropCases();
-    }
+//    @Test
+//    public void testAssessCasePersistentDB() throws Exception{
+//        System.out.println("assessCase");
+//        Case aCase = new StringCase("abc123");
+//        RuleSetImpl instance = new RuleSetImpl("ob-regex-tests", false, "localhost", 27017);
+//        instance.addRule(new RegExRule(".*", "string"));
+//        instance.addRule(new RegExRule("a.*", "aString"));
+//        Opinion result = instance.assessCase(aCase, null, "Test", RuleSet.ALWAYSPERSIST, null);
+//        assertTrue(result.getLabel().contains("string"));
+//        assertTrue(result.getLabel().contains("aString"));
+//        System.out.println(result.getEnrichedCase("Test", aCase));
+//        assertTrue(result.getEnrichedCase("Test", aCase).contains("Test"));
+//        instance.getPersist().dropCases();
+//    }
 
 }

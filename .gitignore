@@ -11,3 +11,5 @@
 /worker/target/
 /client-osgi/target
 /camel/target/
+/worker/src/main/resources/oddball.properties
+/service/src/main/resources/oddball.properties
