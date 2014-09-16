@@ -57,6 +57,9 @@ public class RetrieveProcessor extends AbstractOddballProcessor{
         if (aggregator!=null && aggregator.equals("latest")){
             retrievePath.append("latest/");
         }
+        if (aggregator!=null && aggregator.equals("series")){
+            retrievePath.append("series/");
+        }
         return retrievePath.toString();
     }
     

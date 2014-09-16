@@ -28,8 +28,7 @@ import uk.co.revsys.resource.repository.model.Resource;
  *
  * @author Andrew
  */
-public class RuleSetImpl implements RuleSet{
-    
+public class RuleSetImpl implements RuleSet{    
 
     public RuleSetImpl(){
     }
@@ -135,11 +134,14 @@ public class RuleSetImpl implements RuleSet{
                 String persistCase = op.getEnrichedCase(ruleSetStr, aCase);
                 if (persistOption == UPDATEPERSIST){
                     String id = getPersist().checkAlreadyExists(duplicateQuery);
-                    if (id !=null){
+                    while (id != null){
+                        LOGGER.debug("removing "+id);
                         getPersist().removeCase(id);
+                        id = getPersist().checkAlreadyExists(duplicateQuery);
                     }
                 }
                 getPersist().insertCase(persistCase);
+                LOGGER.debug("inserting:"+duplicateQuery);
             }
         }
         return op;
