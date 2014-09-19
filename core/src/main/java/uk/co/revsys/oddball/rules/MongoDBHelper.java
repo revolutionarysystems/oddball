@@ -127,29 +127,40 @@ public class MongoDBHelper {
         }
     }
 
-    public Collection<String> findCasesForOwner(String owner, String query) throws DaoException {
-//        try {
-            if (!owner.equals(Oddball.ALL)) {
-                StringBuilder modQuery = new StringBuilder("{\"case." + OWNERPROPERTY + "\":\"" + owner + "\", ");
-                modQuery.append(query.substring(1));
-                query = modQuery.toString();
+    public Collection<String> findCasesForOwner(String owner, String queryString, Map<String, String> options) throws IOException, DaoException {
+        if (queryString == null) {
+            queryString="{ }";
+        }
+        BasicDBObject query = new BasicDBObject(JSONUtil.json2map(queryString));
+        if (!owner.equals(Oddball.ALL)) {
+            query.append("case." + OWNERPROPERTY, owner);
+        }
+        if (options.get("recent") != null) {
+            addRecentQuery(query, options.get("recent"));
+        }
+        if (options.get("since") != null) {
+            addSinceQuery(query, options.get("since"));
+        }
+        if (options.get("series") != null) {
+            addSeriesQuery(query, options.get("series"));
+        }
+        if (options.get("agent") != null) {
+            addAgentQuery(query, options.get("agent"));
+        }
+        List<DBObject> foundCases = cases.getDBCollection().find(query).toArray();
+        ArrayList<String> caseList = new ArrayList<String>();
+        for (DBObject foundCase : foundCases) {
+            Map result = JSONUtil.json2map(foundCase.toString());
+            result.put("_id", foundCase.get("_id").toString());
+            String json = JSONUtil.map2json(result);
+            if (json.contains(":  }")) {
+                LOGGER.debug("Reading bad json object");
+                LOGGER.debug(json);
+                json = json.replace(":  }", ": {}");
             }
-            Find found = cases.find(query);
-            Iterable<Map> foundCases = found.as(Map.class);
-            ArrayList<String> caseList = new ArrayList<String>();
-            for (Map foundCase : foundCases) {
-                String json = JSONUtil.map2json(foundCase);
-                if (json.contains(":  }")) {
-                    LOGGER.warn("Reading bad json object");
-                    LOGGER.warn(json);
-                    json = json.replace(":  }", ": {}");
-                }
-                caseList.add(json);
-            }
-            return caseList;
-//        } catch (IOException ex) {
-//            throw new DaoException("Unable to find cases for owner " + owner, ex);
-//        }
+            caseList.add(json);
+        }
+        return caseList;
     }
 
     public Collection<String> findCaseById(String owner, String id) throws DaoException {
@@ -209,6 +220,14 @@ public class MongoDBHelper {
             BasicDBObject subQuery = new BasicDBObject("$gt", Long.toString(cutoff));
 //            BasicDBObject subQuery = new BasicDBObject("$gt", cutoff);
             query.append("timestamp", subQuery);
+    }
+   
+    private void addSeriesQuery(BasicDBObject query, String series){
+            query.append("case.series", series);
+    }
+   
+    private void addAgentQuery(BasicDBObject query, String agent){
+            query.append("case.agent", agent);
     }
    
     public Collection<String> findDistinctQuery(String owner, String queryString, String field, String recent, String since) throws DaoException, IOException {

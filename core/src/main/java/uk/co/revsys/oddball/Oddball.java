@@ -282,8 +282,12 @@ public class Oddball {
     public Collection<String> findCases(String ruleSetName, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, TransformerNotLoadedException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.ALL;
+        String transformer = null;
         if (options.get("owner")!=null){
             owner = options.get("owner");
+        }
+        if (options.get("transformer")!=null){
+            transformer =options.get("transformer");
         }
         Collection<String> result = ruleSet.getPersist().findCasesForOwner(owner);
         if (options.get("transformer")!=null){
@@ -293,13 +297,13 @@ public class Oddball {
         }
     }
 
-    public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException{
+    public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException{
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.ALL;
         if (options.get("owner")!=null){
             owner = options.get("owner");
         }
-        Collection<String> result = ruleSet.getPersist().findCasesForOwner(owner, query);
+        Collection<String> result = ruleSet.getPersist().findCasesForOwner(owner, query, options);
         if (options.get("transformer")!=null){
             result = transformResults(result,  getDefaultedTransformer(ruleSetName, options));
         }
@@ -352,7 +356,7 @@ public class Oddball {
         return ruleSet.getPersist().findDistinctQuery(owner, "{}", field, recent, since);
     }
 
-    public Collection<String> findCasesInBin(String ruleSetName, String binLabel, Map<String, String> options) throws UnknownBinException, RuleSetNotLoadedException, DaoException, BinSetNotLoadedException, TransformerNotLoadedException, AggregationException {
+    public Collection<String> findCasesInBin(String ruleSetName, String binLabel, Map<String, String> options) throws IOException, UnknownBinException, RuleSetNotLoadedException, DaoException, BinSetNotLoadedException, TransformerNotLoadedException, AggregationException {
         String binQuery = null;
         String owner = Oddball.ALL;
         if (options.get("owner")!=null){

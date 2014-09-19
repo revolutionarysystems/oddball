@@ -890,7 +890,9 @@ public class OddballTest {
         String id = "";
         for (String aCase : cases1){
             System.out.println(aCase);
-            id = aCase.substring(aCase.indexOf("\"_id\" : \"")+9, aCase.indexOf("\" , \""));
+            int idStart = aCase.indexOf("\"_id\" : \"")+9;
+            int idEnd = aCase.substring(idStart).indexOf("\" , \"")+idStart;
+            id = aCase.substring(idStart, idEnd);
             System.out.println("id = "+id);
         }
         

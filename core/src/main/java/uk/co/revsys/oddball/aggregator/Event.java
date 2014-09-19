@@ -32,7 +32,13 @@ public class Event implements Comparable<Event> {
         }
         owner=(String)mapCase.get("accountId");
         agent=(String)mapCase.get("userId");
+        if (agent==null){
+            agent=(String)mapCase.get("agent");
+        }
         series=(String)mapCase.get("sessionId");
+        if (series==null){
+            series=(String)mapCase.get("series");
+        }
     }
     
     private long parseTime(String timeString) throws ParseException{
@@ -40,9 +46,17 @@ public class Event implements Comparable<Event> {
             long time=Long.parseLong(timeString);
             return time;
         } catch (NumberFormatException ex){
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM HH:mm:ss");
-            long time = sdf.parse(timeString).getTime();
-            return time;
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss,SSS");
+            //SimpleDateFormat sdf = new SimpleDateFormat("dd MMM HH:mm:ss");
+            try {
+                long time = sdf.parse(timeString).getTime();
+                return time;
+            } catch (ParseException ex2){
+                sdf = new SimpleDateFormat("dd MMM HH:mm:ss");
+                long time = sdf.parse(timeString).getTime();
+                return time;
+            }
+            
         } 
     }
     

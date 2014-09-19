@@ -91,23 +91,34 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/case/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCases(@PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("transformer") String transformer){
+    public Response findCases(@PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("transformer") String transformer, @QueryParam("agent") String agent, @QueryParam("series") String series, @QueryParam("query") String query, @QueryParam("aggregator") String aggregator, @QueryParam("recent") String recent, @QueryParam("since") String since){
         owner = getOwner(owner);
         if(owner == null){
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
+        options.put("query", query);
+        options.put("agent", agent);
+        options.put("series", series);
+        options.put("aggregator", aggregator);
+        options.put("recent", recent);
+        options.put("since", since);
         options.put("transformer", transformer);
+        LOGGER.debug(options.toString());
         ArrayList<String> cases= new ArrayList<String>();
         try {
             String[] ruleSetNames = ruleSets.split(",");
             for (String ruleSet : ruleSetNames){
-                cases.addAll(oddball.findCases(ruleSet.trim(), options));
+                cases.addAll(oddball.findQueryCases(ruleSet.trim(), query, options));
             }
         } catch (RuleSetNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (TransformerNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (AggregationException ex) {
+            return buildErrorResponse(ex);
+        } catch (IOException ex) {
             return buildErrorResponse(ex);
         } catch (DaoException ex) {
             return buildErrorResponse(ex);
@@ -393,6 +404,8 @@ public class OddballRestService extends AbstractRestService {
             return buildErrorResponse(ex);
         } catch (AggregationException ex) {
             return buildErrorResponse(ex);
+        } catch (IOException ex) {
+            return buildErrorResponse(ex);
         } catch (DaoException ex) {
             return buildErrorResponse(ex);
         }
@@ -547,6 +560,8 @@ public class OddballRestService extends AbstractRestService {
             return buildErrorResponse(ex);
         } catch (AggregationException ex) {
             return buildErrorResponse(ex);
+        } catch (IOException ex) {
+            return buildErrorResponse(ex);
         } catch (DaoException ex) {
             return buildErrorResponse(ex);
         }
@@ -628,6 +643,8 @@ public class OddballRestService extends AbstractRestService {
         } catch (TransformerNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (AggregationException ex) {
+            return buildErrorResponse(ex);
+        } catch (IOException ex) {
             return buildErrorResponse(ex);
         } catch (DaoException ex) {
             return buildErrorResponse(ex);
@@ -726,6 +743,8 @@ public class OddballRestService extends AbstractRestService {
         } catch (TransformerNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (AggregationException ex) {
+            return buildErrorResponse(ex);
+        } catch (IOException ex) {
             return buildErrorResponse(ex);
         } catch (DaoException ex) {
             return buildErrorResponse(ex);
