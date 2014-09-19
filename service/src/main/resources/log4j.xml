@@ -30,6 +30,28 @@
 		</layout>
 	</appender>
 
+    <appender name="kinesis" class="uk.co.revsys.kinesis.log4j.KinesisAppender">
+	<layout class="org.apache.log4j.JSONLayout">
+        	<!--param name="ConversionPattern" value="%-5p %d{dd MMM HH:mm:ss} %C#%M:%L thread:%t [%m]%n" /-->
+	</layout>
+        <!-- mandatory configuration for KINESIS appender -->
+        <param name="streamName" value="analytics" />
+        <!-- mandatory configuration for KINESIS appender added by revsys-->
+        <param name="partitionKey" value="log" />
+
+        <!--optional, defaults to UTF-8-->
+        <param name="encoding" value="UTF-8" />
+        <!--optional, defaults to 3-->
+        <param name="maxRetries" value="3" />
+        <!--optional, defaults to 2000-->
+        <param name="bufferSize" value="1000" />
+        <!--optional, defaults to 20-->
+        <param name="threadCount" value="20" />
+        <!--optional, defaults to 30 seconds-->
+        <param name="shutdownTimeout" value="30" />        
+    </appender>
+
+
     <logger name="oddball-results" additivity="false">
             <level value="info" />
             <appender-ref ref="results" />
@@ -37,6 +59,7 @@
     <logger name="oddball" additivity="false">
             <level value="debug" />
             <appender-ref ref="file" />
+            <!--appender-ref ref="kinesis" /--><!-- could be dangerous -->
     </logger>
    <root>
 		<appender-ref ref="console"/>

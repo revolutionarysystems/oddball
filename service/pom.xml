@@ -142,6 +142,13 @@
             <version>4.10</version>
             <scope>test</scope>
         </dependency>
+        
+        <dependency>
+          <groupId>uk.co.revsys</groupId>
+          <artifactId>kinesis-log4j-appender</artifactId>
+          <version>1.0.0</version>
+        </dependency>
+
     </dependencies>
 
 
