@@ -5,10 +5,6 @@
  */
 package uk.co.revsys.oddball.rules;
 
-<<<<<<< HEAD
-=======
-import com.github.fakemongo.Fongo;
->>>>>>> a2120c8d56f12e11fea2ca75f358e9b7f969cf47
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
@@ -20,11 +16,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-<<<<<<< HEAD
-=======
-import java.util.NoSuchElementException;
-import org.bson.LazyBSONObject;
->>>>>>> a2120c8d56f12e11fea2ca75f358e9b7f969cf47
 import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.FindOne;
@@ -41,13 +32,8 @@ import uk.co.revsys.oddball.util.JSONUtil;
  */
 public class MongoDBHelper {
 
-<<<<<<< HEAD
     private final MongoCollection cases;
     private final DB db;
-=======
-    private MongoCollection cases;
-    private DB db;
->>>>>>> a2120c8d56f12e11fea2ca75f358e9b7f969cf47
 
     public MongoDBHelper(String dbName, boolean inMemory, String host, int port) throws UnknownHostException {
         db = new MongoDBFactory().getDBInstance(dbName, inMemory, host, port);
@@ -177,7 +163,6 @@ public class MongoDBHelper {
         } else if (options.get("selector")!=null){
             String selector = options.get("selector");
             BasicDBObject sort = new BasicDBObject("timestamp", -1);
-<<<<<<< HEAD
             if (selector.contains("earliest")){
                 sort = new BasicDBObject("timestamp", 1);
             }
@@ -186,16 +171,6 @@ public class MongoDBHelper {
                 try {
                     retrieveCount = Integer.parseInt(selector.substring(selector.indexOf(" ")+1, selector.length()));
                 } catch (NumberFormatException e){}
-=======
-            if (selector.indexOf("earliest")>=0){
-                sort = new BasicDBObject("timestamp", 1);
-            }
-            int retrieveCount = 1;
-            if (selector.indexOf(" ")>=0){
-                try {
-                    retrieveCount = Integer.parseInt(selector.substring(selector.indexOf(" ")+1, selector.length()));
-                } catch (Exception e){}
->>>>>>> a2120c8d56f12e11fea2ca75f358e9b7f969cf47
             }
             List<DBObject> foundCases = cases.getDBCollection().find(query).sort(sort).limit(retrieveCount).toArray();
             for (DBObject foundCase : foundCases) {

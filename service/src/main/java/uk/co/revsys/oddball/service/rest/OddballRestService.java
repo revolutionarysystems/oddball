@@ -593,7 +593,6 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/bin/{binLabel}/distinct")
     @Produces(MediaType.APPLICATION_JSON)
-<<<<<<< HEAD
     public Response findDistinctPropertiesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @Context UriInfo ui) {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
@@ -606,85 +605,6 @@ public class OddballRestService extends AbstractRestService {
         }
         return findCasesService(ruleSets, options);
 
-//        owner = getOwner(owner);
-//        if (owner == null) {
-//            return Response.status(Response.Status.FORBIDDEN).build();
-//        }
-//        HashMap<String, String> options = new HashMap<String, String>();
-//        options.put("owner", owner);
-//        options.put("property", property);
-//        options.put("recent", recent);
-//        options.put("since", since);
-//        ArrayList<String> cases = new ArrayList<String>();
-//        try {
-//            String[] ruleSetNames = ruleSets.split(",");
-//            for (String ruleSet : ruleSetNames) {
-//                cases.addAll(oddball.findDistinctPropertyInBin(ruleSet, binLabel, options));
-//            }
-//        } catch (UnknownBinException ex) {
-//            return buildErrorResponse(ex);
-//        } catch (RuleSetNotLoadedException ex) {
-//            return buildErrorResponse(ex);
-//        } catch (TransformerNotLoadedException ex) {
-//            return buildErrorResponse(ex);
-//        } catch (DaoException ex) {
-//            return buildErrorResponse(ex);
-//        } catch (IOException ex) {
-//            return buildErrorResponse(ex);
-//        } catch (BinSetNotLoadedException ex) {
-//            return buildErrorResponse(ex);
-//        }
-//        StringBuilder out = new StringBuilder("[ ");
-//        for (String aCase : cases) {
-//            out.append(aCase);
-//            out.append(", ");
-//        }
-//        if (out.length() > 2) {
-//            out.delete(out.length() - 2, out.length());
-//        }
-//        out.append("]");
-//        return Response.ok(out.toString()).build();
-=======
-    public Response findDistinctPropertiesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("property") String property, @QueryParam("recent") String recent, @QueryParam("since") String since) {
-        owner = getOwner(owner);
-        if (owner == null) {
-            return Response.status(Response.Status.FORBIDDEN).build();
-        }
-        HashMap<String, String> options = new HashMap<String, String>();
-        options.put("owner", owner);
-        options.put("property", property);
-        options.put("recent", recent);
-        options.put("since", since);
-        ArrayList<String> cases = new ArrayList<String>();
-        try {
-            String[] ruleSetNames = ruleSets.split(",");
-            for (String ruleSet : ruleSetNames) {
-                cases.addAll(oddball.findDistinctPropertyInBin(ruleSet, binLabel, options));
-            }
-        } catch (UnknownBinException ex) {
-            return buildErrorResponse(ex);
-        } catch (RuleSetNotLoadedException ex) {
-            return buildErrorResponse(ex);
-        } catch (TransformerNotLoadedException ex) {
-            return buildErrorResponse(ex);
-        } catch (DaoException ex) {
-            return buildErrorResponse(ex);
-        } catch (IOException ex) {
-            return buildErrorResponse(ex);
-        } catch (BinSetNotLoadedException ex) {
-            return buildErrorResponse(ex);
-        }
-        StringBuilder out = new StringBuilder("[ ");
-        for (String aCase : cases) {
-            out.append(aCase);
-            out.append(", ");
-        }
-        if (out.length() > 2) {
-            out.delete(out.length() - 2, out.length());
-        }
-        out.append("]");
-        return Response.ok(out.toString()).build();
->>>>>>> a2120c8d56f12e11fea2ca75f358e9b7f969cf47
     }
 
     /***********************/
@@ -705,20 +625,8 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/reload")
     @Produces(MediaType.TEXT_PLAIN)
-<<<<<<< HEAD
-
     public Response reloadRuleSet(@PathParam("ruleSet") String ruleSet) {
         if (!authorisationHandler.isAdministrator()) {
-=======
-
-    public Response reloadRuleSet(@PathParam("ruleSet") String ruleSet){
-        if(!authorisationHandler.isAdministrator()){
-
-
-
-
-
->>>>>>> a2120c8d56f12e11fea2ca75f358e9b7f969cf47
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         try {

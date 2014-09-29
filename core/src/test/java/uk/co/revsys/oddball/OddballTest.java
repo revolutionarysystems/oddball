@@ -734,36 +734,24 @@ public class OddballTest {
         BinSet binSet = instance.binSet;
         
         HashMap<String, String> options = new HashMap<String, String>();
-<<<<<<< HEAD
         options.put("binLabel", "bin1");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
-=======
-        Iterable<String> cases = instance.findCasesInBin(ruleSetName, "bin1", options);
->>>>>>> a2120c8d56f12e11fea2ca75f358e9b7f969cf47
         assertTrue(cases.iterator().hasNext());
         for (String foundCase : cases){
             System.out.println("in bin1:");
             System.out.println(foundCase);
         }
        
-<<<<<<< HEAD
         options.put("binLabel", "bin2");
         cases = instance.findQueryCases(ruleSetName, "{ }", options);
-=======
-        cases = instance.findCasesInBin(ruleSetName, "bin2", options);
->>>>>>> a2120c8d56f12e11fea2ca75f358e9b7f969cf47
         assertTrue(cases.iterator().hasNext());
         for (String foundCase : cases){
             System.out.println("in bin2:");
             System.out.println(foundCase);
         }
        
-<<<<<<< HEAD
         options.put("binLabel", "bin3");
         cases = instance.findQueryCases(ruleSetName, "{ }", options);
-=======
-        cases = instance.findCasesInBin(ruleSetName, "bin3", options);
->>>>>>> a2120c8d56f12e11fea2ca75f358e9b7f969cf47
         assertTrue(cases.iterator().hasNext());
         for (String foundCase : cases){
             System.out.println("in bin3:");
@@ -792,13 +780,9 @@ public class OddballTest {
         BinSet binSet = instance.binSet;
         
         HashMap<String, String> options = new HashMap<String, String>();
-<<<<<<< HEAD
         options.put("binLabel", "bin2");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
 //        cases = instance.findCasesInBin(ruleSetName, "bin2", options);
-=======
-        Iterable<String> cases = instance.findCasesInBin(ruleSetName, "bin2", options);
->>>>>>> a2120c8d56f12e11fea2ca75f358e9b7f969cf47
         assertTrue(cases.iterator().hasNext());
         int count=0;
         for (String foundCase : cases){
@@ -808,16 +792,9 @@ public class OddballTest {
         }
         assertTrue(count==3);
 
-<<<<<<< HEAD
         options.put("distinct", "case.platform");
         options.put("binLabel", "bin2");
         Iterable<String> platforms = instance.findQueryCases(ruleSetName, "{ }", options);
-=======
-//        options.put("property", "case.platform");
-        options.put("distinct", "case.platform");
-//        Iterable<String> platforms = instance.findDistinctPropertyInBin(ruleSetName, "bin2", options);
-        Iterable<String> platforms = instance.findCasesInBin(ruleSetName, "bin2", options);
->>>>>>> a2120c8d56f12e11fea2ca75f358e9b7f969cf47
         assertTrue(platforms.iterator().hasNext());
         count=0;
         for (String platform : platforms){
