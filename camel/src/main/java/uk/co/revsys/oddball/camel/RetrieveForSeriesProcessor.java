@@ -63,9 +63,6 @@ public class RetrieveForSeriesProcessor extends AbstractOddballProcessor{
     @Override
     public String getUrlPath() {
         StringBuilder retrievePath = new StringBuilder("/"+getRuleSet()+"/series/"+getSeries()+"/");
-        if (aggregator!=null && aggregator.equals("latest")){
-            retrievePath.append("latest/");
-        }
         return retrievePath.toString();
     }
     
