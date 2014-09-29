@@ -593,45 +593,56 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/bin/{binLabel}/distinct")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findDistinctPropertiesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("property") String property, @QueryParam("recent") String recent, @QueryParam("since") String since) {
-        owner = getOwner(owner);
-        if (owner == null) {
-            return Response.status(Response.Status.FORBIDDEN).build();
-        }
+    public Response findDistinctPropertiesForBin(@PathParam("binLabel") String binLabel, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @Context UriInfo ui) {
+        MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
-        options.put("owner", owner);
-        options.put("property", property);
-        options.put("recent", recent);
-        options.put("since", since);
-        ArrayList<String> cases = new ArrayList<String>();
-        try {
-            String[] ruleSetNames = ruleSets.split(",");
-            for (String ruleSet : ruleSetNames) {
-                cases.addAll(oddball.findDistinctPropertyInBin(ruleSet, binLabel, options));
-            }
-        } catch (UnknownBinException ex) {
-            return buildErrorResponse(ex);
-        } catch (RuleSetNotLoadedException ex) {
-            return buildErrorResponse(ex);
-        } catch (TransformerNotLoadedException ex) {
-            return buildErrorResponse(ex);
-        } catch (DaoException ex) {
-            return buildErrorResponse(ex);
-        } catch (IOException ex) {
-            return buildErrorResponse(ex);
-        } catch (BinSetNotLoadedException ex) {
-            return buildErrorResponse(ex);
+        for (String key : queryParams.keySet()) {
+            options.put(key, queryParams.getFirst(key).replace("+"," "));
         }
-        StringBuilder out = new StringBuilder("[ ");
-        for (String aCase : cases) {
-            out.append(aCase);
-            out.append(", ");
+        options.put("binLabel", binLabel);
+        if(options.get("property")!=null){
+            options.put("distinct", options.get("property"));
         }
-        if (out.length() > 2) {
-            out.delete(out.length() - 2, out.length());
-        }
-        out.append("]");
-        return Response.ok(out.toString()).build();
+        return findCasesService(ruleSets, options);
+
+//        owner = getOwner(owner);
+//        if (owner == null) {
+//            return Response.status(Response.Status.FORBIDDEN).build();
+//        }
+//        HashMap<String, String> options = new HashMap<String, String>();
+//        options.put("owner", owner);
+//        options.put("property", property);
+//        options.put("recent", recent);
+//        options.put("since", since);
+//        ArrayList<String> cases = new ArrayList<String>();
+//        try {
+//            String[] ruleSetNames = ruleSets.split(",");
+//            for (String ruleSet : ruleSetNames) {
+//                cases.addAll(oddball.findDistinctPropertyInBin(ruleSet, binLabel, options));
+//            }
+//        } catch (UnknownBinException ex) {
+//            return buildErrorResponse(ex);
+//        } catch (RuleSetNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+//        } catch (TransformerNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+//        } catch (DaoException ex) {
+//            return buildErrorResponse(ex);
+//        } catch (IOException ex) {
+//            return buildErrorResponse(ex);
+//        } catch (BinSetNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+//        }
+//        StringBuilder out = new StringBuilder("[ ");
+//        for (String aCase : cases) {
+//            out.append(aCase);
+//            out.append(", ");
+//        }
+//        if (out.length() > 2) {
+//            out.delete(out.length() - 2, out.length());
+//        }
+//        out.append("]");
+//        return Response.ok(out.toString()).build();
     }
 
     /***********************/

@@ -5,7 +5,6 @@
  */
 package uk.co.revsys.oddball.rules;
 
-import com.github.fakemongo.Fongo;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
@@ -17,8 +16,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import org.bson.LazyBSONObject;
 import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.FindOne;
@@ -35,8 +32,8 @@ import uk.co.revsys.oddball.util.JSONUtil;
  */
 public class MongoDBHelper {
 
-    private MongoCollection cases;
-    private DB db;
+    private final MongoCollection cases;
+    private final DB db;
 
     public MongoDBHelper(String dbName, boolean inMemory, String host, int port) throws UnknownHostException {
         db = new MongoDBFactory().getDBInstance(dbName, inMemory, host, port);
@@ -166,14 +163,14 @@ public class MongoDBHelper {
         } else if (options.get("selector")!=null){
             String selector = options.get("selector");
             BasicDBObject sort = new BasicDBObject("timestamp", -1);
-            if (selector.indexOf("earliest")>=0){
+            if (selector.contains("earliest")){
                 sort = new BasicDBObject("timestamp", 1);
             }
             int retrieveCount = 1;
-            if (selector.indexOf(" ")>=0){
+            if (selector.contains(" ")){
                 try {
                     retrieveCount = Integer.parseInt(selector.substring(selector.indexOf(" ")+1, selector.length()));
-                } catch (Exception e){}
+                } catch (NumberFormatException e){}
             }
             List<DBObject> foundCases = cases.getDBCollection().find(query).sort(sort).limit(retrieveCount).toArray();
             for (DBObject foundCase : foundCases) {
