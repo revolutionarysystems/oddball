@@ -144,7 +144,7 @@
         </dependency>
         
         <dependency>
-          <groupId>uk.co.revsys</groupId>
+          <groupId>uk.co.revsys.aws</groupId>
           <artifactId>kinesis-log4j-appender</artifactId>
           <version>1.0.0</version>
         </dependency>
