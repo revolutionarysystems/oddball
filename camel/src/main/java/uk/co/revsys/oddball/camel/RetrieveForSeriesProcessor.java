@@ -9,6 +9,15 @@ public class RetrieveForSeriesProcessor extends AbstractOddballProcessor{
     private String ruleSet;
     private String aggregator;
     private String series;
+    private String selector;
+
+    public String getSelector() {
+        return selector;
+    }
+
+    public void setSelector(String selector) {
+        this.selector = selector;
+    }
 
     public String getSeries() {
         return series;
@@ -70,8 +79,11 @@ public class RetrieveForSeriesProcessor extends AbstractOddballProcessor{
     public Map<String, String> getPostParameters() {
         Map<String, String> postParameters = new HashMap<String, String>();
         postParameters.put("account", owner);
-        if (aggregator!=null && !(aggregator.equals("latest"))){
+        if (aggregator!=null){
             postParameters.put("aggregator", aggregator);
+        }
+        if (selector!=null){
+            postParameters.put("selector", selector);
         }
         if (transformer!=null){
             postParameters.put("transformer", transformer);

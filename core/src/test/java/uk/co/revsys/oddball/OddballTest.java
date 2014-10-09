@@ -263,14 +263,17 @@ public class OddballTest {
      */
     @Test
     public void testFindCases() throws Exception {
-        System.out.println("findCases");
+        System.out.println("findCases-1");
         String ruleSetName = "TestMongo.txt";
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\"}");
         
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, null, theCase);
+        System.out.println("result="+result.toString());
         instance.assessCase(ruleSetName, null, theCase);
-        Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", new HashMap<String, String>());
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
         for (String aCase : cases){
             System.out.println(aCase);
         }
@@ -290,7 +293,9 @@ public class OddballTest {
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, null, theCase);
         instance.assessCase(ruleSetName, null, theCase);
-        Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", new HashMap<String, String>());
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
         int count = 0;
         for (String aCase : cases){
             System.out.println(aCase);
@@ -313,7 +318,9 @@ public class OddballTest {
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, null, theCase);
         instance.assessCase(ruleSetName, null, theCase, RuleSet.NEVERPERSIST, null);
-        Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", new HashMap<String, String>());
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
         int count = 0;
         for (String aCase : cases){
             System.out.println(aCase);
@@ -338,7 +345,9 @@ public class OddballTest {
         Opinion result = instance.assessCase(ruleSetName, null, theCase); // should be added
         instance.assessCase(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"123789\"}"); //should match and so, update not add
         instance.assessCase(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"237890\"}"); //should not match and so, be added
-        Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", new HashMap<String, String>());
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
         int count = 0;
         for (String aCase : cases){
             System.out.println(aCase);
@@ -366,7 +375,9 @@ public class OddballTest {
         
         Opinion result = instance.assessCase(ruleSetName, null, theCase);
         instance.assessCase(ruleSetName, null, theCase);
-        Iterable<String> cases2 = instance.findQueryCases(ruleSetName, "{ }", new HashMap<String, String>());
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        Iterable<String> cases2 = instance.findQueryCases(ruleSetName, "{ }", options);
         for (String aCase : cases2){
             System.out.println(aCase);
         }
@@ -391,7 +402,9 @@ public class OddballTest {
         for (String aCase : cases0){
             System.out.println(aCase);
         }
-        Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ \"case.sessionId\" : \"AA11\"}", new HashMap<String, String>());
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ \"case.sessionId\" : \"AA11\"}", options);
         for (String aCase : cases){
             System.out.println(aCase);
         }
@@ -415,6 +428,7 @@ public class OddballTest {
         instance.assessCase(ruleSetName, null, theCase);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("transformer", "testjsont.json");
+        options.put("owner", "_all");
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
         for (String aCase : cases0){
             System.out.println(aCase);
@@ -448,6 +462,7 @@ public class OddballTest {
 //        Iterable<String> cases = instance.findDistinct(ruleSetName, "case.sessionId", new HashMap<String, String>());
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("distinct", "case.sessionId");
+        options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
         for (String aCase : cases){
             System.out.println(aCase);
@@ -469,12 +484,13 @@ public class OddballTest {
         instance.assessCase(ruleSetName, null, theCase);
         instance.assessCase(ruleSetName, null, theCase);
         instance.assessCase(ruleSetName, null, otherCase);
-        Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", new HashMap<String, String>());
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
         for (String aCase : cases0){
             System.out.println(aCase);
         }
         assertTrue(cases0.iterator().hasNext());
-        HashMap<String, String> options = new HashMap<String, String>();
         options.put("selector", "latest");
         Collection<String> latestCase = instance.findQueryCases(ruleSetName, "{}", options);
         System.out.println(latestCase);
@@ -500,6 +516,7 @@ public class OddballTest {
         options.put("recent", "5");
 //        Iterable<String> cases = instance.findDistinct(ruleSetName, "case.sessionId", options);
         options.put("distinct", "case.sessionId");
+        options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
         for (String aCase : cases){
             System.out.println(aCase);
@@ -528,6 +545,7 @@ public class OddballTest {
         options.put("since", Long.toString(since));
 //        Iterable<String> cases = instance.findDistinct(ruleSetName, "case.sessionId", options);
         options.put("distinct", "case.sessionId");
+        options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
         for (String aCase : cases){
             System.out.println(aCase);
@@ -687,7 +705,9 @@ public class OddballTest {
         assertEquals("bin1", firstBin.getLabel());
         String binQuery = firstBin.getBinString();
         
-        Iterable<String> cases = instance.findQueryCases(ruleSetName, binQuery, new HashMap<String, String>());
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        Iterable<String> cases = instance.findQueryCases(ruleSetName, binQuery, options);
         for (String foundCase : cases){
             System.out.println(foundCase);
         }
@@ -735,6 +755,7 @@ public class OddballTest {
         
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("binLabel", "bin1");
+        options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
         assertTrue(cases.iterator().hasNext());
         for (String foundCase : cases){
@@ -781,6 +802,7 @@ public class OddballTest {
         
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("binLabel", "bin2");
+        options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
 //        cases = instance.findCasesInBin(ruleSetName, "bin2", options);
         assertTrue(cases.iterator().hasNext());
@@ -903,7 +925,7 @@ public class OddballTest {
 
     @Test
     public void testFindCaseById() throws Exception {
-        System.out.println("findCases");
+        System.out.println("findCaseById");
         String ruleSetName = "TestMongo.txt";
         String randomSessionId = Integer.toString(new Random().nextInt());
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\""+randomSessionId+"\"}");
@@ -914,7 +936,9 @@ public class OddballTest {
         for (String aCase : cases0){
             System.out.println(aCase);
         }
-        Iterable<String> cases1 = instance.findQueryCases(ruleSetName, "{ \"case.sessionId\" : \""+randomSessionId+"\"}", new HashMap<String, String>());
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        Iterable<String> cases1 = instance.findQueryCases(ruleSetName, "{ \"case.sessionId\" : \""+randomSessionId+"\"}", options);
         String id = "";
         for (String aCase : cases1){
             System.out.println(aCase);
@@ -926,7 +950,7 @@ public class OddballTest {
         
 //        String query = "{ \"_id\" : \"ObjectId(\\\""+id+"\\\")\"}";
 //        String query = "{ \"_id\" : \"ObjectId('"+id+"')\"}";
-        Iterable<String> cases2 = instance.findCaseById(ruleSetName, id, new HashMap<String, String>());
+        Iterable<String> cases2 = instance.findCaseById(ruleSetName, id, options);
         for (String aCase : cases2){
             System.out.println(aCase);
         }

@@ -248,7 +248,8 @@ public class RuleSetImpl implements RuleSet{
             List<String> rules = new ArrayList<String>();
             boolean rulesetFound = false;
             for (Resource resource : resources){
-                if ((resource.getName().indexOf(ruleSetName)==0) &&(resource.getName().indexOf(".json")==-1)){
+                if (resource.getName().equals(ruleSetName)){
+//                if ((resource.getName().indexOf(ruleSetName)==0) &&(resource.getName().indexOf(".json")==-1)){
                     rulesetFound = true;
 //                    Resource resource = new Resource("", ruleSetName);
                     InputStream inputStream = resourceRepository.read(resource);
@@ -265,7 +266,7 @@ public class RuleSetImpl implements RuleSet{
         }    
     }
     
-    public static RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException{
+    public static RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository, String defaultDataStoreHost, String defaultDataStorePort) throws RuleSetNotLoadedException{
         try{
             List<String> rules = getRuleSet(ruleSetName, resourceRepository);
             String ruleType= "default";
@@ -281,8 +282,8 @@ public class RuleSetImpl implements RuleSet{
                 ruleType= parsedRuleType[0];
                 try {
                     ruleHost= parsedRuleType[1];
-                    String rulePortStr= parsedRuleType[2];
-                    rulePort = Integer.parseInt(rulePortStr);
+//                    String rulePortStr= parsedRuleType[2];
+//                    rulePort = Integer.parseInt(rulePortStr);
                 }
                 catch (Exception e){
                 }
@@ -291,13 +292,15 @@ public class RuleSetImpl implements RuleSet{
                     inMemory = true;
                 } else {
                     inMemory = false;
+                    ruleHost = defaultDataStoreHost;
+                    rulePort = Integer.parseInt(defaultDataStorePort);
                 }
                 
             }
-            System.out.println("loading rules "+ruleSetName);
-            System.out.println(inMemory);
-            System.out.println(ruleHost);
-            System.out.println(rulePort);
+//            LOGGER.debug("loading rules "+ruleSetName);
+//            LOGGER.debug(Boolean.toString(inMemory));
+//            LOGGER.debug(ruleHost);
+//            LOGGER.debug(Integer.toString(rulePort));
             Class<? extends RuleSetImpl> ruleSetClass = new RuleSetMap().get(ruleType);
             RuleSet ruleSet = (RuleSet) ruleSetClass.newInstance();
             ruleSet.setPersist(new MongoDBHelper(ruleSetName+"-persist", inMemory, ruleHost, rulePort));

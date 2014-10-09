@@ -104,35 +104,39 @@ public class KinesisRecordProcessor implements IRecordProcessor {
             for (int i = 0; i < numRetries; i++) {
                 try {
                     data = decoder.decode(record.getData()).toString();
-                    String partitionKey = record.getPartitionKey();
-                    LOG.info(record.getSequenceNumber() + ", " + partitionKey + ", " + data);
-                    List<String> recordRuleSets = ruleSets.get(partitionKey);
-                    if (recordRuleSets == null) {
-                        LOG.error("No rule sets found for " + partitionKey);
+                    if (data.equals("")){
+                        LOG.error("Blank data");
                     } else {
-                        LOG.debug("Rule sets found for " + partitionKey + " = " + recordRuleSets);
-                        for (String ruleSetName : recordRuleSets) {
-                            Map<String, String> splitRuleSetName= this.splitRuleSetName(ruleSetName);
-                            String ruleSet = splitRuleSetName.get("ruleSet");
-                            String inboundTransformer = splitRuleSetName.get("inboundTransformer");
-                            if (ruleSet.indexOf("{") >= 0) {
-                                String placeholder = extractPropertyName(ruleSet);
-                                String replacement = extractProperty(placeholder, data);
-                                ruleSet = ruleSet.replace("{" + placeholder + "}", replacement);
-                                LOG.debug("Assessing " + ruleSet);
-                                try {
+                        String partitionKey = record.getPartitionKey();
+                        LOG.info(record.getSequenceNumber() + ", " + partitionKey + ", " + data);
+                        List<String> recordRuleSets = ruleSets.get(partitionKey);
+                        if (recordRuleSets == null) {
+                            LOG.error("No rule sets found for " + partitionKey);
+                        } else {
+                            LOG.debug("Rule sets found for " + partitionKey + " = " + recordRuleSets);
+                            for (String ruleSetName : recordRuleSets) {
+                                Map<String, String> splitRuleSetName= this.splitRuleSetName(ruleSetName);
+                                String ruleSet = splitRuleSetName.get("ruleSet");
+                                String inboundTransformer = splitRuleSetName.get("inboundTransformer");
+                                if (ruleSet.indexOf("{") >= 0) {
+                                    String placeholder = extractPropertyName(ruleSet);
+                                    String replacement = extractProperty(placeholder, data);
+                                    ruleSet = ruleSet.replace("{" + placeholder + "}", replacement);
+                                    LOG.debug("Assessing " + ruleSet);
+                                    try {
+                                        oddball.assessCase(ruleSet, inboundTransformer, new StringCase(data));
+                                    } catch (Throwable t) {
+                                        LOG.warn("Caught throwable attempting ruleSet: " + ruleSet);
+                                    }
+                                } else {
+                                    LOG.debug("Assessing " + ruleSet);
                                     oddball.assessCase(ruleSet, inboundTransformer, new StringCase(data));
-                                } catch (Throwable t) {
-                                    LOG.warn("Caught throwable attempting ruleSet: " + ruleSet);
                                 }
-                            } else {
-                                LOG.debug("Assessing " + ruleSet);
-                                oddball.assessCase(ruleSet, inboundTransformer, new StringCase(data));
                             }
+                            processedSuccessfully = true;
                         }
-                        processedSuccessfully = true;
+                        break;
                     }
-                    break;
                 } catch (CharacterCodingException e) {
                     LOG.error("Malformed data: " + data, e);
                     break;

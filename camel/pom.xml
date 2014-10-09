@@ -67,7 +67,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>oddball-camel</Bundle-SymbolicName>
-                        <Export-Package>uk.co.revsys.oddball.camel.*</Export-Package>
+                        <Export-Package>uk.co.revsys.oddball.camel,org.apache.camel.component.http</Export-Package>
                         <Import-Package>*</Import-Package>
                         <Embed-Dependency>esb-component</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>

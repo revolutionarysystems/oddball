@@ -46,12 +46,25 @@ public class Oddball {
     ResourceRepository resourceRepository;
     HashMap<String, RuleSet> ruleSets = new HashMap<String, RuleSet>();
     BinSet binSet;
+    String defaultDataStoreHost;
+    String defaultDataStorePort;
     HashMap<String, BinSet> privateBinSets = new HashMap<String, BinSet>();
     HashMap<String, String> transformers = new HashMap<String, String>();
 
+    public Oddball(ResourceRepository resourceRepository, String binSetName, String defaultDataStoreHost, String defaultDataStorePort) throws BinSetNotLoadedException {
+        this.resourceRepository = resourceRepository;
+        this.defaultDataStoreHost = defaultDataStoreHost;
+        this.defaultDataStorePort = defaultDataStorePort;
+        binSet = loadBinSet(binSetName, resourceRepository);
+        
+    }
+
     public Oddball(ResourceRepository resourceRepository, String binSetName) throws BinSetNotLoadedException {
         this.resourceRepository = resourceRepository;
+        this.defaultDataStoreHost = "localhost";
+        this.defaultDataStorePort = "27017";
         binSet = loadBinSet(binSetName, resourceRepository);
+        
     }
 
     private RuleSet ensureRuleSet(String ruleSetName) throws RuleSetNotLoadedException {
@@ -89,7 +102,7 @@ public class Oddball {
     }
 
     private RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException {
-        return RuleSetImpl.loadRuleSet(ruleSetName, resourceRepository);
+        return RuleSetImpl.loadRuleSet(ruleSetName, resourceRepository, defaultDataStoreHost, defaultDataStorePort);
     }
 
     public RuleSet reloadRuleSet(String ruleSetName) throws RuleSetNotLoadedException {
@@ -273,7 +286,7 @@ public class Oddball {
 
     public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
-        String owner = Oddball.ALL;
+        String owner = Oddball.NONE;
         if (options.get("owner") != null) {
             owner = options.get("owner");
         }
@@ -353,6 +366,7 @@ public class Oddball {
     }
 
     public static final String ALL = "_all";
+    public static final String NONE = "";
     static final Logger LOGGER = LoggerFactory.getLogger("oddball");
 
 }

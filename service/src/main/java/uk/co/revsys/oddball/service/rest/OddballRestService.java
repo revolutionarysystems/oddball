@@ -196,6 +196,7 @@ public class OddballRestService extends AbstractRestService {
         if (owner == null) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
+        options.put("owner",owner);
         String query = options.get("query");
         ArrayList<String> cases = new ArrayList<String>();
         try {
@@ -275,66 +276,38 @@ public class OddballRestService extends AbstractRestService {
         }
         return findCasesService(ruleSets, options);
 
-//        
-//        owner = getOwner(owner);
-//        if (owner == null) {
-//            return Response.status(Response.Status.FORBIDDEN).build();
-//        }
-//        HashMap<String, String> options = new HashMap<String, String>();
-//        options.put("owner", owner);
-//        options.put("transformer", transformer);
-//        options.put("recent", recent);
-//        options.put("since", since);
-//        ArrayList<String> cases = new ArrayList<String>();
-//        try {
-//            String[] ruleSetNames = ruleSets.split(",");
-//            for (String ruleSet : ruleSetNames) {
-//                cases.addAll(oddball.findDistinct(ruleSet, "case.series", options));
-//                cases.addAll(oddball.findDistinct(ruleSet, "case.sessionId", options));
-//            }
-//        } catch (RuleSetNotLoadedException ex) {
-//            return buildErrorResponse(ex);
-//        } catch (DaoException ex) {
-//            return buildErrorResponse(ex);
-//        } catch (IOException ex) {
-//            return buildErrorResponse(ex);
-//        }
-//        StringBuilder out = new StringBuilder("[ ");
-//        for (String aCase : cases) {
-//            out.append(aCase);
-//            out.append(", ");
-//        }
-//        if (out.length() > 2) {
-//            out.delete(out.length() - 2, out.length());
-//        }
-//        out.append("]");
-//        return Response.ok(out.toString()).build();
     }
 
     @GET
     @Path("/{ruleSet}/sessionId/{sessionId}/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCasesForSession(@PathParam("sessionId") String sessionId, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @Context UriInfo ui) {
+    public Response findCasesForSession(@PathParam("sessionId") String sessionId, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @Context UriInfo ui) {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
             options.put(key, queryParams.getFirst(key).replace("+"," "));
         }
+        if (ruleSet==null || ruleSet.equals("null")){
+            ruleSet = options.get("ruleSet");
+        }
         options.put("sessionId", sessionId);
-        return findCasesService(ruleSets, options);
+        return findCasesService(ruleSet, options);
     }
 
     @GET
     @Path("/{ruleSet}/series/{series}/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCasesForSeries(@PathParam("series") String series, @PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @Context UriInfo ui) {
+    public Response findCasesForSeries(@PathParam("series") String series, @PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner, @Context UriInfo ui) {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
             options.put(key, queryParams.getFirst(key).replace("+"," "));
         }
+        if (ruleSet==null || ruleSet.equals("null")){
+            ruleSet = options.get("ruleSet");
+        }
         options.put("series", series);
-        return findCasesService(ruleSets, options);
+        return findCasesService(ruleSet, options);
     }
 
     @GET
@@ -401,58 +374,6 @@ public class OddballRestService extends AbstractRestService {
         }
         return findCasesService(ruleSets, options);
     }
-
-    
-    
-//    @GET
-//    @Path("/{ruleSet}/userId/")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response findDistinctUserId(@PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("recent") String recent, @QueryParam("since") String since, @QueryParam("transformer") String transformer) {
-//        return findDistinctAgentService(ruleSets, owner, recent, since, transformer);
-//    }
-//
-//    @GET
-//    @Path("/{ruleSet}/agent/")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response findDistinctAgent(@PathParam("ruleSet") String ruleSets, @QueryParam("account") String owner, @QueryParam("recent") String recent, @QueryParam("since") String since, @QueryParam("transformer") String transformer) {
-//        return findDistinctAgentService(ruleSets, owner, recent, since, transformer);
-//    }
-//
-//    public Response findDistinctAgentService(String ruleSets, String owner, String recent, String since, String transformer) {
-//        owner = getOwner(owner);
-//        if (owner == null) {
-//            return Response.status(Response.Status.FORBIDDEN).build();
-//        }
-//        HashMap<String, String> options = new HashMap<String, String>();
-//        options.put("owner", owner);
-//        options.put("transformer", transformer);
-//        options.put("recent", recent);
-//        options.put("since", since);
-//        ArrayList<String> cases = new ArrayList<String>();
-//        try {
-//            String[] ruleSetNames = ruleSets.split(",");
-//            for (String ruleSet : ruleSetNames) {
-//                cases.addAll(oddball.findDistinct(ruleSet, "case.userId", options));
-//                cases.addAll(oddball.findDistinct(ruleSet, "case.agent", options));
-//            }
-//        } catch (RuleSetNotLoadedException ex) {
-//            return buildErrorResponse(ex);
-//        } catch (IOException ex) {
-//            return buildErrorResponse(ex);
-//        } catch (DaoException ex) {
-//            return buildErrorResponse(ex);
-//        }
-//        StringBuilder out = new StringBuilder("[ ");
-//        for (String aCase : cases) {
-//            out.append(aCase);
-//            out.append(", ");
-//        }
-//        if (out.length() > 2) {
-//            out.delete(out.length() - 2, out.length());
-//        }
-//        out.append("]");
-//        return Response.ok(out.toString()).build();
-//    }
 
     @GET
     @Path("/{ruleSet}/userId/{userId}/")
@@ -521,27 +442,36 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/query/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCasesForQuery(@QueryParam("query") String query, @PathParam("ruleSet") String ruleSets, @QueryParam("ruleSet") String altRuleSets, @QueryParam("account") String owner, @Context UriInfo ui) {
+    public Response findCasesForQuery(@QueryParam("query") String query, @PathParam("ruleSet") String ruleSet, @QueryParam("ruleSet") String altRuleSets, @QueryParam("account") String owner, @Context UriInfo ui) {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
             options.put(key, queryParams.getFirst(key).replace("+"," "));
         }
-        return findCasesService(ruleSets, options);
+        if (ruleSet==null || ruleSet.equals("null")){
+            ruleSet = options.get("ruleSet");
+        }
+        for (String key : queryParams.keySet()) {
+            options.put(key, queryParams.getFirst(key).replace("+"," "));
+        }
+        return findCasesService(ruleSet, options);
     }
-
+    
     @GET
     @Path("/{ruleSet}/query/latest")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findLatestQueryCase(@PathParam("ruleSet") String ruleSet, @Context UriInfo ui) {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
-        options.put("selector", "latest");
         for (String key : queryParams.keySet()) {
             options.put(key, queryParams.getFirst(key).replace("+"," "));
         }
-        if (ruleSet == null || ruleSet.equals("null")) {
-            ruleSet = options.get("ruleSets");
+        options.put("selector", "latest");
+        if (ruleSet==null || ruleSet.equals("null")){
+            ruleSet = options.get("ruleSet");
+        }
+        for (String key : queryParams.keySet()) {
+            options.put(key, queryParams.getFirst(key).replace("+"," "));
         }
         return findCasesService(ruleSet, options);
     }
@@ -703,8 +633,6 @@ public class OddballRestService extends AbstractRestService {
             return buildErrorResponse(ex);
         } catch (IOException ex) {
             return buildErrorResponse(ex);
-//        } catch (TransformerNotLoadedException ex) {
-//            return buildErrorResponse(ex);
         }
         StringBuilder out = new StringBuilder("[ ");
         for (String rule : rules) {
@@ -735,8 +663,6 @@ public class OddballRestService extends AbstractRestService {
             return buildErrorResponse(ex);
         } catch (IOException ex) {
             return buildErrorResponse(ex);
-//        } catch (TransformerNotLoadedException ex) {
-//            return buildErrorResponse(ex);
         }
         StringBuilder out = new StringBuilder("[ ");
         for (String rule : rules) {

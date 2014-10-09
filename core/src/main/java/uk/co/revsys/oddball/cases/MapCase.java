@@ -39,7 +39,12 @@ public class MapCase implements Case{
         try {
             mapContent = JSONUtil.json2map(content);
         } catch (IOException ex) {
-            throw new InvalidCaseException("Invalid Map Case -"+content, ex);
+            try {
+                mapContent = JSONUtil.json2map(content.replace("\\", "\\\\"));
+            } catch (IOException ex2) {
+                throw new InvalidCaseException("Invalid Map Case -"+content, ex);
+            }
+            
         }
     }
     

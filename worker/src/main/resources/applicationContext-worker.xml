@@ -22,6 +22,8 @@
     <bean id="oddball" class="uk.co.revsys.oddball.Oddball">
         <constructor-arg index="0" ref="resourceRepository"/>
         <constructor-arg index="1" value="${default.bins}"/>
+        <constructor-arg index="2" value="${datastore.host}"/>
+        <constructor-arg index="3" value="${datastore.port}"/>
     </bean>
     
     <bean id="resourceRepositoryFactory" class="uk.co.revsys.resource.repository.ResourceRepositoryFactory">
