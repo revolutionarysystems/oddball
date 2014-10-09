@@ -328,6 +328,7 @@ public class OddballRestService extends AbstractRestService {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("selector", "latest");
+        options.put(seriesName, series);
         for (String key : queryParams.keySet()) {
             options.put(key, queryParams.getFirst(key).replace("+"," "));
         }
@@ -420,6 +421,7 @@ public class OddballRestService extends AbstractRestService {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("selector", "latest");
+        options.put(agentName, agent);
         for (String key : queryParams.keySet()) {
             options.put(key, queryParams.getFirst(key).replace("+"," "));
         }
