@@ -2,6 +2,7 @@ package uk.co.revsys.oddball.camel;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.camel.Exchange;
 
 public class RetrieveForSeriesProcessor extends AbstractOddballProcessor{
 
@@ -70,7 +71,7 @@ public class RetrieveForSeriesProcessor extends AbstractOddballProcessor{
     }
 
     @Override
-    public String getUrlPath() {
+    public String getUrlPath(Exchange exchange) {
         StringBuilder retrievePath = new StringBuilder("/"+getRuleSet()+"/series/"+getSeries()+"/");
         return retrievePath.toString();
     }

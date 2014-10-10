@@ -2,6 +2,7 @@ package uk.co.revsys.oddball.camel;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.camel.Exchange;
 
 public class RetrieveQueryProcessor extends AbstractOddballProcessor{
 
@@ -62,7 +63,7 @@ public class RetrieveQueryProcessor extends AbstractOddballProcessor{
     }
 
     @Override
-    public String getUrlPath() {
+    public String getUrlPath(Exchange exchange) {
         StringBuilder retrievePath = new StringBuilder("/"+getRuleSet()+"/query/");
         return retrievePath.toString();
     }
