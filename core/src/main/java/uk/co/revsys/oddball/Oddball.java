@@ -27,6 +27,7 @@ import uk.co.revsys.oddball.bins.BinSetNotLoadedException;
 import uk.co.revsys.oddball.bins.UnknownBinException;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.InvalidCaseException;
+import uk.co.revsys.oddball.cases.MapCase;
 import uk.co.revsys.oddball.rules.DaoException;
 import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.rules.Rule;
@@ -275,6 +276,18 @@ public class Oddball {
         }
     }
 
+    private Collection<String> tagResults(Iterable<String> results, Map<String, String> options) throws RuleSetNotLoadedException, InvalidCaseException {
+        ArrayList<String> taggedResults = new ArrayList<String>();
+        String ruleSetName = options.get("tagger");
+        RuleSet ruleSet = ensureRuleSet(ruleSetName);
+        for (String result:results){
+            MapCase aCase = new MapCase(result);
+            Opinion caseOp = ruleSet.assessCase(aCase, null, ruleSetName, RuleSet.NEVERPERSIST, "");
+            taggedResults.add(caseOp.getEnrichedCase(ruleSetName, aCase));
+        }
+        return taggedResults;
+    }
+
     private String getDefaultedTransformer(String ruleSetName, Map<String, String> options) {
         String transformerStr = options.get("transformer");
         if (transformerStr != null && transformerStr.equals("default")) {
@@ -284,7 +297,7 @@ public class Oddball {
         }
     }
 
-    public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException {
+    public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.NONE;
         if (options.get("owner") != null) {
@@ -301,6 +314,9 @@ public class Oddball {
         }
         if (options.get("aggregator") != null) {
             result = aggregateResults(result, options);
+        }
+        if (options.get("tagger") != null) {
+            result = tagResults(result, options);
         }
         return result;
     }
