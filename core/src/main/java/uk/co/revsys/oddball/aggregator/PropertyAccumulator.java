@@ -16,8 +16,10 @@ import uk.co.revsys.resource.repository.ResourceRepository;
  *
  * @author Andrew
  */
-public interface Aggregator {
+public interface PropertyAccumulator {
 
-    ArrayList<Map> aggregateCases(Iterable<String> caseStrings, Map<String, String> options, ResourceRepository resourceRepository) throws AggregationException;
+    public void accumulateProperty(String property);
+    
+    public Map readOffResults();
     
 }
