@@ -248,7 +248,7 @@ public class RuleSetImpl implements RuleSet{
             List<String> rules = new ArrayList<String>();
             boolean rulesetFound = false;
             for (Resource resource : resources){
-                if (resource.getName().equals(ruleSetName)){
+                if ((resource.getName().equals(ruleSetName)) || (resource.getName().indexOf(ruleSetName+".")==0) &&(resource.getName().indexOf(".json")==-1)){
 //                if ((resource.getName().indexOf(ruleSetName)==0) &&(resource.getName().indexOf(".json")==-1)){
                     rulesetFound = true;
 //                    Resource resource = new Resource("", ruleSetName);

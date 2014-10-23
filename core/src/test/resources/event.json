@@ -8,6 +8,6 @@
 			"tagTime": "{{$.timestamp}}",
 			"type": "Test",
 			"state": "{{$.derived.state}}",
-			"code": "{{$.derived.code}}",
+			"code": "{{$.derived.code}}"
 		}
 	}

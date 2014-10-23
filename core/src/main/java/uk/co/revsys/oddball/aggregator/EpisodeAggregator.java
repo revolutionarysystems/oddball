@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import uk.co.revsys.oddball.cases.Case;
+import uk.co.revsys.resource.repository.ResourceRepository;
 
 /**
  *
@@ -25,8 +26,8 @@ public class EpisodeAggregator implements Aggregator{
     
     
     @Override
-    public ArrayList<Object> aggregateCases(Iterable<String> caseStrings, Map options) throws AggregationException{
-        ArrayList<Object> response = new ArrayList<Object>();
+    public ArrayList<Map> aggregateCases(Iterable<String> caseStrings, Map<String, String> options, ResourceRepository resourceRepository) throws AggregationException{
+        ArrayList<Map> response = new ArrayList<Map>();
         long timeOutPeriod = 600000L;
         long timeOutReference = new Date().getTime(); // default is now
         if (options.containsKey("timeOutPeriod")){

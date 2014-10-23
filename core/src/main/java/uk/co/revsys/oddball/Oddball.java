@@ -263,9 +263,10 @@ public class Oddball {
         Class aggregatorClass = new AggregatorMap().get(options.get("aggregator"));
         try {
             Aggregator ag = (Aggregator) aggregatorClass.newInstance();
-            ArrayList<Object> aggregated = ag.aggregateCases(results, options);
+            ArrayList<Map> aggregated = ag.aggregateCases(results, options, resourceRepository);
             for (Object agg : aggregated) {
                 String aggString = JSONUtil.map2json((Map) agg);
+                aggString=aggString.replace(":  }", ":{ }");
                 aggregatedResults.add(aggString);
             }
             return aggregatedResults;

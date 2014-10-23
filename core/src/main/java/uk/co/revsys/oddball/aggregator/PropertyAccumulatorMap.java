@@ -4,22 +4,22 @@
  * and open the template in the editor.
  */
 
-package uk.co.revsys.oddball;
+package uk.co.revsys.oddball.aggregator;
 
+import uk.co.revsys.oddball.*;
 import java.util.HashMap;
 import uk.co.revsys.oddball.aggregator.EpisodeAggregator;
-import uk.co.revsys.oddball.aggregator.SummaryAggregator;
 
 /**
  *
  * @author Andrew
  */
     
-public class AggregatorMap extends HashMap<String, Class>{
+public class PropertyAccumulatorMap extends HashMap<String, Class>{
 
-	public AggregatorMap() {
-		put("episode", EpisodeAggregator.class);
-		put("summary", SummaryAggregator.class);
+	public PropertyAccumulatorMap() {
+		put("collate", CollationAccumulator.class);
+		put("stats1", BasicStatsAccumulator.class);
 	}
 
 }
