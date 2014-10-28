@@ -206,6 +206,8 @@ public class OddballRestService extends AbstractRestService {
             }
         } catch (RuleSetNotLoadedException ex) {
             return buildErrorResponse(ex);
+        } catch (InvalidCaseException ex) {
+            return buildErrorResponse(ex);
         } catch (TransformerNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (AggregationException ex) {

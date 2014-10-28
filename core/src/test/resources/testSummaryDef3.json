@@ -1,0 +1,8 @@
+{"summary": 
+    [
+        {"name":"city", "source":"location.city", "treatment":"collate"}, 
+        {"name":"state", "source":"case.process.state", "treatment":"collate"}, 
+        {"name":"agent-name", "source":"agent-name", "treatment":"collate"},
+        {"name":"response", "source":"response", "treatment":"stats1"}
+    ]
+}
