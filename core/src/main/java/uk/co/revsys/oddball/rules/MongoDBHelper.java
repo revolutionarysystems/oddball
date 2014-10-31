@@ -123,7 +123,7 @@ public class MongoDBHelper {
         }
     }
 
-    private BasicDBObject buildQuery(String owner, String queryString, Map<String, String> options)throws IOException{
+    private BasicDBObject buildQuery(String owner, String queryString, Map<String, String> options)throws IOException, InvalidTimePeriodException{
         if (queryString == null) {
             queryString="{ }";
         }
@@ -164,47 +164,8 @@ public class MongoDBHelper {
         return query;
     }
     
-    public Collection<String> findCasesForOwner(String owner, String queryString, Map<String, String> options) throws IOException, DaoException {
+    public Collection<String> findCasesForOwner(String owner, String queryString, Map<String, String> options) throws IOException, DaoException, InvalidTimePeriodException {
         BasicDBObject query = buildQuery(owner, queryString, options);
-        
-//        if (queryString == null) {
-//            queryString="{ }";
-//        }
-//        if (options.get("binQuery") != null) {
-//            queryString = addBinQuery(queryString, options.get("binQuery"));
-//        }
-//        BasicDBObject query = new BasicDBObject(JSONUtil.json2map(queryString));
-//        if (!owner.equals(Oddball.ALL)) {
-//            query.append("case." + OWNERPROPERTY, owner);
-//        }
-//        if (options.get("recent") != null) {
-//            addRecentQuery(query, options.get("recent"));
-//        }
-//        if (options.get("ago") != null) {
-//            addAgoQuery(query, options.get("ago"));
-//        }
-//        if (options.get("since") != null) {
-//            addSinceQuery(query, options.get("since"));
-//        }
-//        if (options.get("before") != null) {
-//            addBeforeQuery(query, options.get("before"));
-//        }
-//        if (options.get("forEach") != null) {
-//            addForEachQuery(query, options.get("forEach"), options.get("forEachValue"));
-//        }
-//        if (options.get("series") != null) {
-//            addSeriesQuery(query, options.get("series"));
-//        }
-//        if (options.get("agent") != null) {
-//            addAgentQuery(query, options.get("agent"));
-//        }
-//        if (options.get("sessionId") != null) {
-//            addSessionIdQuery(query, options.get("sessionId"));
-//        }
-//        if (options.get("userId") != null) {
-//            addUserIdQuery(query, options.get("userId"));
-//        }
-
         ArrayList<String> caseList = new ArrayList<String>();
         if (options.get("distinct") !=null){
             List foundCases = cases.getDBCollection().distinct(options.get("distinct"), query);
@@ -252,7 +213,7 @@ public class MongoDBHelper {
         return caseList;
     }
 
-    public void deleteCasesForOwner(String owner, String queryString, Map<String, String> options) throws IOException, DaoException {
+    public void deleteCasesForOwner(String owner, String queryString, Map<String, String> options) throws IOException, DaoException, InvalidTimePeriodException {
         BasicDBObject query = buildQuery(owner, queryString, options);
         
 //        ArrayList<String> caseList = new ArrayList<String>();
@@ -301,18 +262,61 @@ public class MongoDBHelper {
 //        }
 //   }
 
-    private void addRecentQuery(BasicDBObject query, String recent){
-            int minutes = Integer.parseInt(recent);
-            long millis = minutes * 60 * 1000;
+
+    private long parseTimePeriod(String period) throws InvalidTimePeriodException{
+        period=period.trim();
+        long millis = 0;
+        if (period.matches("\\d*")){
+            long periodNum = Long.parseLong(period);
+            millis = periodNum * 60 * 1000;
+        } else {
+            if (period.matches("\\d*[smhDMWY]")){
+                long periodNum = Long.parseLong(period.substring(0, period.length()-1));
+                String periodUnit = period.substring(period.length()-1);
+                if (periodUnit.equals("s")){
+                    millis = periodNum * 1000;
+                } else {
+                    if (periodUnit.equals("m")){
+                        millis = periodNum * 60 * 1000;
+                    } else {
+                        if (periodUnit.equals("h")){
+                            millis = periodNum * 60 * 60 * 1000;
+                        } else {
+                            if (periodUnit.equals("D")){
+                                millis = periodNum * 24 * 60 * 60 * 1000;
+                            } else {
+                                if (periodUnit.equals("M")){
+                                    millis = periodNum * 30 * 24 * 60 * 60 * 1000;
+                                } else {
+                                    if (periodUnit.equals("Y")){
+                                        millis = periodNum * 365 * 24 * 60 * 60 * 1000;
+                                    }
+                                }
+                            }
+                        } 
+                    }
+                } 
+            } else {
+                throw new InvalidTimePeriodException(period);
+            }
+        }
+        return millis;
+    }
+    
+    private void addRecentQuery(BasicDBObject query, String recent) throws InvalidTimePeriodException{
+//            long minutes = Long.parseLong(recent);
+//            long millis = minutes * 60 * 1000;
+            long millis = parseTimePeriod(recent);
             long now = Calendar.getInstance().getTimeInMillis();
             long cutoff = now - millis;
             BasicDBObject subQuery = new BasicDBObject("$gt", Long.toString(cutoff));
             query.append("timestamp", subQuery);
     }
    
-    private void addAgoQuery(BasicDBObject query, String ago){
-            int minutes = Integer.parseInt(ago);
-            long millis = minutes * 60 * 1000;
+    private void addAgoQuery(BasicDBObject query, String ago) throws InvalidTimePeriodException{
+//            long minutes = Long.parseLong(ago);
+//            long millis = minutes * 60 * 1000;
+            long millis = parseTimePeriod(ago);
             long now = Calendar.getInstance().getTimeInMillis();
             long cutoff = now - millis;
             BasicDBObject subQuery = new BasicDBObject("$lte", Long.toString(cutoff));
@@ -369,7 +373,7 @@ public class MongoDBHelper {
     }
     
     
-    public Collection<String> findDistinctQuery(String owner, String queryString, String field, String recent, String since) throws DaoException, IOException {
+    public Collection<String> findDistinctQuery(String owner, String queryString, String field, String recent, String since) throws DaoException, IOException, InvalidTimePeriodException {
         BasicDBObject query = new BasicDBObject(JSONUtil.json2map(queryString));
         if (!owner.equals(Oddball.ALL)) {
             //query = new BasicDBObject("case." + OWNERPROPERTY, owner);

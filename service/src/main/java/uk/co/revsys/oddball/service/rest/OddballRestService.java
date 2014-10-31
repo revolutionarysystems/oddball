@@ -26,6 +26,7 @@ import uk.co.revsys.oddball.bins.UnknownBinException;
 import uk.co.revsys.oddball.cases.InvalidCaseException;
 import uk.co.revsys.oddball.cases.StringCase;
 import uk.co.revsys.oddball.rules.DaoException;
+import uk.co.revsys.oddball.rules.InvalidTimePeriodException;
 import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.rules.RuleSetNotLoadedException;
@@ -212,6 +213,8 @@ public class OddballRestService extends AbstractRestService {
                         }
                     }
             }
+        } catch (InvalidTimePeriodException ex) {
+            return buildErrorResponse(ex);
         } catch (RuleSetNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (InvalidCaseException ex) {

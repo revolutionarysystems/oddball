@@ -1,4 +1,4 @@
-$ruleType:regex
+$ruleType:regex,inMemory
 #$ruleType:regex,localhost,27017
 string:.*
 aString:a.*
