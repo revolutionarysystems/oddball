@@ -1,0 +1,6 @@
+$ruleType:mongo
+$forEachIn:scripts
+[jslib]
+Libraries:{"scripts":{"$regex": ".*libraries.js.*"}}
+Wonderbar:{"scripts":{"$regex": ".*wonderbar.js.*"}}
+Other:{"scripts":{"$regex": ".*someother.js.*"}}

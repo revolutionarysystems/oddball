@@ -6,6 +6,7 @@
 
 package uk.co.revsys.oddball.rules;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import org.junit.After;
@@ -15,7 +16,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.co.revsys.oddball.cases.Case;
+import uk.co.revsys.oddball.cases.MapCase;
 import uk.co.revsys.oddball.cases.StringCase;
+import uk.co.revsys.resource.repository.LocalDiskResourceRepository;
+import uk.co.revsys.resource.repository.ResourceRepository;
 
 /**
  *
@@ -65,7 +69,7 @@ public class RuleSetImplTest {
         RuleSetImpl instance = new RuleSetImpl("Test", true, "", 0);
         instance.addRule(new RegExRule(".*", "string"));
         instance.addRule(new RegExRule("a.*", "aString"));
-        Opinion result = instance.assessCase(aCase, null, "Test", RuleSet.ALWAYSPERSIST, null);
+        Opinion result = instance.assessCase(aCase, null, "Test", RuleSet.ALWAYSPERSIST, null, null);
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("aString"));
         System.out.println(result.getEnrichedCase("Test", aCase));
@@ -90,4 +94,20 @@ public class RuleSetImplTest {
 //        instance.getPersist().dropCases();
 //    }
 
+    ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("src/test/resources"));
+
+    @Test
+    public void testAssessCaseWithMultiples() throws Exception {
+        System.out.println("assessCase");
+        Case aCase = new MapCase("{\"id\": \"123\", \"scripts\": [\"{async=false, defer=false, src=http://dev.echo-central.com/libraries.js, type=text/javascript}\",\"{async=true, defer=true, src=http://script.echo-central.com/wonderbar.js, type=text/javascript}\"]}");
+        //RuleSetImpl instance = new RuleSetImpl("Test1burst", true, "", 0);
+        RuleSet instance = RuleSetImpl.loadRuleSet("Test1burst", resourceRepository, null, null);
+        Opinion result = instance.assessCase(aCase, null, "Test", RuleSet.NEVERPERSIST, null, "scripts");
+        System.out.println(result.getEnrichedCase("Test", aCase));
+        assertTrue(result.getLabel().contains("Libraries"));
+        assertTrue(result.getLabel().contains("Wonderbar"));
+    }
+    
+    
 }
+

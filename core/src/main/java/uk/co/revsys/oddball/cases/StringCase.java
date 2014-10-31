@@ -22,6 +22,10 @@ public class StringCase implements Case{
         return content;
     }
 
+    public Object getContentObject() {
+        return content;
+    }
+
     public String getJSONisedContent(){
         return "\""+content.replace("\"", "\\\"")+"\"";
     }

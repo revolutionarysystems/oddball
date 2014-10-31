@@ -60,4 +60,5 @@ public class MongoRuleSetTest {
         assertTrue(persistDb.testCase("{ \"case\" : { \"platform\" : \"Win32\", \"userId\" : \"10A\" } }"));
     }
 
+
 }

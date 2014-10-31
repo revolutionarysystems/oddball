@@ -14,27 +14,29 @@ import uk.co.revsys.oddball.util.JSONUtil;
  *
  * @author Andrew
  */
-public class BasicStatsAccumulator implements PropertyAccumulator{
+public class LogNormalStatsAccumulator implements PropertyAccumulator{
 
     private float min = Float.MAX_VALUE;
     private float max = Float.MIN_VALUE;
     private float total = 0;
+    private float sumsquares = 0;
     private int nonNulls = 0;
-
-    public BasicStatsAccumulator() {
+    public LogNormalStatsAccumulator() {
         
     }
                 
     public void accumulateProperty(String property){
         if (property!=null){
-            float value = Float.parseFloat(property);
+            float rawValue = Float.parseFloat(property);
+            float value = (float) Math.log10(rawValue);
             total+= value;
+            sumsquares+=value * value;
             nonNulls+=1;
-            if (value < min){
-                min= value;
+            if (rawValue < min){
+                min= rawValue;
             }
-            if (value > max){
-                max= value;
+            if (rawValue > max){
+                max= rawValue;
             }
         }
     }
@@ -43,12 +45,23 @@ public class BasicStatsAccumulator implements PropertyAccumulator{
         Map<String, String> results = new HashMap<String, String>();
         results.put("nonNulls", Integer.toString(nonNulls));
         results.put("total", Float.toString(total));
+        results.put("sumsquares", Float.toString(sumsquares));
         results.put("min", Float.toString(min));
         results.put("max", Float.toString(max));
         if (nonNulls > 0){
-            results.put("ave", Float.toString(total/nonNulls));
+            results.put("avelog", Float.toString(total/nonNulls));
+            results.put("centre", Double.toString(Math.pow(10.0, total/nonNulls)));
+        }
+        if (nonNulls > 1){
+            double var = (sumsquares - (total*total)/nonNulls)/(nonNulls-1);
+            double std = Math.sqrt(var);
+            results.put("varlog", Double.toString(var));
+            results.put("stdlog", Double.toString(std));
+            results.put("lowMargin", Double.toString(Math.pow(10.0, total/nonNulls-std)));
+            results.put("highMargin", Double.toString(Math.pow(10.0, total/nonNulls+std)));
         }
         return results;
+
     }
 
     

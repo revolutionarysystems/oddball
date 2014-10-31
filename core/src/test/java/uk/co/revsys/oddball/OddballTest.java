@@ -371,7 +371,7 @@ public class OddballTest {
             System.out.println(aCase);
         }
         assertFalse(cases.iterator().hasNext());
-        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\"}");
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\"}, \"hashTag\":\"#luckybreak\"}");
         
         Opinion result = instance.assessCase(ruleSetName, null, theCase);
         instance.assessCase(ruleSetName, null, theCase);
@@ -380,8 +380,8 @@ public class OddballTest {
         Iterable<String> cases2 = instance.findQueryCases(ruleSetName, "{ }", options);
         for (String aCase : cases2){
             System.out.println(aCase);
+            assertTrue(aCase.contains("#luckybreak"));
         }
-        
         assertTrue(cases2.iterator().hasNext());
     }
     
@@ -989,6 +989,26 @@ public class OddballTest {
     }
     
 
+    @Test
+    public void testFindCasesMultipleQuery() throws Exception {
+        System.out.println("findCasesMultiple");
+        String ruleSetName = "Test1burst";
+        Case theCase = new MapCase("{\"id\": \"123\", \"scripts\": [\"{async=false, defer=false, src=http://dev.echo-central.com/libraries.js, type=text/javascript}\",\"{async=true, defer=true, src=http://script.echo-central.com/wonderbar.js, type=text/javascript}\"]}");
+       
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, null, theCase);
+        System.out.println(result.getLabel());
+        HashMap<String, String> options=new HashMap<String, String>();
+        options.put("owner", "_all");
+        Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        for (String aCase : cases0){
+            System.out.println(aCase);
+            assertTrue(aCase.contains("Libraries")||aCase.contains("Wonderbar"));
+        }
+       // assertTrue(false);
+
+    }
+    
 
 
 }

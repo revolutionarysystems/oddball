@@ -35,6 +35,8 @@ public interface RuleSet {
         
     public Set<Rule> getAllRules();
         
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String forEachIn) throws InvalidCaseException;
+
     public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery) throws InvalidCaseException;
     
     public String getRuleType();
@@ -46,6 +48,10 @@ public interface RuleSet {
     public Class getRuleClass();
     
     public void setRuleClass(Class ruleClass);
+
+    public String getForEachIn();
+    
+    public void setForEachIn(String forEachIn);
 
     public void setName(String name);
     

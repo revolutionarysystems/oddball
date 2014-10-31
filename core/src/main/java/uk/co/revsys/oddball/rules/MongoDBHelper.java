@@ -67,7 +67,6 @@ public class MongoDBHelper {
     }
 
     public String checkAlreadyExists(String duplicateQuery){
-        System.out.println(duplicateQuery);
         FindOne found = cases.findOne(duplicateQuery);
         if (found.as(Map.class)==null){
             return null;
@@ -124,7 +123,7 @@ public class MongoDBHelper {
         }
     }
 
-    public Collection<String> findCasesForOwner(String owner, String queryString, Map<String, String> options) throws IOException, DaoException {
+    private BasicDBObject buildQuery(String owner, String queryString, Map<String, String> options)throws IOException{
         if (queryString == null) {
             queryString="{ }";
         }
@@ -138,8 +137,17 @@ public class MongoDBHelper {
         if (options.get("recent") != null) {
             addRecentQuery(query, options.get("recent"));
         }
+        if (options.get("ago") != null) {
+            addAgoQuery(query, options.get("ago"));
+        }
         if (options.get("since") != null) {
             addSinceQuery(query, options.get("since"));
+        }
+        if (options.get("before") != null) {
+            addBeforeQuery(query, options.get("before"));
+        }
+        if (options.get("forEach") != null) {
+            addForEachQuery(query, options.get("forEach"), options.get("forEachValue"));
         }
         if (options.get("series") != null) {
             addSeriesQuery(query, options.get("series"));
@@ -153,6 +161,49 @@ public class MongoDBHelper {
         if (options.get("userId") != null) {
             addUserIdQuery(query, options.get("userId"));
         }
+        return query;
+    }
+    
+    public Collection<String> findCasesForOwner(String owner, String queryString, Map<String, String> options) throws IOException, DaoException {
+        BasicDBObject query = buildQuery(owner, queryString, options);
+        
+//        if (queryString == null) {
+//            queryString="{ }";
+//        }
+//        if (options.get("binQuery") != null) {
+//            queryString = addBinQuery(queryString, options.get("binQuery"));
+//        }
+//        BasicDBObject query = new BasicDBObject(JSONUtil.json2map(queryString));
+//        if (!owner.equals(Oddball.ALL)) {
+//            query.append("case." + OWNERPROPERTY, owner);
+//        }
+//        if (options.get("recent") != null) {
+//            addRecentQuery(query, options.get("recent"));
+//        }
+//        if (options.get("ago") != null) {
+//            addAgoQuery(query, options.get("ago"));
+//        }
+//        if (options.get("since") != null) {
+//            addSinceQuery(query, options.get("since"));
+//        }
+//        if (options.get("before") != null) {
+//            addBeforeQuery(query, options.get("before"));
+//        }
+//        if (options.get("forEach") != null) {
+//            addForEachQuery(query, options.get("forEach"), options.get("forEachValue"));
+//        }
+//        if (options.get("series") != null) {
+//            addSeriesQuery(query, options.get("series"));
+//        }
+//        if (options.get("agent") != null) {
+//            addAgentQuery(query, options.get("agent"));
+//        }
+//        if (options.get("sessionId") != null) {
+//            addSessionIdQuery(query, options.get("sessionId"));
+//        }
+//        if (options.get("userId") != null) {
+//            addUserIdQuery(query, options.get("userId"));
+//        }
 
         ArrayList<String> caseList = new ArrayList<String>();
         if (options.get("distinct") !=null){
@@ -201,6 +252,16 @@ public class MongoDBHelper {
         return caseList;
     }
 
+    public void deleteCasesForOwner(String owner, String queryString, Map<String, String> options) throws IOException, DaoException {
+        BasicDBObject query = buildQuery(owner, queryString, options);
+        
+//        ArrayList<String> caseList = new ArrayList<String>();
+        WriteResult wr = cases.getDBCollection().remove(query);
+    }
+
+
+    
+    
     public Collection<String> findCaseById(String owner, String id) throws DaoException {
 //        try {
             Find found = cases.find("{_id: #}", new ObjectId(id));
@@ -249,13 +310,35 @@ public class MongoDBHelper {
             query.append("timestamp", subQuery);
     }
    
+    private void addAgoQuery(BasicDBObject query, String ago){
+            int minutes = Integer.parseInt(ago);
+            long millis = minutes * 60 * 1000;
+            long now = Calendar.getInstance().getTimeInMillis();
+            long cutoff = now - millis;
+            BasicDBObject subQuery = new BasicDBObject("$lte", Long.toString(cutoff));
+            query.append("timestamp", subQuery);
+    }
+   
     private void addSinceQuery(BasicDBObject query, String since){
             long cutoff = 0;
             try {
                 cutoff = Long.parseLong(since);
             } catch (java.lang.NumberFormatException e) {}
-            BasicDBObject subQuery = new BasicDBObject("$gt", Long.toString(cutoff));
+            BasicDBObject subQuery = new BasicDBObject("$gte", Long.toString(cutoff));
             query.append("timestamp", subQuery);
+    }
+   
+    private void addBeforeQuery(BasicDBObject query, String before){
+            long cutoff = 0;
+            try {
+                cutoff = Long.parseLong(before);
+            } catch (java.lang.NumberFormatException e) {}
+            BasicDBObject subQuery = new BasicDBObject("$lt", Long.toString(cutoff));
+            query.append("timestamp", subQuery);
+    }
+   
+    private void addForEachQuery(BasicDBObject query, String forEach, String forEachValue){
+            query.append(forEach, forEachValue);
     }
    
     private void addSeriesQuery(BasicDBObject query, String series){

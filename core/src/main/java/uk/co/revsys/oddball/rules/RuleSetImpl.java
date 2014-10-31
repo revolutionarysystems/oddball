@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
@@ -21,6 +22,9 @@ import uk.co.revsys.oddball.RuleSetMap;
 import uk.co.revsys.oddball.RuleTypeMap;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.InvalidCaseException;
+import uk.co.revsys.oddball.cases.MapCase;
+import uk.co.revsys.oddball.cases.StringCase;
+import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.resource.repository.ResourceRepository;
 import uk.co.revsys.resource.repository.model.Resource;
 
@@ -44,6 +48,15 @@ public class RuleSetImpl implements RuleSet{
 
     private String name;
     private String ruleType;
+    private String forEachIn;
+
+    public String getForEachIn() {
+        return forEachIn;
+    }
+
+    public void setForEachIn(String forEachIn) {
+        this.forEachIn = forEachIn;
+    }
     private MongoDBHelper persist;
     private Class ruleClass;
 
@@ -81,70 +94,99 @@ public class RuleSetImpl implements RuleSet{
 
     @Override
     public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery) throws InvalidCaseException{
-        
-        Opinion op = new OpinionImpl();
+        return assessCase(aCase, key, ruleSetStr, persistOption, duplicateQuery, this.forEachIn);
+    }
 
+    
+    @Override
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String forEachIn) throws InvalidCaseException{
+
+        Opinion op = new OpinionImpl();
+        MapCase aMapCase = null;
         
-        for (Rule rule: rules){
-            Assessment as = rule.apply(aCase, this, key);
-            op.incorporate(as);
-        }
-        if (op.getTags().isEmpty()){
-            boolean found = false;
-            for (Rule rule:extraRules){
+        if (forEachIn!=null){ // multiple Case
+            try {
+                aMapCase = (MapCase) aCase;
+            } catch (ClassCastException e){
+                aMapCase = new MapCase(aCase.getContent());
+            }
+            List subCases = (List)((Map<String, Object>)aMapCase.getContentObject()).get(this.forEachIn);
+            System.out.println(aMapCase);
+            System.out.println(subCases);
+            if (subCases != null){
+                for (Object subCaseString: subCases){
+                    ((Map<String, Object>)aMapCase.getContentObject()).put(this.forEachIn, subCaseString);
+                    aMapCase.setContent(JSONUtil.map2json((Map<String, Object>)aMapCase.getContentObject()));
+                    Case subCase = new MapCase(aMapCase.getContent());
+                    Opinion subOp = assessCase(subCase, null, ruleSetStr, persistOption, duplicateQuery, null);
+                    op.getTags().addAll(subOp.getTags());
+                }
+            }
+            return op;
+            
+        } else { // single case
+            for (Rule rule: rules){
                 Assessment as = rule.apply(aCase, this, key);
-                if (as.getLabelStr()!=null){
-                    op.incorporate(as);
-                    found=true;
-                    break;
-                }
+                op.incorporate(as);
             }
-            if (!found){
-                op.getTags().add("*odDball*");
-            }
-        }
-        for (String prefix:prefixes){
-            boolean found = false;
-            for (String tag: op.getTags()){
-                if (tag.indexOf(prefix)==0){
-                    found=true;
-                    break;
-                }
-            }
-            if (!found){
+            if (op.getTags().isEmpty()){
+                boolean found = false;
                 for (Rule rule:extraRules){
-                    if (rule.getLabel().indexOf(prefix)==0){
-                        Assessment as = rule.apply(aCase, this, key);
-                        if (as.getLabelStr()!=null){
-                            op.incorporate(as);
-                            found=true;
-                            break;
+                    Assessment as = rule.apply(aCase, this, key);
+                    if (as.getLabelStr()!=null){
+                        op.incorporate(as);
+                        found=true;
+                        break;
+                    }
+                }
+                if (!found){
+                    op.getTags().add("*odDball*");
+                }
+            }
+            for (String prefix:prefixes){
+                boolean found = false;
+                for (String tag: op.getTags()){
+                    if (tag.indexOf(prefix)==0){
+                        found=true;
+                        break;
+                    }
+                }
+                if (!found){
+                    for (Rule rule:extraRules){
+                        if (rule.getLabel().indexOf(prefix)==0){
+                            Assessment as = rule.apply(aCase, this, key);
+                            if (as.getLabelStr()!=null){
+                                op.incorporate(as);
+                                found=true;
+                                break;
+                            }
                         }
                     }
                 }
-            }
-            if (!found){
-                op.getTags().add(prefix+"odDball");
-            }
-        }
-        if (op.getLabel().indexOf("*ignore*")>=0){
-            op.getTags().clear();
-        } else {
-            if (persistOption != NEVERPERSIST){
-                String persistCase = op.getEnrichedCase(ruleSetStr, aCase);
-                if (persistOption == UPDATEPERSIST){
-                    String id = getPersist().checkAlreadyExists(duplicateQuery);
-                    while (id != null){
-                        LOGGER.debug("removing "+id);
-                        getPersist().removeCase(id);
-                        id = getPersist().checkAlreadyExists(duplicateQuery);
-                    }
+                if (!found){
+                    op.getTags().add(prefix+"odDball");
                 }
-                getPersist().insertCase(persistCase);
-                LOGGER.debug("inserting:"+duplicateQuery);
             }
-        }
-        return op;
+            if (op.getLabel().indexOf("*ignore*")>=0){
+                op.getTags().clear();
+            } else {
+                if (persistOption != NEVERPERSIST){
+                    String persistCase = op.getEnrichedCase(ruleSetStr, aCase);
+                    if (persistOption == UPDATEPERSIST){
+                        String id = getPersist().checkAlreadyExists(duplicateQuery);
+                        while (id != null){
+                            LOGGER.debug("removing "+id);
+                            getPersist().removeCase(id);
+                            id = getPersist().checkAlreadyExists(duplicateQuery);
+                        }
+                    }
+                    getPersist().insertCase(persistCase);
+                    //LOGGER.debug("inserting:"+duplicateQuery);
+                }
+            }
+            return op;
+            }
+    
     }
 
    
@@ -269,33 +311,36 @@ public class RuleSetImpl implements RuleSet{
     public static RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository, String defaultDataStoreHost, String defaultDataStorePort) throws RuleSetNotLoadedException{
         try{
             List<String> rules = getRuleSet(ruleSetName, resourceRepository);
+            String forEachIn= null;
             String ruleType= "default";
             String ruleHost= "inMemory";
             int rulePort= 0;
             
             boolean inMemory = true;
-            if (rules.get(0).contains("$ruleType")){
-                String rule = rules.get(0);
-                String[] parsed = rule.trim().split(":",2);
-                ruleType=parsed[1];
-                String[] parsedRuleType = ruleType.trim().split(",",3);
-                ruleType= parsedRuleType[0];
-                try {
-                    ruleHost= parsedRuleType[1];
-//                    String rulePortStr= parsedRuleType[2];
-//                    rulePort = Integer.parseInt(rulePortStr);
+            for (String rule:rules){
+                if (rule.contains("$ruleType")){
+                    String[] parsed = rule.trim().split(":",2);
+                    ruleType=parsed[1];
+                    String[] parsedRuleType = ruleType.trim().split(",",3);
+                    ruleType= parsedRuleType[0];
+                    try {
+                        ruleHost= parsedRuleType[1];
+                    }
+                    catch (Exception e){
+                    }
+                    //rules.remove(rule);
+                    if (ruleHost.equals("inMemory")){
+                        inMemory = true;
+                    } else {
+                        inMemory = false;
+                        ruleHost = defaultDataStoreHost;
+                        rulePort = Integer.parseInt(defaultDataStorePort);
+                    }
                 }
-                catch (Exception e){
+                if (rule.contains("$forEachIn")){
+                    String[] parsed = rule.trim().split(":",2);
+                    forEachIn=parsed[1];
                 }
-                rules.remove(rule);
-                if (ruleHost.equals("inMemory")){
-                    inMemory = true;
-                } else {
-                    inMemory = false;
-                    ruleHost = defaultDataStoreHost;
-                    rulePort = Integer.parseInt(defaultDataStorePort);
-                }
-                
             }
 //            LOGGER.debug("loading rules "+ruleSetName);
 //            LOGGER.debug(Boolean.toString(inMemory));
@@ -309,6 +354,7 @@ public class RuleSetImpl implements RuleSet{
             Class ruleClass = new RuleTypeMap().get(ruleType);
             ruleSet.setName(ruleSetName);
             ruleSet.setRuleClass(ruleClass);
+            ruleSet.setForEachIn(forEachIn);
             ruleSet.loadRules(rules, resourceRepository);
             
             return ruleSet;

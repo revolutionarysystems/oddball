@@ -48,13 +48,18 @@ public class MongoRuleSet extends RuleSetImpl{
     }
     
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery) throws InvalidCaseException{
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String forEachIn) throws InvalidCaseException{
         String caseStr = aCase.getContent();
         Case theCase = new MapCase(caseStr);
-        String caseId = assess.insertCase(caseStr);
-        Opinion op = super.assessCase(theCase, caseId, ruleSetStr, persistOption, duplicateQuery);
-        assess.removeCase(caseId);
-        return op;
+        if (forEachIn==null){  //lowest level of nesting
+            String caseId = assess.insertCase(caseStr);
+            Opinion op = super.assessCase(theCase, caseId, ruleSetStr, persistOption, duplicateQuery, forEachIn);
+            assess.removeCase(caseId);
+            return op;
+        } else {
+            Opinion op = super.assessCase(theCase, "", ruleSetStr, persistOption, duplicateQuery, forEachIn);
+            return op;
+    }
     }
 
     

@@ -28,7 +28,6 @@ public class FileFlow {
     public FileFlow(Tap inTap, Tap outTap, Tap otherTap) {
         Pipe copyPipe = new Pipe( "copy" );
         Pipe oddballPipe = new Each( "oddball", new OddballFilter() );
-        System.out.println(oddballPipe.getName());
         flowDef = FlowDef.flowDef().addSource( copyPipe, inTap ).addSource(oddballPipe, inTap).addTailSink( copyPipe, outTap ).addTailSink(oddballPipe, otherTap);
     }
     

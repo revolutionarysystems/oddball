@@ -202,7 +202,15 @@ public class OddballRestService extends AbstractRestService {
         try {
             String[] ruleSetNames = ruleSets.split(",");
             for (String ruleSet : ruleSetNames) {
-                    cases.addAll(oddball.findQueryCases(ruleSet.trim(), query, options));
+                    if (options.get("action")!=null && options.get("action").equals("delete")){
+                        oddball.deleteQueryCases(ruleSet.trim(), query, options);
+                    } else {
+                        if (options.get("forEach")!=null){
+                            cases.addAll(oddball.findQueryCasesForEach(ruleSet.trim(), query, options));
+                        } else {
+                            cases.addAll(oddball.findQueryCases(ruleSet.trim(), query, options));
+                        }
+                    }
             }
         } catch (RuleSetNotLoadedException ex) {
             return buildErrorResponse(ex);

@@ -82,24 +82,17 @@ public class SummaryAggregator implements Aggregator{
         for (int i=periods-1 ; i>=0; i--){
             try {
                 summaries.add(new Summary(options.get("owner"), reportStart+i*periodms, periodms, summaryDefinition));
-                System.out.println("setting up summary");
             } catch (AccumulationException e){
                 throw new AggregationException("Problem in Accumulation", e);
             }
         }
         // iterate through cases
         for (String caseString:caseStrings){
-            System.out.println("testing case string");
-            System.out.println(caseString);
             try {
                 Map<String, Object> caseMap = JSONUtil.json2map(caseString);
                 long caseTime = Long.parseLong((String)caseMap.get("timestamp")); //generalise
                 for (Summary summary: summaries){
                 // if case belongs in Summary, incorporate it
-                    System.out.println("testing summary");
-                    System.out.println(caseTime);
-                    System.out.println(summary.getStartTime());
-                    System.out.println(summary.getEndTime());
                     if (caseTime >= summary.getStartTime() && caseTime < summary.getEndTime()){
                         summary.incorporate(caseMap);
                         break;

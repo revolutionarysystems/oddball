@@ -30,6 +30,11 @@ public class MapCase implements Case{
         return content;
     }
 
+    public Object getContentObject(){
+        return mapContent;
+    }
+    
+    
     public String getJSONisedContent(){
         return content;
     }

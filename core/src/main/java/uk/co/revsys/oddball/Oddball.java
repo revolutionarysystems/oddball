@@ -172,9 +172,6 @@ public class Oddball {
                 }
             }
         }
-        System.out.println("Rule lines");
-        System.out.println(lines);
-
         InputStream is = new ByteArrayInputStream(lines.toString().getBytes("UTF-8"));
         Resource resource = new Resource("", fileName);
 
@@ -298,6 +295,35 @@ public class Oddball {
         }
     }
 
+    private Collection<String> restoreHashes(Collection<String> inStrings){
+        Collection<String> result = new ArrayList<String>();
+        for (String resultString : inStrings){
+            result.add(resultString.replace("(hash)", "#"));
+        }
+        return result;
+    }
+
+        public Collection<String> findQueryCasesForEach(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException {
+            ArrayList<String> cases = new ArrayList<String>();
+            String forEach = options.get("forEach");
+            HashMap<String, String> distinctOptions = new HashMap<String, String>();
+            distinctOptions.putAll(options);
+            distinctOptions.put("distinct", forEach);
+            distinctOptions.remove("transformer");
+            distinctOptions.remove("aggregator");
+            distinctOptions.remove("selector");
+            distinctOptions.remove("tagger");
+            distinctOptions.remove("forEach");
+            ArrayList<String> allDistinct = new ArrayList<String>();
+            allDistinct.addAll(findQueryCases(ruleSetName, query, distinctOptions));
+            for (String distinctValue : allDistinct){
+                options.put("forEachValue", distinctValue.replace("\"", ""));
+                cases.addAll(findQueryCases(ruleSetName, query, options));
+            }
+            return cases;
+        }
+
+    
     public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.NONE;
@@ -310,6 +336,7 @@ public class Oddball {
             options.put("binQuery", binQuery);
         }
         Collection<String> result = ruleSet.getPersist().findCasesForOwner(owner, query, options);
+        result = restoreHashes(result);
         if (options.get("transformer") != null) {
             result = transformResults(result, getDefaultedTransformer(ruleSetName, options));
         }
@@ -322,6 +349,22 @@ public class Oddball {
         return result;
     }
 
+
+    public void deleteQueryCases(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException {
+        RuleSet ruleSet = ensureRuleSet(ruleSetName);
+        String owner = Oddball.NONE;
+        if (options.get("owner") != null) {
+            owner = options.get("owner");
+        }
+        if (options.get("binLabel")!=null){
+            String binLabel = options.get("binLabel");
+            String binQuery = this.getBinQuery(binLabel, options);
+            options.put("binQuery", binQuery);
+        }
+        ruleSet.getPersist().deleteCasesForOwner(owner, query, options);
+    }
+
+    
     public Collection<String> findCaseById(String ruleSetName, String id, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, TransformerNotLoadedException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.ALL;

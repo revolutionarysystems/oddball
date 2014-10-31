@@ -99,9 +99,7 @@ public abstract class RuleImpl implements Rule {
     @Override
     public String asRuleConfig()throws IOException{
         StringBuilder rule = new StringBuilder("");
-        System.out.println(getLabel());
         String prefix = this.getPrefix();
-        System.out.println(prefix);
         if (prefix !=null){
             rule.append("["+prefix+"]\n");
         } else {
