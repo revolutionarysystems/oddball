@@ -84,19 +84,19 @@ public class OddballTest {
     /**
      * Test of assessCase method, of class Oddball.
      */
-    @Test
-    public void testAssessCaseMatchPersistentRules() throws Exception {
-        System.out.println("assessCase");
-        String ruleSetName = "Test1persist";
-        Case aCase = new StringCase("abc123");
-        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
-        assertTrue(result.getLabel().contains("string"));
-        assertTrue(result.getLabel().contains("aString"));
-        assertTrue(result.getLabel().contains("abc-ish"));
-        assertFalse(result.getLabel().contains("null"));
-        instance.ruleSets.get("Test1persist").getPersist().dropCases();
-    }
+//    @Test
+//    public void testAssessCaseMatchPersistentRules() throws Exception {
+//        System.out.println("assessCase");
+//        String ruleSetName = "Test1persist";
+//        Case aCase = new StringCase("abc123");
+//        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+//        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+//        assertTrue(result.getLabel().contains("string"));
+//        assertTrue(result.getLabel().contains("aString"));
+//        assertTrue(result.getLabel().contains("abc-ish"));
+//        assertFalse(result.getLabel().contains("null"));
+//        instance.ruleSets.get("Test1persist").getPersist().dropCases();
+//    }
  
     /**
      * Test of assessCase method, of class Oddball.
