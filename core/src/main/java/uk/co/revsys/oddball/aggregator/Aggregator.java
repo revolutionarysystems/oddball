@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import uk.co.revsys.oddball.rules.InvalidTimePeriodException;
 import uk.co.revsys.resource.repository.ResourceRepository;
 
 /**
@@ -18,6 +19,6 @@ import uk.co.revsys.resource.repository.ResourceRepository;
  */
 public interface Aggregator {
 
-    ArrayList<Map> aggregateCases(Iterable<String> caseStrings, Map<String, String> options, ResourceRepository resourceRepository) throws AggregationException;
+    ArrayList<Map> aggregateCases(Iterable<String> caseStrings, Map<String, String> options, ResourceRepository resourceRepository) throws AggregationException, InvalidTimePeriodException;
     
 }

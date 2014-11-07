@@ -256,7 +256,7 @@ public class Oddball {
         return transformer.transform(caseStr, transformStr, params);
     }
 
-    private Collection<String> aggregateResults(Iterable<String> results, Map<String, String> options) throws AggregationException {
+    private Collection<String> aggregateResults(Iterable<String> results, Map<String, String> options) throws AggregationException, InvalidTimePeriodException {
         ArrayList<String> aggregatedResults = new ArrayList<String>();
         Class aggregatorClass = new AggregatorMap().get(options.get("aggregator"));
         try {

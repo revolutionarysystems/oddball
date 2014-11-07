@@ -15,7 +15,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import uk.co.revsys.oddball.cases.Case;
+import uk.co.revsys.oddball.rules.InvalidTimePeriodException;
 import uk.co.revsys.oddball.util.JSONUtil;
+import uk.co.revsys.oddball.util.OddUtil;
 import uk.co.revsys.resource.repository.ResourceRepository;
 
 /**
@@ -27,7 +29,7 @@ public class SummaryAggregator implements Aggregator{
     
     
     @Override
-    public ArrayList<Map> aggregateCases(Iterable<String> caseStrings, Map<String, String> options, ResourceRepository resourceRepository) throws AggregationException{
+    public ArrayList<Map> aggregateCases(Iterable<String> caseStrings, Map<String, String> options, ResourceRepository resourceRepository) throws AggregationException, InvalidTimePeriodException{
         ArrayList<Map> response = new ArrayList<Map>();
         String summaryDefinitionName = options.get("summaryDefinition");
         try {
@@ -44,19 +46,22 @@ public class SummaryAggregator implements Aggregator{
         }
         long reportEnd = new Date().getTime();
         if (options.get("periodEnd")!=null){
-            reportEnd = Long.parseLong(options.get("periodEnd"));
+            reportEnd = Long.parseLong((String) options.get("periodEnd"));
+        } else {
+            if (options.get("ago")!=null){
+                reportEnd = new Date().getTime() - new OddUtil().parseTimePeriod((String) options.get("ago"), "m");
+            }
         }
-        long periodMin = 60; // default unit is minute
+        long periodms = 60 * 60 * 1000; 
         if (options.get("periodDivision")!=null){
-            periodMin = Long.parseLong(options.get("periodDivision"));
+            periodms = new OddUtil().parseTimePeriod((String) options.get("periodDivision"), "m");
         }
-        long periodms=periodMin * 60 * 1000;
         if (align.equals("clock")){
             reportEnd = periodms * Math.round(0.499999+reportEnd/(1.0*periodms));
         }
         long reportStart = reportEnd - periodms;
         if (options.get("periodStart")!=null){
-            reportStart = Long.parseLong(options.get("periodStart"));
+            reportStart = Long.parseLong((String) options.get("periodStart"));
         }
         int periods = (int) Math.round(0.4999+(reportEnd-reportStart)/(1.0*periodms));  //round up number of periods to ensure coverage
         if (options.get("periods")!=null){
@@ -67,7 +72,8 @@ public class SummaryAggregator implements Aggregator{
         }
         if (options.get("recent")!=null){
             if (options.get("periodStart")==null && options.get("periods")==null){
-                long duration = Long.parseLong(options.get("recent"))*60*1000;
+                long duration = new OddUtil().parseTimePeriod((String) options.get("recent"), "m");
+                //long duration = Long.parseLong(options.get("recent"))*60*1000;
                 if (align.equals("clock")){ //ensure at least the recent period is covered, when aligned to clock, this means 1 extra period
                     duration+=periodms;
                 }

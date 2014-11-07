@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import static org.junit.Assert.*;
 import org.junit.Test;
+import uk.co.revsys.oddball.rules.InvalidTimePeriodException;
 import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.resource.repository.LocalDiskResourceRepository;
 import uk.co.revsys.resource.repository.ResourceRepository;
@@ -31,7 +32,7 @@ public class SummaryAggregatorTest{
 
     
     @Test
-    public void testAggregateSignals() throws EventNotCreatedException, AggregationException, IOException {
+    public void testAggregateSignals() throws EventNotCreatedException, AggregationException, IOException, InvalidTimePeriodException {
         HashSet<String> signals = new HashSet<String>();
         signals.add("{\"accountId\": \"revsys-master-account\","
                 + "\"timestamp\": \"1000000\","
@@ -96,7 +97,7 @@ public class SummaryAggregatorTest{
     }
         
     @Test
-    public void testAggregateSignalsWithStats() throws EventNotCreatedException, AggregationException, IOException {
+    public void testAggregateSignalsWithStats() throws EventNotCreatedException, AggregationException, IOException, InvalidTimePeriodException {
         HashSet<String> signals = new HashSet<String>();
         signals.add("{\"accountId\": \"revsys-master-account\","
                 + "\"timestamp\": \"1000000\","
@@ -148,7 +149,7 @@ public class SummaryAggregatorTest{
     }
         
     @Test
-    public void testAggregateSignalsWithStats2() throws EventNotCreatedException, AggregationException, IOException {
+    public void testAggregateSignalsWithStats2() throws EventNotCreatedException, AggregationException, IOException, InvalidTimePeriodException {
         HashSet<String> signals = new HashSet<String>();
         signals.add("{\"accountId\": \"revsys-master-account\","
                 + "\"timestamp\": \"1000000\","
@@ -204,7 +205,7 @@ public class SummaryAggregatorTest{
         
        
     @Test
-    public void testAggregateSignalsWithLogNormalStats() throws EventNotCreatedException, AggregationException, IOException {
+    public void testAggregateSignalsWithLogNormalStats() throws EventNotCreatedException, AggregationException, IOException, InvalidTimePeriodException {
         HashSet<String> signals = new HashSet<String>();
         signals.add("{\"accountId\": \"revsys-master-account\","
                 + "\"timestamp\": \"1000000\","
@@ -264,7 +265,7 @@ public class SummaryAggregatorTest{
        
        
     @Test
-    public void testAggregateSignalsNestedObjects() throws EventNotCreatedException, AggregationException, IOException {
+    public void testAggregateSignalsNestedObjects() throws EventNotCreatedException, AggregationException, IOException, InvalidTimePeriodException {
         HashSet<String> signals = new HashSet<String>();
         signals.add("{\"accountId\": \"revsys-master-account\","
                 + "\"timestamp\": \"1000000\","
@@ -319,7 +320,7 @@ public class SummaryAggregatorTest{
         
         
     @Test
-    public void testAggregateSignalsEmpty() throws EventNotCreatedException, AggregationException, IOException {
+    public void testAggregateSignalsEmpty() throws EventNotCreatedException, AggregationException, IOException, InvalidTimePeriodException {
         HashSet<String> signals = new HashSet<String>();
         SummaryAggregator sa = new SummaryAggregator();
         Map<String, String> options = new HashMap<String, String>();

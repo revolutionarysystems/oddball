@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package uk.co.revsys.oddball.aggregator;
 
 import java.util.ArrayList;
@@ -27,40 +26,40 @@ public class Episode {
         this.status = Episode.OPEN;
         this.stateCodes = new StringBuilder("");
     }
-    
-    public void recordState(String state, String code, long thisTime, long thisTagTime){
+
+    public void recordState(String state, String code, long thisTime, long thisTagTime) {
         this.states.add(state);
         this.stateCodes.append(code);
-        this.endTime=thisTime;
-        this.lastTagTime=thisTagTime;
+        this.endTime = thisTime;
+        this.lastTagTime = thisTagTime;
     }
-    
-    public void recordInterval(long prevTime, long thisTime, long thisTagTime){
-        int intervalSeconds = (int) ((thisTime-prevTime)/1000);
+
+    public void recordInterval(long prevTime, long thisTime, long thisTagTime) {
+        int intervalSeconds = (int) ((thisTime - prevTime) / 1000);
         String intervalString = Integer.toString(intervalSeconds);
         String intervalCode = "0";
-        if (intervalSeconds > 0){
-            intervalCode=Integer.toString(intervalString.length());
+        if (intervalSeconds > 0) {
+            intervalCode = Integer.toString(intervalString.length());
         }
-        lastTagTime= thisTagTime;
-        this.states.add(intervalString+"s");
+        lastTagTime = thisTagTime;
+        this.states.add(intervalString + "s");
         this.stateCodes.append(intervalCode);
     }
 
-    public void close(long timedOutTime, long lastTagTime){
-        int intervalSeconds = (int) ((timedOutTime)/1000);
+    public void close(long timedOutTime, long lastTagTime) {
+        int intervalSeconds = (int) ((timedOutTime) / 1000);
         String intervalString = Integer.toString(intervalSeconds);
-        this.states.add(intervalString+"s > timeout");
+        this.states.add(intervalString + "s > timeout");
         this.stateCodes.append("X");
         this.duration = this.endTime - this.startTime;
         this.status = Episode.CLOSED;
         this.lastTagTime = lastTagTime;
     }
 
-    public boolean isOpen(){
+    public boolean isOpen() {
         return status == Episode.OPEN;
     }
-    
+
     private String owner;
     private String agent;
     private String series;
@@ -72,8 +71,7 @@ public class Episode {
     private ArrayList<String> states;
     private int status;
     private StringBuilder stateCodes;
-    
-    
+
     /**
      * @return the owner
      */
@@ -227,9 +225,8 @@ public class Episode {
     public void setStateCodes(String stateCodes) {
         this.stateCodes = new StringBuilder(stateCodes);
     }
-            
 
-    public Map<String, Object> asMap(){
+    public Map<String, Object> asMap() {
         Map<String, Object> episodeMap = new HashMap<String, Object>();
         episodeMap.put("owner", owner);
         episodeMap.put("agent", agent);
@@ -240,7 +237,7 @@ public class Episode {
         episodeMap.put("lastTagTime", Long.toString(lastTagTime));
         episodeMap.put("duration", Long.toString(duration));
         episodeMap.put("states", states);
-        if (isOpen()){
+        if (isOpen()) {
             episodeMap.put("status", "open");
         } else {
             episodeMap.put("status", "closed");
@@ -248,11 +245,8 @@ public class Episode {
         episodeMap.put("stateCodes", stateCodes.toString());
         return episodeMap;
     }
-    
+
     static int OPEN = 1;
     static int CLOSED = 0;
 
-    
-    
 }
-
