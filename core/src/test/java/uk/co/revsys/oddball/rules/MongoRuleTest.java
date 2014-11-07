@@ -48,7 +48,7 @@ public class MongoRuleTest {
         System.out.println("apply");
         Case aCase = new MapCase("{\"browser\":\"chrome\"}");
         MongoRule instance = new MongoRule("{\"browser\":\"chrome\"}", "chrome");
-        MongoRuleSet mrs = new MongoRuleSet("test", true, "", 0);
+        MongoRuleSet mrs = new MongoRuleSet("test", true);
         String caseId = mrs.getAssess().insertCase(((MapCase)aCase).getContent());
         Assessment expResult = new Assessment("{\"browser\":\"chrome\"}", "{\"browser\":\"chrome\"}", "chrome");
         Assessment result = (Assessment) instance.apply(aCase, mrs, caseId);
@@ -65,7 +65,7 @@ public class MongoRuleTest {
         System.out.println("apply");
         Case aCase = new MapCase("{\"browser\":\"IE6\"}");
         MongoRule instance = new MongoRule("{\"browser\":\"chrome\"}", "chrome");
-        MongoRuleSet mrs = new MongoRuleSet("test", true, "", 0);
+        MongoRuleSet mrs = new MongoRuleSet("test", true);
         String caseId = mrs.getAssess().insertCase(((MapCase)aCase).getContent());
         Assessment expResult = new Assessment("{\"browser\":\"IE6\"}", "{\"browser\":\"chrome\"}", null);
         Assessment result = (Assessment) instance.apply(aCase, mrs, caseId);

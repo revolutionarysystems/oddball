@@ -36,8 +36,8 @@ public class MongoDBHelper {
     private final MongoCollection cases;
     private final DB db;
 
-    public MongoDBHelper(String dbName, boolean inMemory, String host, int port) throws UnknownHostException {
-        db = new MongoDBFactory().getDBInstance(dbName, inMemory, host, port);
+    public MongoDBHelper(String dbName, boolean inMemory) {
+        db = MongoDBFactory.getDBInstance(dbName, inMemory);
         Jongo jongo = new Jongo(db);
         cases = jongo.getCollection("cases");
     }

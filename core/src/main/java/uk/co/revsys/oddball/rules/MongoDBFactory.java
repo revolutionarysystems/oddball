@@ -4,7 +4,6 @@ package uk.co.revsys.oddball.rules;
 import com.github.fakemongo.Fongo;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
-import java.net.UnknownHostException;
 
 
 /**
@@ -13,15 +12,22 @@ import java.net.UnknownHostException;
  */
 public class MongoDBFactory {
 
-    public DB getDBInstance(String dbName, boolean inMemory, String host, int port)throws UnknownHostException{
-        DB db = null;
+    private static MongoClient mongoClient;
+    
+    public static void setMongoClient(MongoClient mongoClient){
+        MongoDBFactory.mongoClient = mongoClient;
+    }
+    
+    public static DB getDBInstance(String dbName, boolean inMemory){
         dbName = dbName.replace(".", "-");
         if (inMemory){
-            db = new Fongo("Fongo").getDB(dbName);
+            return new Fongo("Fongo").getDB(dbName);
         } else {
-            db = new MongoClient(host, port).getDB(dbName);
+            if(mongoClient == null){
+                throw new IllegalStateException("No instance of MongoClient found");
+            }
+            return mongoClient.getDB(dbName);
         }
-        return db;
     }
     
 }

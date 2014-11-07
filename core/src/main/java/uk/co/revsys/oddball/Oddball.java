@@ -48,25 +48,12 @@ public class Oddball {
     ResourceRepository resourceRepository;
     HashMap<String, RuleSet> ruleSets = new HashMap<String, RuleSet>();
     BinSet binSet;
-    String defaultDataStoreHost;
-    String defaultDataStorePort;
     HashMap<String, BinSet> privateBinSets = new HashMap<String, BinSet>();
     HashMap<String, String> transformers = new HashMap<String, String>();
 
-    public Oddball(ResourceRepository resourceRepository, String binSetName, String defaultDataStoreHost, String defaultDataStorePort) throws BinSetNotLoadedException {
-        this.resourceRepository = resourceRepository;
-        this.defaultDataStoreHost = defaultDataStoreHost;
-        this.defaultDataStorePort = defaultDataStorePort;
-        binSet = loadBinSet(binSetName, resourceRepository);
-        
-    }
-
     public Oddball(ResourceRepository resourceRepository, String binSetName) throws BinSetNotLoadedException {
         this.resourceRepository = resourceRepository;
-        this.defaultDataStoreHost = "localhost";
-        this.defaultDataStorePort = "27017";
-        binSet = loadBinSet(binSetName, resourceRepository);
-        
+        binSet = loadBinSet(binSetName, resourceRepository);   
     }
 
     private RuleSet ensureRuleSet(String ruleSetName) throws RuleSetNotLoadedException {
@@ -104,7 +91,7 @@ public class Oddball {
     }
 
     private RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException {
-        return RuleSetImpl.loadRuleSet(ruleSetName, resourceRepository, defaultDataStoreHost, defaultDataStorePort);
+        return RuleSetImpl.loadRuleSet(ruleSetName, resourceRepository);
     }
 
     public RuleSet reloadRuleSet(String ruleSetName) throws RuleSetNotLoadedException {

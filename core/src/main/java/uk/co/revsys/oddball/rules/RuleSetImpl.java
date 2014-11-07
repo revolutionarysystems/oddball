@@ -37,8 +37,8 @@ public class RuleSetImpl implements RuleSet{
     public RuleSetImpl(){
     }
     
-    public RuleSetImpl(String name, boolean inMemory, String host, int port) throws UnknownHostException {
-        setPersist(new MongoDBHelper(name+"-persist", inMemory, host, port));
+    public RuleSetImpl(String name, boolean inMemory){
+        setPersist(new MongoDBHelper(name+"-persist", inMemory));
         this.name = name;
     }
 
@@ -308,13 +308,12 @@ public class RuleSetImpl implements RuleSet{
         }    
     }
     
-    public static RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository, String defaultDataStoreHost, String defaultDataStorePort) throws RuleSetNotLoadedException{
+    public static RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException{
         try{
             List<String> rules = getRuleSet(ruleSetName, resourceRepository);
             String forEachIn= null;
             String ruleType= "default";
             String ruleHost= "inMemory";
-            int rulePort= 0;
             
             boolean inMemory = true;
             for (String rule:rules){
@@ -333,8 +332,6 @@ public class RuleSetImpl implements RuleSet{
                         inMemory = true;
                     } else {
                         inMemory = false;
-                        ruleHost = defaultDataStoreHost;
-                        rulePort = Integer.parseInt(defaultDataStorePort);
                     }
                 }
                 if (rule.contains("$forEachIn")){
@@ -348,7 +345,7 @@ public class RuleSetImpl implements RuleSet{
 //            LOGGER.debug(Integer.toString(rulePort));
             Class<? extends RuleSetImpl> ruleSetClass = new RuleSetMap().get(ruleType);
             RuleSet ruleSet = (RuleSet) ruleSetClass.newInstance();
-            ruleSet.setPersist(new MongoDBHelper(ruleSetName+"-persist", inMemory, ruleHost, rulePort));
+            ruleSet.setPersist(new MongoDBHelper(ruleSetName+"-persist", inMemory));
             
             ruleSet.setRuleType(ruleType);
             Class ruleClass = new RuleTypeMap().get(ruleType);
@@ -361,8 +358,6 @@ public class RuleSetImpl implements RuleSet{
         } catch (InstantiationException ex) {
             throw new RuleSetNotLoadedException(ruleSetName, ex);
         } catch (IllegalAccessException ex) {
-            throw new RuleSetNotLoadedException(ruleSetName, ex);
-        } catch (UnknownHostException ex) {
             throw new RuleSetNotLoadedException(ruleSetName, ex);
         }
     }

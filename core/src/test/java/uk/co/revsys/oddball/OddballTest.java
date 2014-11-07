@@ -303,7 +303,7 @@ public class OddballTest {
         }
         
         assertTrue(cases.iterator().hasNext());
-        assertTrue(count==2);
+        assertEquals(2, count);
     }
     
     /**

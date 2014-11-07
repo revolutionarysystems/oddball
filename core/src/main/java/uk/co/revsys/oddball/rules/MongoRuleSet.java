@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package uk.co.revsys.oddball.rules;
 
 import java.io.IOException;
@@ -19,14 +18,11 @@ import uk.co.revsys.oddball.cases.StringCase;
  *
  * @author Andrew
  */
-public class MongoRuleSet extends RuleSetImpl{
+public class MongoRuleSet extends RuleSetImpl {
 
     public MongoRuleSet() {
         super();
-        try {
-            setAssess(new MongoDBHelper("oddball-assess", true, "", 0));
-        } 
-        catch (UnknownHostException ex){};   // won't be thrown for in-memory db.
+        setAssess(new MongoDBHelper("oddball-assess", true));
     }
 
     private MongoDBHelper assess;
@@ -39,19 +35,16 @@ public class MongoRuleSet extends RuleSetImpl{
         this.assess = assess;
     }
 
-    public MongoRuleSet(String name, boolean inMemory, String host, int port) throws UnknownHostException {
-        super(name, inMemory, host, port);
-        try {
-            setAssess(new MongoDBHelper("oddball-assess", true, "", 0));
-        } 
-        catch (UnknownHostException ex){};   // won't be thrown for in-memory db.
+    public MongoRuleSet(String name, boolean inMemory) {
+        super(name, inMemory);
+        setAssess(new MongoDBHelper("oddball-assess", true));
     }
-    
+
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String forEachIn) throws InvalidCaseException{
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String forEachIn) throws InvalidCaseException {
         String caseStr = aCase.getContent();
         Case theCase = new MapCase(caseStr);
-        if (forEachIn==null){  //lowest level of nesting
+        if (forEachIn == null) {  //lowest level of nesting
             String caseId = assess.insertCase(caseStr);
             Opinion op = super.assessCase(theCase, caseId, ruleSetStr, persistOption, duplicateQuery, forEachIn);
             assess.removeCase(caseId);
@@ -59,8 +52,7 @@ public class MongoRuleSet extends RuleSetImpl{
         } else {
             Opinion op = super.assessCase(theCase, "", ruleSetStr, persistOption, duplicateQuery, forEachIn);
             return op;
-    }
+        }
     }
 
-    
 }
