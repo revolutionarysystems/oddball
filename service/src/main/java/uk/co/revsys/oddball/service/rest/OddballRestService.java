@@ -35,14 +35,14 @@ import uk.co.revsys.user.manager.model.User;
 @Path("/")
 public class OddballRestService extends AbstractRestService {
 
-
-    /***********************/
+    /**
+     * ********************
+     */
     // Security
-    /***********************/
-    
-    
+    /**
+     * ********************
+     */
     private AuthorisationHandler authorisationHandler;
-
 
     private String getAccount() {
         Subject subject = SecurityUtils.getSubject();
@@ -56,7 +56,6 @@ public class OddballRestService extends AbstractRestService {
         return null;
     }
 
-    
     private String getOwner(String ownerParam) {
         if (authorisationHandler.isAdministrator()) {
             if (ownerParam == null) {
@@ -77,12 +76,13 @@ public class OddballRestService extends AbstractRestService {
         }
     }
 
-    /***********************/
+    /**
+     * ********************
+     */
     // General Functions
-    /***********************/
-    
-
-    
+    /**
+     * ********************
+     */
     public OddballRestService(Oddball oddball, AuthorisationHandler authorisationHandler) {
         LOGGER.debug("Initialising");
         this.oddball = oddball;
@@ -184,9 +184,9 @@ public class OddballRestService extends AbstractRestService {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
-        if (ruleSet==null || ruleSet.equals("null")){
+        if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = options.get("ruleSet");
         }
         return findCasesService(ruleSet, options);
@@ -197,21 +197,21 @@ public class OddballRestService extends AbstractRestService {
         if (owner == null) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
-        options.put("owner",owner);
+        options.put("owner", owner);
         String query = options.get("query");
         ArrayList<String> cases = new ArrayList<String>();
         try {
             String[] ruleSetNames = ruleSets.split(",");
             for (String ruleSet : ruleSetNames) {
-                    if (options.get("action")!=null && options.get("action").equals("delete")){
-                        oddball.deleteQueryCases(ruleSet.trim(), query, options);
+                if (options.get("action") != null && options.get("action").equals("delete")) {
+                    oddball.deleteQueryCases(ruleSet.trim(), query, options);
+                } else {
+                    if (options.get("forEach") != null) {
+                        cases.addAll(oddball.findQueryCasesForEach(ruleSet.trim(), query, options));
                     } else {
-                        if (options.get("forEach")!=null){
-                            cases.addAll(oddball.findQueryCasesForEach(ruleSet.trim(), query, options));
-                        } else {
-                            cases.addAll(oddball.findQueryCases(ruleSet.trim(), query, options));
-                        }
+                        cases.addAll(oddball.findQueryCases(ruleSet.trim(), query, options));
                     }
+                }
             }
         } catch (InvalidTimePeriodException ex) {
             return buildErrorResponse(ex);
@@ -250,19 +250,21 @@ public class OddballRestService extends AbstractRestService {
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("selector", "latest");
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
-        if (ruleSet == null || ruleSet.equals("null")){
+        if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = options.get("ruleSet");
         }
         return findCasesService(ruleSet, options);
     }
 
-    /***********************/
+    /**
+     * ********************
+     */
     // Sessions and Series
-    /***********************/
-    
-    
+    /**
+     * ********************
+     */
     @GET
     @Path("/{ruleSet}/sessionId/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -282,7 +284,7 @@ public class OddballRestService extends AbstractRestService {
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("distinct", seriesName);
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
         if (ruleSets == null || ruleSets.equals("null")) {
             ruleSets = options.get("ruleSet");
@@ -298,9 +300,9 @@ public class OddballRestService extends AbstractRestService {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
-        if (ruleSet==null || ruleSet.equals("null")){
+        if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = options.get("ruleSet");
         }
         options.put("sessionId", sessionId);
@@ -314,9 +316,9 @@ public class OddballRestService extends AbstractRestService {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
-        if (ruleSet==null || ruleSet.equals("null")){
+        if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = options.get("ruleSet");
         }
         options.put("series", series);
@@ -343,7 +345,7 @@ public class OddballRestService extends AbstractRestService {
         options.put("selector", "latest");
         options.put(seriesName, series);
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
         if (ruleSets == null || ruleSets.equals("null")) {
             ruleSets = options.get("ruleSets");
@@ -358,10 +360,13 @@ public class OddballRestService extends AbstractRestService {
 
     }
 
-    /***********************/
+    /**
+     * ********************
+     */
     // Users and Agents
-    /***********************/
-
+    /**
+     * ********************
+     */
     @GET
     @Path("/{ruleSet}/userId/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -381,7 +386,7 @@ public class OddballRestService extends AbstractRestService {
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("distinct", agentName);
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
         if (ruleSets == null || ruleSets.equals("null")) {
             ruleSets = options.get("ruleSet");
@@ -396,7 +401,7 @@ public class OddballRestService extends AbstractRestService {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
         options.put("userId", userId);
         return findCasesService(ruleSets, options);
@@ -409,12 +414,11 @@ public class OddballRestService extends AbstractRestService {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
         options.put("agent", agent);
         return findCasesService(ruleSets, options);
     }
-
 
     @GET
     @Path("/{ruleSet}/userId/{userId}/latest")
@@ -436,7 +440,7 @@ public class OddballRestService extends AbstractRestService {
         options.put("selector", "latest");
         options.put(agentName, agent);
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
         if (ruleSets == null || ruleSets.equals("null")) {
             ruleSets = options.get("ruleSets");
@@ -450,10 +454,13 @@ public class OddballRestService extends AbstractRestService {
         return findCasesService(ruleSets, options);
     }
 
-    /***********************/
+    /**
+     * ********************
+     */
     // Arbitrary Queries
-    /***********************/
-
+    /**
+     * ********************
+     */
     @GET
     @Path("/{ruleSet}/query/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -461,17 +468,17 @@ public class OddballRestService extends AbstractRestService {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
-        if (ruleSet==null || ruleSet.equals("null")){
+        if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = options.get("ruleSet");
         }
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
         return findCasesService(ruleSet, options);
     }
-    
+
     @GET
     @Path("/{ruleSet}/query/latest")
     @Produces(MediaType.APPLICATION_JSON)
@@ -479,23 +486,25 @@ public class OddballRestService extends AbstractRestService {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
         options.put("selector", "latest");
-        if (ruleSet==null || ruleSet.equals("null")){
+        if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = options.get("ruleSet");
         }
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
         return findCasesService(ruleSet, options);
     }
 
-    /***********************/
+    /**
+     * ********************
+     */
     // Bins
-    /***********************/
-    
-
+    /**
+     * ********************
+     */
     @GET
     @Path("/{ruleSet}/bin/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -529,7 +538,7 @@ public class OddballRestService extends AbstractRestService {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
         options.put("binLabel", binLabel);
         return findCasesService(ruleSets, options);
@@ -542,20 +551,23 @@ public class OddballRestService extends AbstractRestService {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+"," "));
+            options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
         options.put("binLabel", binLabel);
-        if(options.get("property")!=null){
+        if (options.get("property") != null) {
             options.put("distinct", options.get("property"));
         }
         return findCasesService(ruleSets, options);
 
     }
 
-    /***********************/
+    /**
+     * ********************
+     */
     // RuleSet Management
-    /***********************/
-    
+    /**
+     * ********************
+     */
     @GET
     @Path("/{ruleSet}/clear")
     @Produces(MediaType.TEXT_PLAIN)
@@ -691,11 +703,13 @@ public class OddballRestService extends AbstractRestService {
         return Response.ok(out.toString()).build();
     }
 
-    /***********************/
+    /**
+     * ********************
+     */
     // Cache Management
-    /***********************/
-    
-
+    /**
+     * ********************
+     */
     @GET
     @Path("/transformer/clear")
     @Produces(MediaType.TEXT_PLAIN)
@@ -707,8 +721,6 @@ public class OddballRestService extends AbstractRestService {
         return Response.ok("Transformers cleared.").build();
     }
 
-    
-    
     static final Logger RESULTSLOGGER = LoggerFactory.getLogger("oddball-results");
     static final Logger LOGGER = LoggerFactory.getLogger("oddball");
 

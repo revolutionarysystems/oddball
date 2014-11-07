@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.Oddball;
 import uk.co.revsys.oddball.util.JSONUtil;
+import uk.co.revsys.oddball.util.OddUtil;
 
 /**
  *
@@ -263,50 +264,8 @@ public class MongoDBHelper {
 //   }
 
 
-    private long parseTimePeriod(String period) throws InvalidTimePeriodException{
-        period=period.trim();
-        long millis = 0;
-        if (period.matches("\\d*")){
-            long periodNum = Long.parseLong(period);
-            millis = periodNum * 60 * 1000;
-        } else {
-            if (period.matches("\\d*[smhDMWY]")){
-                long periodNum = Long.parseLong(period.substring(0, period.length()-1));
-                String periodUnit = period.substring(period.length()-1);
-                if (periodUnit.equals("s")){
-                    millis = periodNum * 1000;
-                } else {
-                    if (periodUnit.equals("m")){
-                        millis = periodNum * 60 * 1000;
-                    } else {
-                        if (periodUnit.equals("h")){
-                            millis = periodNum * 60 * 60 * 1000;
-                        } else {
-                            if (periodUnit.equals("D")){
-                                millis = periodNum * 24 * 60 * 60 * 1000;
-                            } else {
-                                if (periodUnit.equals("M")){
-                                    millis = periodNum * 30 * 24 * 60 * 60 * 1000;
-                                } else {
-                                    if (periodUnit.equals("Y")){
-                                        millis = periodNum * 365 * 24 * 60 * 60 * 1000;
-                                    }
-                                }
-                            }
-                        } 
-                    }
-                } 
-            } else {
-                throw new InvalidTimePeriodException(period);
-            }
-        }
-        return millis;
-    }
-    
     private void addRecentQuery(BasicDBObject query, String recent) throws InvalidTimePeriodException{
-//            long minutes = Long.parseLong(recent);
-//            long millis = minutes * 60 * 1000;
-            long millis = parseTimePeriod(recent);
+            long millis = new OddUtil().parseTimePeriod(recent, "m");
             long now = Calendar.getInstance().getTimeInMillis();
             long cutoff = now - millis;
             BasicDBObject subQuery = new BasicDBObject("$gt", Long.toString(cutoff));
@@ -314,9 +273,7 @@ public class MongoDBHelper {
     }
    
     private void addAgoQuery(BasicDBObject query, String ago) throws InvalidTimePeriodException{
-//            long minutes = Long.parseLong(ago);
-//            long millis = minutes * 60 * 1000;
-            long millis = parseTimePeriod(ago);
+            long millis = new OddUtil().parseTimePeriod(ago, "m");
             long now = Calendar.getInstance().getTimeInMillis();
             long cutoff = now - millis;
             BasicDBObject subQuery = new BasicDBObject("$lte", Long.toString(cutoff));
