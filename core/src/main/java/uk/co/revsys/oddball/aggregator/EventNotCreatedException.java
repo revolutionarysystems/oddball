@@ -1,8 +1,5 @@
 package uk.co.revsys.oddball.aggregator;
 
-import uk.co.revsys.oddball.*;
-import uk.co.revsys.oddball.bins.*;
-
 public class EventNotCreatedException extends Exception{
 
     public EventNotCreatedException(String eventString) {

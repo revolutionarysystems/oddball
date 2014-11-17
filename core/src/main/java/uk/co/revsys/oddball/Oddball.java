@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +28,12 @@ import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.InvalidCaseException;
 import uk.co.revsys.oddball.cases.MapCase;
 import uk.co.revsys.oddball.rules.DaoException;
-import uk.co.revsys.oddball.rules.InvalidTimePeriodException;
 import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.rules.Rule;
 import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.rules.RuleSetImpl;
 import uk.co.revsys.oddball.rules.RuleSetNotLoadedException;
+import uk.co.revsys.oddball.util.InvalidTimePeriodException;
 import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.resource.repository.ResourceRepository;
 import uk.co.revsys.resource.repository.model.Resource;
@@ -68,6 +67,7 @@ public class Oddball {
     public Opinion assessCase(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         if (inboundTransformer != null) {
+            LOGGER.debug("Applying transformation:"+inboundTransformer);
             aCase.setContent(this.transformCase(aCase.getContent(), inboundTransformer));
         }
         return ruleSet.assessCase(aCase, null, ruleSetName, persistOption, duplicateQuery);
@@ -210,6 +210,23 @@ public class Oddball {
         }
     }
 
+    public String loadProcessor(String processorName, ResourceRepository resourceRepository) throws ProcessorNotLoadedException {
+        try {
+            Resource resource = new Resource("", processorName);
+            InputStream inputStream = resourceRepository.read(resource);
+            List<String> lines = IOUtils.readLines(inputStream);
+            StringBuilder processorStringBuilder = new StringBuilder();
+            for (String line : lines) {
+                processorStringBuilder.append(line);
+            }
+            String processorString = processorStringBuilder.toString();
+            return processorString;
+        } catch (IOException ex) {
+            throw new ProcessorNotLoadedException(processorName, ex);
+        }
+    }
+
+    
     public String getTransformer(String transformerName, ResourceRepository resourceRepository) throws TransformerNotLoadedException {
         if (transformers.get(transformerName) != null) {
             return (String) transformers.get(transformerName);
@@ -268,10 +285,58 @@ public class Oddball {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         for (String result:results){
             MapCase aCase = new MapCase(result);
-            Opinion caseOp = ruleSet.assessCase(aCase, null, ruleSetName, RuleSet.NEVERPERSIST, "");
+            int persistOption=RuleSet.NEVERPERSIST;
+            String duplicateQuery = "";
+            if (options.get("persist")!=null&&options.get("persist").equals("true")&&(options.get("duplicateQuery")!=null)&&(!options.get("duplicateQuery").equals(""))){
+                persistOption=RuleSet.UPDATEPERSIST;
+                duplicateQuery = options.get("duplicateQuery");
+            }
+            Opinion caseOp = ruleSet.assessCase(aCase, null, ruleSetName, persistOption, duplicateQuery);
             taggedResults.add(caseOp.getEnrichedCase(ruleSetName, aCase));
         }
         return taggedResults;
+    }
+
+    
+    private Collection<String> applyProcessor(Iterable<String> results, Map<String, String> options) throws InvalidTimePeriodException, AggregationException,TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, ProcessorNotLoadedException {
+        String processor = options.get("processor");
+        String processorChain = loadProcessor(processor, resourceRepository);
+        options.put("processorChain", processorChain);
+        return applyProcessorChain(results, options);
+    }
+    
+    private Collection<String> applyProcessorChain(Iterable<String> results, Map<String, String> options) throws InvalidTimePeriodException, AggregationException,TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException {
+        ArrayList<String> processedResults = new ArrayList<String>();
+        ArrayList<String> interimResults = new ArrayList<String>();
+        String processorChain = options.get("processorChain");
+        try {
+            Map chain = JSONUtil.json2map("{\"chain\":"+processorChain+"}");
+            ArrayList<Object> chainSteps = (ArrayList<Object>) chain.get("chain");
+            for (Object step:chainSteps){
+                interimResults = new ArrayList<String>();
+                System.out.println(step);
+                Map<String, String> stepMap = (Map<String, String>)step;
+                if (stepMap.get("transformer")!=null){
+                    interimResults.addAll(transformResults(results,(String)stepMap.get("transformer")));
+                }
+                if (stepMap.get("aggregator")!=null){
+                    Map<String, String> subOptions = (Map<String, String>)stepMap;
+                    if (options.get("recent")!=null){
+                        subOptions.put("recent", options.get("recent"));
+                    }
+                    interimResults.addAll(aggregateResults(results, subOptions));
+                }
+                if (stepMap.get("tagger")!=null){
+                    interimResults.addAll(tagResults(results,(Map<String, String>)stepMap));
+                }
+                results = interimResults;
+            }
+        }
+        catch (IOException ex){
+            throw new InvalidCaseException("{\"chain\":"+processorChain+"}");
+        }
+        processedResults.addAll(interimResults);
+        return interimResults;
     }
 
     private String getDefaultedTransformer(String ruleSetName, Map<String, String> options) {
@@ -291,7 +356,7 @@ public class Oddball {
         return result;
     }
 
-        public Collection<String> findQueryCasesForEach(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException, InvalidTimePeriodException {
+        public Collection<String> findQueryCasesForEach(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException, InvalidTimePeriodException, ProcessorNotLoadedException {
             ArrayList<String> cases = new ArrayList<String>();
             String forEach = options.get("forEach");
             HashMap<String, String> distinctOptions = new HashMap<String, String>();
@@ -312,7 +377,7 @@ public class Oddball {
         }
 
     
-    public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException, InvalidTimePeriodException {
+    public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException, InvalidTimePeriodException, ProcessorNotLoadedException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.NONE;
         if (options.get("owner") != null) {
@@ -333,6 +398,12 @@ public class Oddball {
         }
         if (options.get("tagger") != null) {
             result = tagResults(result, options);
+        }
+        if (options.get("processorChain") != null) {
+            result = applyProcessorChain(result, options);
+        }
+        if (options.get("processor") != null) {
+            result = applyProcessor(result, options);
         }
         return result;
     }

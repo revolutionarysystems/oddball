@@ -8,7 +8,6 @@ package uk.co.revsys.oddball.aggregator;
 
 import java.util.HashMap;
 import java.util.Map;
-import uk.co.revsys.oddball.util.JSONUtil;
 
 /**
  *
@@ -17,7 +16,7 @@ import uk.co.revsys.oddball.util.JSONUtil;
 public class BasicStatsAccumulator implements PropertyAccumulator{
 
     private float min = Float.MAX_VALUE;
-    private float max = Float.MIN_VALUE;
+    private float max = -Float.MAX_VALUE;
     private float total = 0;
     private int nonNulls = 0;
 
@@ -25,6 +24,7 @@ public class BasicStatsAccumulator implements PropertyAccumulator{
         
     }
                 
+    @Override
     public void accumulateProperty(String property){
         if (property!=null){
             float value = Float.parseFloat(property);
@@ -39,6 +39,7 @@ public class BasicStatsAccumulator implements PropertyAccumulator{
         }
     }
 
+    @Override
     public Map readOffResults(){
         Map<String, String> results = new HashMap<String, String>();
         results.put("nonNulls", Integer.toString(nonNulls));

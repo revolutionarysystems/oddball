@@ -29,6 +29,7 @@ public class BinImpl implements Bin {
     /**
      * @return the binString
      */
+    @Override
     public String getBinString() {
         return binString;
     }
@@ -36,6 +37,7 @@ public class BinImpl implements Bin {
     /**
      * @param binString the binString to set
      */
+    @Override
     public void setBinString(String binString, ResourceRepository resourceRepository){
         this.binString = binString;
     }
@@ -43,6 +45,7 @@ public class BinImpl implements Bin {
     /**
      * @return the label
      */
+    @Override
     public String getLabel() {
         return label;
     }
@@ -50,6 +53,7 @@ public class BinImpl implements Bin {
     /**
      * @param label the label to set
      */
+    @Override
     public void setLabel(String label) {
         this.label = label;
     }

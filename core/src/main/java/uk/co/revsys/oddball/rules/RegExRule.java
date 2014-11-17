@@ -6,13 +6,9 @@
 
 package uk.co.revsys.oddball.rules;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.regex.Pattern;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.StringCase;
-import uk.co.revsys.oddball.util.JSONUtil;
-import uk.co.revsys.resource.repository.ResourceRepository;
 
 /**
  *

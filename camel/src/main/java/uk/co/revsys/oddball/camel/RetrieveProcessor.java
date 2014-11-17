@@ -70,7 +70,9 @@ public class RetrieveProcessor extends AbstractOddballProcessor{
     @Override
     public Map<String, String> getPostParameters() {
         Map<String, String> postParameters = new HashMap<String, String>();
-        postParameters.put("account", owner);
+        if (postParameters.get("account")==null && owner!=null ){
+            postParameters.put("account", owner);
+        }
         if (aggregator!=null){
             postParameters.put("aggregator", aggregator);
         }

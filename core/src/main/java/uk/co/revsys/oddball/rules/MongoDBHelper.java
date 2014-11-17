@@ -10,7 +10,6 @@ import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -24,6 +23,7 @@ import org.jongo.MongoCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.Oddball;
+import uk.co.revsys.oddball.util.InvalidTimePeriodException;
 import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.oddball.util.OddUtil;
 

@@ -12,10 +12,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import uk.co.revsys.oddball.rules.InvalidTimePeriodException;
-import uk.co.revsys.oddball.util.JSONUtil;
+import uk.co.revsys.oddball.util.InvalidTimePeriodException;
 import uk.co.revsys.resource.repository.LocalDiskResourceRepository;
 import uk.co.revsys.resource.repository.ResourceRepository;
 

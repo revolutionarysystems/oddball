@@ -21,9 +21,9 @@ public class JSONUtil {
 
 
     public static Map<String, Object> json2map(String json) throws IOException{
-	Map<String,Object> map = new HashMap<String,Object>();
+//	Map<String,Object> map = new HashMap<String,Object>();
 	ObjectMapper mapper = new ObjectMapper();
-        map = mapper.readValue(json, new TypeReference<HashMap<String,Object>>(){});
+        Map<String,Object> map = mapper.readValue(json, new TypeReference<HashMap<String,Object>>(){});
         return map;
     }
     

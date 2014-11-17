@@ -8,13 +8,10 @@ package uk.co.revsys.oddball.aggregator;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-import uk.co.revsys.oddball.cases.Case;
-import uk.co.revsys.oddball.rules.InvalidTimePeriodException;
+import uk.co.revsys.oddball.util.InvalidTimePeriodException;
 import uk.co.revsys.oddball.util.OddUtil;
 import uk.co.revsys.resource.repository.ResourceRepository;
 
@@ -33,14 +30,18 @@ public class EpisodeAggregator implements Aggregator {
             try {
                 timeOutPeriod = new OddUtil().parseTimePeriod((String) options.get("timeOutPeriod"), "~");
             } catch (InvalidTimePeriodException e) {
+                timeOutPeriod = Long.parseLong((String) options.get("timeOutPeriod"));
             }
-            timeOutPeriod = Long.parseLong((String) options.get("timeOutPeriod"));
         }
         if (options.containsKey("timeOutReference")) {
             try {
                 timeOutReference = new OddUtil().parseTimePeriod((String) options.get("timeOutReference"), "~");
             } catch (InvalidTimePeriodException e) {
+                System.out.println("Invalid time period");
+                System.out.println(options.get("timeOutReference"));
             }
+            System.out.println("timeOutReference");    
+            System.out.println(timeOutReference);    
         }
         try {
             for (Episode ep : aggregateEvents(caseStrings, timeOutPeriod, timeOutReference)) {

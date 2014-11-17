@@ -5,14 +5,9 @@
  */
 package uk.co.revsys.oddball.rules;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.Map;
-import org.jongo.FindOne;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.InvalidCaseException;
 import uk.co.revsys.oddball.cases.MapCase;
-import uk.co.revsys.oddball.cases.StringCase;
 
 /**
  *
@@ -31,7 +26,7 @@ public class MongoRuleSet extends RuleSetImpl {
         return assess;
     }
 
-    public void setAssess(MongoDBHelper assess) {
+    public final void setAssess(MongoDBHelper assess) {
         this.assess = assess;
     }
 

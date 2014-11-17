@@ -6,11 +6,15 @@
 
 package uk.co.revsys.oddball.rules;
 
-import java.lang.Long;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.cases.Case;
 
 /**
@@ -33,8 +37,9 @@ public class OpinionImpl implements Opinion{
         return tags;
     }
 
+    @Override
     public String getLabel() {
-        StringBuffer tagStr = new StringBuffer("{ \"tags\" : [");
+        StringBuilder tagStr = new StringBuilder("{ \"tags\" : [");
         for (String tag : tags){
             tagStr.append("\""+tag+"\", ");
         }
@@ -47,14 +52,18 @@ public class OpinionImpl implements Opinion{
 
     public String derivedProperties(){
         StringBuilder propStr = new StringBuilder("{ \"derived\" : {");
+        HashSet<String> alreadyAdded = new HashSet<String>();
         boolean empty = true;
         for (String tag: tags){
             if (tag.contains(".")){
                 String[] parsed = tag.split("\\.",2);
-                propStr.append("\""+parsed[0]+"\"");
-                propStr.append(" : ");
-                propStr.append("\""+parsed[1]+"\"");
-                propStr.append(", ");
+                if (!alreadyAdded.contains(parsed[0])){ // only allow one of each derived tag
+                    propStr.append("\""+parsed[0]+"\"");
+                    propStr.append(" : ");
+                    propStr.append("\""+parsed[1]+"\"");
+                    propStr.append(", ");
+                    alreadyAdded.add(parsed[0]);
+                }
                 empty = false;
             } 
         }
@@ -65,6 +74,7 @@ public class OpinionImpl implements Opinion{
         return propStr.toString();
     }
     
+    @Override
     public String getEnrichedCase(String ruleSet, String caseStr) {
         String tags = getLabel();
         caseStr = caseStr.replace("\"", "\\\"");
@@ -83,6 +93,7 @@ public class OpinionImpl implements Opinion{
         return enrichedCase.toString();
     }
 
+    @Override
     public String getEnrichedCase(String ruleSet, Case aCase) {
         String tags = getLabel();
         String caseStr = aCase.getJSONisedContent();
@@ -90,10 +101,33 @@ public class OpinionImpl implements Opinion{
             assessTime=new Date().getTime();
         }
         String timeStr = Long.toString(assessTime);
+        String caseTimeStr = null;
+        StringBuilder caseTime = new StringBuilder();
+        try{
+            HashMap caseMap = (HashMap)aCase.getContentObject();
+            if (caseMap.containsKey("time")){
+                caseTimeStr = caseMap.get("time").toString();
+                GregorianCalendar gc = new GregorianCalendar();
+                gc.setTimeInMillis(Long.parseLong(caseTimeStr));
+                caseTime.append("\"caseTime\" : { ");
+                String displayTime = new Date(gc.getTimeInMillis()).toString();
+                caseTime.append("\"display\" : \"" + displayTime + "\", ");
+                String hod = Integer.toString(gc.get(GregorianCalendar.HOUR_OF_DAY));
+                caseTime.append("\"hod\" : \"" + hod + "\", ");
+                String dow = Integer.toString(gc.get(GregorianCalendar.DAY_OF_WEEK));
+                caseTime.append("\"dow\" : \"" + dow + "\"");
+                caseTime.append(" }, ");
+            }
+        } catch (ClassCastException ex){
+            // just don't include the time
+        }
 //        String enrichedCase =  "{ \"timestamp\" : \"" + timeStr + "\", " + "\"ruleSet\" : \"" + ruleSet + "\", " + "\"case\" : " + caseStr + ", " + tags.substring(1, tags.length() - 1)+" }";
 //        return enrichedCase;
         StringBuilder enrichedCase =  new StringBuilder("{");
         enrichedCase.append("\"timestamp\" : \"" + timeStr + "\", ");
+        if (caseTimeStr!=null){
+            enrichedCase.append(caseTime);
+        }
         enrichedCase.append("\"ruleSet\" : \"" + ruleSet + "\", ");
         enrichedCase.append("\"case\" : " + caseStr + ", ");
         enrichedCase.append(tags.substring(1, tags.length() - 1)+ ", ");
@@ -131,4 +165,5 @@ public class OpinionImpl implements Opinion{
         this.assessTime = assessTime;
     }
     
+    static final Logger LOGGER = LoggerFactory.getLogger("oddball");
 }

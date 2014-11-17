@@ -6,17 +6,15 @@
 
 package uk.co.revsys.oddball.rules;
 
-import java.io.IOException;
-import java.util.Set;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.MapCase;
-import uk.co.revsys.oddball.cases.StringCase;
 
 /**
  *

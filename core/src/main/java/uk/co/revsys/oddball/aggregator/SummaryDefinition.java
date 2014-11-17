@@ -8,12 +8,9 @@ package uk.co.revsys.oddball.aggregator;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
-import uk.co.revsys.oddball.TransformerNotLoadedException;
-import uk.co.revsys.oddball.rules.RuleSetNotLoadedException;
 import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.resource.repository.ResourceRepository;
 import uk.co.revsys.resource.repository.model.Resource;
@@ -28,7 +25,7 @@ class SummaryDefinition {
                 definition = loadSummaryDefinition(this.name, resourceRepository);
         }
 
-    public Map<String, Object> loadSummaryDefinition(String summaryDefinitionName, ResourceRepository resourceRepository) throws SummaryDefinitionNotLoadedException {
+    private Map<String, Object> loadSummaryDefinition(String summaryDefinitionName, ResourceRepository resourceRepository) throws SummaryDefinitionNotLoadedException {
         try {
             Resource resource = new Resource("", summaryDefinitionName);
             InputStream inputStream = resourceRepository.read(resource);
@@ -48,7 +45,7 @@ class SummaryDefinition {
 
         
     private final String name;
-    private Map<String, Object> definition;
+    private final Map<String, Object> definition;
 
     public Map<String, Object> getDefinition() {
         return definition;

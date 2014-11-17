@@ -19,7 +19,7 @@
         <dependency>
             <groupId>uk.co.revsys.esb</groupId>
             <artifactId>esb-component</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>0.2.0-SNAPSHOT</version>
         </dependency> 
         
         <dependency>
@@ -67,7 +67,8 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>oddball-camel</Bundle-SymbolicName>
-                        <Export-Package>uk.co.revsys.oddball.camel,org.apache.camel.component.http</Export-Package>
+                        <Export-Package>uk.co.revsys.oddball.camel</Export-Package>
+                        <!--Export-Package>uk.co.revsys.oddball.camel,org.apache.camel.component.http</Export-Package-->
                         <Import-Package>*</Import-Package>
                         <Embed-Dependency>esb-component</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>

@@ -1,7 +1,5 @@
 package uk.co.revsys.oddball;
 
-import uk.co.revsys.oddball.bins.*;
-
 public class TransformerNotLoadedException extends Exception{
 
     public TransformerNotLoadedException(String transformer) {

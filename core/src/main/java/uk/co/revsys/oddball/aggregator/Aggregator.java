@@ -7,10 +7,8 @@
 package uk.co.revsys.oddball.aggregator;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
-import uk.co.revsys.oddball.rules.InvalidTimePeriodException;
+import uk.co.revsys.oddball.util.InvalidTimePeriodException;
 import uk.co.revsys.resource.repository.ResourceRepository;
 
 /**

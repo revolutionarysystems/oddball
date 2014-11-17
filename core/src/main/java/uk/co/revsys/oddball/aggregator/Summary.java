@@ -1,14 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package uk.co.revsys.oddball.aggregator;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,14 +15,13 @@ public class Summary {
         this.startTime = startTime;
         this.duration = duration;
         this.endTime = startTime+duration;
-        this.firstTagTime = firstTagTime;
         this.summaryDefinition = summaryDefinition;
         this.accumulators = new HashMap<String, PropertyAccumulator>();
         this.properties= new HashMap<String, String>();
         Collection<Object> definition = (Collection<Object>) summaryDefinition.getDefinition().get("summary");
         //for each analysis property in summary definition
         for (Object accumulator : definition){
-            Map<String, Object> accMap = (Map)accumulator;
+            Map<String, String> accMap = (Map)accumulator;
             //set up an accumulator object, initialised
             Class accumulatorClass = new PropertyAccumulatorMap().get(accMap.get("treatment"));
             try {
@@ -48,14 +39,14 @@ public class Summary {
     }
     
     private String owner;
-    private SummaryDefinition summaryDefinition;
+    private final SummaryDefinition summaryDefinition;
     private long startTime;
     private long endTime;
     private long firstTagTime;
     private long lastTagTime;
     private long duration;
-    private Map<String, PropertyAccumulator> accumulators;
-    private Map<String, String> properties;
+    private final Map<String, PropertyAccumulator> accumulators;
+    private final Map<String, String> properties;
     
 
     public void incorporate(Map<String, Object> caseMap){

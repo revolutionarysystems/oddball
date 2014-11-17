@@ -8,7 +8,6 @@ package uk.co.revsys.oddball.aggregator;
 
 import java.util.HashMap;
 import java.util.Map;
-import uk.co.revsys.oddball.util.JSONUtil;
 
 /**
  *
@@ -22,15 +21,17 @@ public class CollationAccumulator implements PropertyAccumulator{
         this.collation = new HashMap<String, Object>();
     }
                 
+    @Override
     public void accumulateProperty(String property){
         if (collation.containsKey(property)){
-            collation.put(property, ((Integer)collation.get(property)).intValue()+1);
+            collation.put(property, ((Integer)collation.get(property))+1);
         } else {
             collation.put(property, 1);
         }
             
     }
 
+    @Override
     public Map readOffResults(){
         Map<String, String> results = new HashMap<String, String>();
         for (String item:collation.keySet()){

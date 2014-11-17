@@ -25,6 +25,7 @@ public interface Rule {
     
     /**
      * @param ruleString the ruleString to set
+     * @param resourceRepository
      */
     public void setRuleString(String ruleString, ResourceRepository resourceRepository) throws RuleNotLoadedException;
 

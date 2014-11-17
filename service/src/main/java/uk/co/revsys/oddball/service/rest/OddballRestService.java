@@ -19,6 +19,7 @@ import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.Oddball;
+import uk.co.revsys.oddball.ProcessorNotLoadedException;
 import uk.co.revsys.oddball.TransformerNotLoadedException;
 import uk.co.revsys.oddball.aggregator.AggregationException;
 import uk.co.revsys.oddball.bins.BinSetNotLoadedException;
@@ -26,10 +27,10 @@ import uk.co.revsys.oddball.bins.UnknownBinException;
 import uk.co.revsys.oddball.cases.InvalidCaseException;
 import uk.co.revsys.oddball.cases.StringCase;
 import uk.co.revsys.oddball.rules.DaoException;
-import uk.co.revsys.oddball.rules.InvalidTimePeriodException;
 import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.rules.RuleSetNotLoadedException;
+import uk.co.revsys.oddball.util.InvalidTimePeriodException;
 import uk.co.revsys.user.manager.model.User;
 
 @Path("/")
@@ -220,6 +221,8 @@ public class OddballRestService extends AbstractRestService {
         } catch (InvalidCaseException ex) {
             return buildErrorResponse(ex);
         } catch (TransformerNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (ProcessorNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (AggregationException ex) {
             return buildErrorResponse(ex);

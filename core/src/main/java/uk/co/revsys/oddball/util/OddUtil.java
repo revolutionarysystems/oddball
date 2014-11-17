@@ -6,7 +6,7 @@
 
 package uk.co.revsys.oddball.util;
 
-import uk.co.revsys.oddball.rules.InvalidTimePeriodException;
+import java.util.Map;
 
 /**
  *
@@ -20,7 +20,7 @@ public class OddUtil {
         if (period.matches("\\d*")){
             period=period+defaultUnit;
         }
-        if (period.matches("\\d*[smhDMWY]")){
+        if (period.matches("\\d*[~smhDMWY]")){
             long periodNum = Long.parseLong(period.substring(0, period.length()-1));
             String periodUnit = period.substring(period.length()-1);
             if (periodUnit.equals("s")){
@@ -60,6 +60,22 @@ public class OddUtil {
         return millis;
     }
     
+    private String replacePlaceholder(String templateString, Map<String, Object> aCase){
+        int openBrace = 1+templateString.substring(1).indexOf("{");
+        int closeBrace = 1+templateString.substring(1).indexOf("}");
+        String targetName = templateString.substring(openBrace+1, closeBrace);
+        String replacement = (String) aCase.get(targetName);
+        if (replacement==null){
+            replacement = "null";
+        }
+        return templateString.substring(0, openBrace)+replacement+templateString.substring(closeBrace+1);
+    }
     
+    public String replacePlaceholders(String templateString, Map<String, Object> aCase){
+        while (templateString.substring(1).indexOf("{")>=0){
+            templateString=replacePlaceholder(templateString, aCase);
+        }
+        return templateString;
+    }
     
 }

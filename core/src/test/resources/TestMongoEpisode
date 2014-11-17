@@ -1,0 +1,3 @@
+$ruleType:mongo,inMemory
+[profile]
+case1:{"stateString":"A0BX"}

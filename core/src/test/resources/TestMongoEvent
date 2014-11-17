@@ -1,4 +1,4 @@
-$ruleType:mongo
+$ruleType:mongo,inMemory
 [state]
 stateA:{"browser":"firefox"}
 stateB:{"browser":"chrome"}

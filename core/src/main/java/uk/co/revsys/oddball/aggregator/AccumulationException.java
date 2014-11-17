@@ -1,8 +1,5 @@
 package uk.co.revsys.oddball.aggregator;
 
-import uk.co.revsys.oddball.*;
-import uk.co.revsys.oddball.bins.*;
-
 public class AccumulationException extends Exception{
 
     public AccumulationException(String message) {

@@ -7,11 +7,10 @@
 package uk.co.revsys.oddball.rules;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Set;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

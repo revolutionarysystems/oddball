@@ -1,4 +1,4 @@
-package uk.co.revsys.oddball.rules;
+package uk.co.revsys.oddball.util;
 
 public class InvalidTimePeriodException extends Exception{
 

@@ -7,10 +7,7 @@
 package uk.co.revsys.oddball.cases;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import uk.co.revsys.oddball.util.JSONUtil;
 
 /**
@@ -26,19 +23,23 @@ public class MapCase implements Case{
     private String content;
     private Map<String, Object> mapContent;
 
+    @Override
     public String getContent() {
         return content;
     }
 
+    @Override
     public Object getContentObject(){
         return mapContent;
     }
     
     
+    @Override
     public String getJSONisedContent(){
         return content;
     }
     
+    @Override
     public void setContent(String content)  throws InvalidCaseException{
         this.content = content;
         try {

@@ -8,7 +8,6 @@ package uk.co.revsys.oddball.aggregator;
 
 import java.util.HashMap;
 import java.util.Map;
-import uk.co.revsys.oddball.util.JSONUtil;
 
 /**
  *
@@ -25,6 +24,7 @@ public class VarianceStatsAccumulator implements PropertyAccumulator{
         
     }
                 
+    @Override
     public void accumulateProperty(String property){
         if (property!=null){
             float value = Float.parseFloat(property);
@@ -40,6 +40,7 @@ public class VarianceStatsAccumulator implements PropertyAccumulator{
         }
     }
 
+    @Override
     public Map readOffResults(){
         Map<String, String> results = new HashMap<String, String>();
         results.put("nonNulls", Integer.toString(nonNulls));

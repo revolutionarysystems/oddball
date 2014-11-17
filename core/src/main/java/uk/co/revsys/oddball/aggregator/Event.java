@@ -9,7 +9,6 @@ package uk.co.revsys.oddball.aggregator;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
 import java.util.Map;
 import uk.co.revsys.oddball.util.JSONUtil;
 
@@ -61,6 +60,7 @@ public class Event implements Comparable<Event> {
     }
     
     
+    @Override
     public int compareTo(Event compareEvent) {
 
 		long compareEventTime = ((Event) compareEvent).getEventTime(); 

@@ -7,15 +7,10 @@
 package uk.co.revsys.oddball.aggregator;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-import uk.co.revsys.oddball.cases.Case;
-import uk.co.revsys.oddball.rules.InvalidTimePeriodException;
+import uk.co.revsys.oddball.util.InvalidTimePeriodException;
 import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.oddball.util.OddUtil;
 import uk.co.revsys.resource.repository.ResourceRepository;
@@ -43,6 +38,10 @@ public class SummaryAggregator implements Aggregator{
         String align = "now";
         if (options.get("align")!=null){
             align = options.get("align");
+        }
+        boolean complete= false; // only report complete periods
+        if (options.get("complete")!=null){
+            complete = options.get("complete").equals("true");
         }
         long reportEnd = new Date().getTime();
         if (options.get("periodEnd")!=null){
@@ -84,8 +83,13 @@ public class SummaryAggregator implements Aggregator{
             reportStart = periodms * Math.round(-0.499999+reportStart/(1.0*periodms));
         }
         periods = (int) Math.round(0.4999+(reportEnd-reportStart)/(1.0*periodms));  //round up number of periods to ensure coverage
+        int endIteration = 0;
+        if (complete){   // except take first and last away if complete periods only wanted
+            periods--;
+            endIteration = 1;
+        }
         // set up Summaries
-        for (int i=periods-1 ; i>=0; i--){
+        for (int i=periods-1 ; i>=endIteration; i--){
             try {
                 summaries.add(new Summary(options.get("owner"), reportStart+i*periodms, periodms, summaryDefinition));
             } catch (AccumulationException e){

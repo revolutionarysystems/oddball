@@ -8,9 +8,7 @@ package uk.co.revsys.oddball.rules;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.regex.Pattern;
 import uk.co.revsys.oddball.cases.Case;
-import uk.co.revsys.oddball.cases.StringCase;
 import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.resource.repository.ResourceRepository;
 
@@ -40,13 +38,16 @@ public abstract class RuleImpl implements Rule {
     /**
      * @return the ruleString
      */
+    @Override
     public String getRuleString() {
         return ruleString;
     }
 
     /**
      * @param ruleString the ruleString to set
+     * @throws uk.co.revsys.oddball.rules.RuleNotLoadedException
      */
+    @Override
     public void setRuleString(String ruleString, ResourceRepository resourceRepository) throws RuleNotLoadedException{
         this.ruleString = ruleString;
     }
@@ -54,6 +55,7 @@ public abstract class RuleImpl implements Rule {
     /**
      * @return the label
      */
+    @Override
     public String getLabel() {
         return label;
     }
@@ -61,6 +63,7 @@ public abstract class RuleImpl implements Rule {
     /**
      * @param label the label to set
      */
+    @Override
     public void setLabel(String label) {
         this.label = label;
     }
@@ -69,6 +72,7 @@ public abstract class RuleImpl implements Rule {
     /**
      * @return the source
      */
+    @Override
     public String getSource() {
         return source;
     }
@@ -76,6 +80,7 @@ public abstract class RuleImpl implements Rule {
     /**
      * @param source the source to set
      */
+    @Override
     public void setSource(String source) {
         this.source = source;
     }
@@ -101,7 +106,7 @@ public abstract class RuleImpl implements Rule {
         StringBuilder rule = new StringBuilder("");
         String prefix = this.getPrefix();
         if (prefix !=null){
-            rule.append("["+prefix+"]\n");
+            rule.append("[").append(prefix).append("]\n");
         } else {
             rule.append("[other]\n");
         }

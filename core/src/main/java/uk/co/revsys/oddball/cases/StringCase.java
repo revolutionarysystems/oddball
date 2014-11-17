@@ -18,18 +18,22 @@ public class StringCase implements Case{
     
     private String content;
 
+    @Override
     public String getContent() {
         return content;
     }
 
+    @Override
     public Object getContentObject() {
         return content;
     }
 
+    @Override
     public String getJSONisedContent(){
         return "\""+content.replace("\"", "\\\"")+"\"";
     }
     
+    @Override
     public void setContent(String content) {
         this.content = content;
     }

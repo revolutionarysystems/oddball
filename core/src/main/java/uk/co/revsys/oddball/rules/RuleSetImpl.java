@@ -8,7 +8,6 @@ package uk.co.revsys.oddball.rules;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -23,8 +22,8 @@ import uk.co.revsys.oddball.RuleTypeMap;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.InvalidCaseException;
 import uk.co.revsys.oddball.cases.MapCase;
-import uk.co.revsys.oddball.cases.StringCase;
 import uk.co.revsys.oddball.util.JSONUtil;
+import uk.co.revsys.oddball.util.OddUtil;
 import uk.co.revsys.resource.repository.ResourceRepository;
 import uk.co.revsys.resource.repository.model.Resource;
 
@@ -50,10 +49,12 @@ public class RuleSetImpl implements RuleSet{
     private String ruleType;
     private String forEachIn;
 
+    @Override
     public String getForEachIn() {
         return forEachIn;
     }
 
+    @Override
     public void setForEachIn(String forEachIn) {
         this.forEachIn = forEachIn;
     }
@@ -102,7 +103,7 @@ public class RuleSetImpl implements RuleSet{
     public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String forEachIn) throws InvalidCaseException{
 
         Opinion op = new OpinionImpl();
-        MapCase aMapCase = null;
+        MapCase aMapCase;
         
         if (forEachIn!=null){ // multiple Case
             try {
@@ -118,7 +119,11 @@ public class RuleSetImpl implements RuleSet{
                     ((Map<String, Object>)aMapCase.getContentObject()).put(this.forEachIn, subCaseString);
                     aMapCase.setContent(JSONUtil.map2json((Map<String, Object>)aMapCase.getContentObject()));
                     Case subCase = new MapCase(aMapCase.getContent());
-                    Opinion subOp = assessCase(subCase, null, ruleSetStr, persistOption, duplicateQuery, null);
+                    String caseDuplicateQuery= null;
+                    if (duplicateQuery!=null){
+                        caseDuplicateQuery=new OddUtil().replacePlaceholders(duplicateQuery, (Map<String, Object>)subCase.getContentObject());
+                    }
+                    Opinion subOp = assessCase(subCase, null, ruleSetStr, persistOption, caseDuplicateQuery, null);
                     op.getTags().addAll(subOp.getTags());
                 }
             }
@@ -167,17 +172,21 @@ public class RuleSetImpl implements RuleSet{
                     op.getTags().add(prefix+"odDball");
                 }
             }
-            if (op.getLabel().indexOf("*ignore*")>=0){
+            if (op.getLabel().contains("*ignore*")){
                 op.getTags().clear();
             } else {
                 if (persistOption != NEVERPERSIST){
                     String persistCase = op.getEnrichedCase(ruleSetStr, aCase);
                     if (persistOption == UPDATEPERSIST){
-                        String id = getPersist().checkAlreadyExists(duplicateQuery);
+                        String caseDuplicateQuery= null;
+                        if (duplicateQuery!=null){
+                            caseDuplicateQuery=new OddUtil().replacePlaceholders(duplicateQuery, (Map<String, Object>)aCase.getContentObject());
+                        }
+                        String id = getPersist().checkAlreadyExists(caseDuplicateQuery);
                         while (id != null){
                             LOGGER.debug("removing "+id);
                             getPersist().removeCase(id);
-                            id = getPersist().checkAlreadyExists(duplicateQuery);
+                            id = getPersist().checkAlreadyExists(caseDuplicateQuery);
                         }
                     }
                     getPersist().insertCase(persistCase);
@@ -190,11 +199,13 @@ public class RuleSetImpl implements RuleSet{
     }
 
    
+    @Override
     public Set<Rule> getRules() {
         Set<Rule> result = rules;
         return result;
     }
 
+    @Override
     public Set<Rule> getAllRules() {
         Set<Rule> result = new HashSet<Rule>();
         result.addAll(rules);
@@ -202,10 +213,12 @@ public class RuleSetImpl implements RuleSet{
         return result;
     }
 
+    @Override
     public String getName() {
         return name;
     }
     
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -213,6 +226,7 @@ public class RuleSetImpl implements RuleSet{
     /**
      * @return the ruleType
      */
+    @Override
     public String getRuleType() {
         return ruleType;
     }
@@ -220,18 +234,22 @@ public class RuleSetImpl implements RuleSet{
     /**
      * @param ruleType the ruleType to set
      */
+    @Override
     public void setRuleType(String ruleType) {
         this.ruleType = ruleType;
     }
     
+    @Override
     public MongoDBHelper getPersist() {
         return persist;
     }
 
-    public void setPersist(MongoDBHelper persist) {
+    @Override
+    public final void setPersist(MongoDBHelper persist) {
         this.persist = persist;
     }
 
+    @Override
     public Rule createRule(String prefix, String label, String ruleString, String source, ResourceRepository resourceRepository) throws RuleSetNotLoadedException{
         try{
             Rule ruleInstance = (Rule) ruleClass.newInstance();
@@ -249,6 +267,7 @@ public class RuleSetImpl implements RuleSet{
         
     }
     
+    @Override
     public void loadRules(List<String> rules, ResourceRepository resourceRepository) throws RuleSetNotLoadedException{
         this.getRules().clear();
         this.extraRules.clear();
@@ -290,7 +309,7 @@ public class RuleSetImpl implements RuleSet{
             List<String> rules = new ArrayList<String>();
             boolean rulesetFound = false;
             for (Resource resource : resources){
-                if ((resource.getName().equals(ruleSetName)) || (resource.getName().indexOf(ruleSetName+".")==0) &&(resource.getName().indexOf(".json")==-1)){
+                if ((resource.getName().equals(ruleSetName)) || (resource.getName().indexOf(ruleSetName+".")==0) &&(!resource.getName().contains(".json"))){
 //                if ((resource.getName().indexOf(ruleSetName)==0) &&(resource.getName().indexOf(".json")==-1)){
                     rulesetFound = true;
 //                    Resource resource = new Resource("", ruleSetName);
@@ -328,11 +347,7 @@ public class RuleSetImpl implements RuleSet{
                     catch (Exception e){
                     }
                     //rules.remove(rule);
-                    if (ruleHost.equals("inMemory")){
-                        inMemory = true;
-                    } else {
-                        inMemory = false;
-                    }
+                    inMemory = ruleHost.equals("inMemory");
                 }
                 if (rule.contains("$forEachIn")){
                     String[] parsed = rule.trim().split(":",2);
@@ -362,18 +377,20 @@ public class RuleSetImpl implements RuleSet{
         }
     }
 
+    @Override
     public void reloadRules(ResourceRepository resourceRepository) throws RuleSetNotLoadedException{
-        List<String> rules = getRuleSet(getName(), resourceRepository);
-        if (rules.get(0).contains("$ruleType")){
-            String rule = rules.get(0);
-            rules.remove(rule);
+        List<String> ruleList = getRuleSet(getName(), resourceRepository);
+        if (ruleList.get(0).contains("$ruleType")){
+            String rule = ruleList.get(0);
+            ruleList.remove(rule);
         }
-        loadRules(rules, resourceRepository);
+        loadRules(ruleList, resourceRepository);
     }
     
     /**
      * @return the ruleClass
      */
+    @Override
     public Class getRuleClass() {
         return ruleClass;
     }
@@ -381,6 +398,7 @@ public class RuleSetImpl implements RuleSet{
     /**
      * @param ruleClass the ruleClass to set
      */
+    @Override
     public void setRuleClass(Class ruleClass) {
         this.ruleClass = ruleClass;
     }

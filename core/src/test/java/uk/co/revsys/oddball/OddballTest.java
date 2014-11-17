@@ -10,13 +10,14 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -25,9 +26,6 @@ import uk.co.revsys.oddball.bins.BinSet;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.MapCase;
 import uk.co.revsys.oddball.cases.StringCase;
-import uk.co.revsys.oddball.rules.Assessment;
-import uk.co.revsys.oddball.rules.MongoDBHelper;
-import uk.co.revsys.oddball.rules.MongoRule;
 import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.rules.Rule;
 import uk.co.revsys.oddball.rules.RuleSet;
@@ -246,6 +244,27 @@ public class OddballTest {
      * Test of assessCase method, of class Oddball.
      */
     @Test
+    public void testAssessCaseOddballMongoEnrichedCase() throws Exception {
+        System.out.println("assessCase");
+        String ruleSetName = "TestMongo.txt";
+        
+        Case aCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"windows\", \"time\":\"1415958560342\"}");
+        
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        System.out.println(result.getEnrichedCase(ruleSetName, aCase));
+        Map<String, Object> compare = JSONUtil.json2map(result.getEnrichedCase(ruleSetName, aCase));
+        assertTrue(compare.containsKey("case"));
+        assertTrue(compare.containsKey("caseTime"));
+        assertTrue(compare.containsKey("tags"));
+        assertTrue(compare.containsKey("timestamp"));
+        assertTrue(compare.containsKey("derived"));
+    }
+    
+    /**
+     * Test of assessCase method, of class Oddball.
+     */
+    @Test
     public void testAssessCaseOddballMongoOddball() throws Exception {
         System.out.println("assessCase");
         String ruleSetName = "TestMongo.txt";
@@ -330,9 +349,6 @@ public class OddballTest {
         assertTrue(cases.iterator().hasNext());
         assertTrue(count==1);
     }
-    /**
-     * Test of findCases method, of class Oddball.
-     */
     @Test
     public void testFindCasesDuplicatesUpdate() throws Exception {
         System.out.println("findCases");
@@ -345,6 +361,31 @@ public class OddballTest {
         Opinion result = instance.assessCase(ruleSetName, null, theCase); // should be added
         instance.assessCase(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"123789\"}"); //should match and so, update not add
         instance.assessCase(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"237890\"}"); //should not match and so, be added
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
+        int count = 0;
+        for (String aCase : cases){
+            System.out.println(aCase);
+            count++;
+        }
+        
+        assertTrue(cases.iterator().hasNext());
+        assertTrue(count==2);
+    }
+    
+    @Test
+    public void testFindCasesDuplicatesUpdatePlaceholder() throws Exception {
+        System.out.println("findCases");
+        String ruleSetName = "TestMongo.txt";
+        Case theCase = new MapCase("{\"series\":\"123789\", \"browser\":\"firefox\", \"platform\":\"android\"}");
+        Case theRevisedCase = new MapCase("{\"series\":\"123789\", \"browser\":\"firefox\", \"platform\":\"android\", \"orientation\":\"landscape\"}");
+        Case theDifferentCase = new MapCase("{\"series\":\"237890\", \"browser\":\"firefox\", \"platform\":\"android\", \"orientation\":\"landscape\"}");
+        
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, null, theCase); // should be added
+        instance.assessCase(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"{series}\"}"); //should match and so, update not add
+        instance.assessCase(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"{series}\"}"); //should not match and so, be added
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
@@ -970,9 +1011,11 @@ public class OddballTest {
         Opinion result = instance.assessCase(ruleSetName, null, theCase);
         instance.assessCase(ruleSetName, null, anotherCase);
         HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
         options.put("transformer", "event.json");
         options.put("aggregator", "episode");
-        Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        assertTrue(cases0.size()>0);
         for (String aCase : cases0){
             System.out.println(aCase);
             Map episodeMap = JSONUtil.json2map(aCase);
@@ -980,6 +1023,7 @@ public class OddballTest {
         }
         long future = new Date().getTime()+1000000;
         options.put("timeOutReference", Long.toString(future));
+        System.out.println("tor:"+ Long.toString(future));
         Iterable<String> cases1 = instance.findQueryCases(ruleSetName, "{}", options);
         for (String aCase : cases1){
             System.out.println(aCase);
@@ -989,6 +1033,54 @@ public class OddballTest {
     }
     
 
+    @Test
+    public void testFindCasesQueryWithProcessorChain() throws Exception {
+        System.out.println("findCases");
+        String ruleSetName = "TestMongoEvent";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, null, theCase);
+        instance.assessCase(ruleSetName, null, anotherCase);
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        long future = new Date().getTime()+1000000;
+        options.put("processorChain", "[{\"transformer\":\"event.json\"},{\"aggregator\":\"episode\", \"timeOutReference\":\""+Long.toString(future)+"\"}]");
+        Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        assertTrue(cases0.size()>0);
+        for (String aCase : cases0){
+            System.out.println(aCase);
+            Map episodeMap = JSONUtil.json2map(aCase);
+            assertEquals("A0BX", episodeMap.get("stateCodes"));
+        }
+    }
+    
+
+    @Test
+    public void testFindCasesQueryWithProcessorChain2() throws Exception {
+        System.out.println("findCases");
+        String ruleSetName = "TestMongoEvent";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, null, theCase);
+        instance.assessCase(ruleSetName, null, anotherCase);
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        long future = new Date().getTime()+1000000;
+        options.put("processorChain", "[{\"transformer\":\"event.json\"},{\"aggregator\":\"episode\", \"timeOutReference\":\""+Long.toString(future)+"\"}, {\"tagger\":\"TestMongoEpisode\"}]");
+        Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        assertTrue(cases0.size()>0);
+        for (String aCase : cases0){
+            System.out.println(aCase);
+            Map episodeMap = JSONUtil.json2map(aCase);
+            assertEquals("A0BX", ((Map<String, Object>)episodeMap.get("case")).get("stateCodes"));
+        }
+    }
+    
+
+
+    
     @Test
     public void testFindCasesMultipleQuery() throws Exception {
         System.out.println("findCasesMultiple");

@@ -22,6 +22,7 @@ public interface Bin {
     
     /**
      * @param binString the binString to set
+     * @param resourceRepository
      */
     public void setBinString(String binString, ResourceRepository resourceRepository);
 

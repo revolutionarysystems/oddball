@@ -6,7 +6,6 @@
 
 package uk.co.revsys.oddball.rules;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import uk.co.revsys.oddball.cases.Case;
@@ -52,6 +51,8 @@ public interface RuleSet {
     public String getForEachIn();
     
     public void setForEachIn(String forEachIn);
+
+    public String getName();
 
     public void setName(String name);
     

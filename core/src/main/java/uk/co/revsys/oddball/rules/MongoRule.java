@@ -7,14 +7,10 @@ package uk.co.revsys.oddball.rules;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.MapCase;
-import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.resource.repository.ResourceRepository;
 import uk.co.revsys.resource.repository.model.Resource;
 
@@ -48,6 +44,7 @@ public class MongoRule extends RuleImpl {
 
     /**
      * @param ruleString the ruleString to set
+     * @param resourceRepository
      */
     @Override
     public void setRuleString(String ruleString, ResourceRepository resourceRepository) throws RuleNotLoadedException {
@@ -57,7 +54,7 @@ public class MongoRule extends RuleImpl {
                 Resource resource = new Resource("", ruleString);
                 inputStream = resourceRepository.read(resource);
                 List<String> rulesLines = IOUtils.readLines(inputStream);
-                StringBuffer ruleStringBuffer = new StringBuffer();
+                StringBuilder ruleStringBuffer = new StringBuilder();
                 for (String line : rulesLines) {
                     ruleStringBuffer.append(line);
                 }   
@@ -66,9 +63,10 @@ public class MongoRule extends RuleImpl {
                 throw new RuleNotLoadedException(ruleString, ex);
             } finally {
                 try {
-                    inputStream.close();
+                    if (inputStream!=null){
+                        inputStream.close();
+                    }
                 } catch (IOException ex) {
-                    
                 }
             }
         } else {

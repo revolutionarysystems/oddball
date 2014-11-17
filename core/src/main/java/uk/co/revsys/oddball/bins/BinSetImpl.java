@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package uk.co.revsys.oddball.bins;
 
 import java.io.IOException;
@@ -15,8 +10,7 @@ import org.apache.commons.io.IOUtils;
 import uk.co.revsys.resource.repository.ResourceRepository;
 import uk.co.revsys.resource.repository.model.Resource;
 
-/**
- *
+/*
  * @author Andrew
  */
 public class BinSetImpl implements BinSet {
@@ -31,10 +25,12 @@ public class BinSetImpl implements BinSet {
         bins.put(bin.getLabel(), bin);
     }
 
+    @Override
     public Map<String, Bin> getBins() {
         return bins;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -42,6 +38,7 @@ public class BinSetImpl implements BinSet {
     /**
      * @return the binType
      */
+    @Override
     public String getBinType() {
         return binType;
     }
@@ -49,6 +46,7 @@ public class BinSetImpl implements BinSet {
     /**
      * @param binType the binType to set
      */
+    @Override
     public void setBinType(String binType) {
         this.binType = binType;
     }
@@ -77,6 +75,7 @@ public class BinSetImpl implements BinSet {
         }
     }
 
+    @Override
     public Collection listBinLabels() {
         return bins.keySet();
     }
@@ -84,6 +83,7 @@ public class BinSetImpl implements BinSet {
     /**
      * @param name the name to set
      */
+    @Override
     public void setName(String name) {
         this.name = name;
     }
