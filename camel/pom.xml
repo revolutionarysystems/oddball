@@ -6,12 +6,11 @@
     <parent>
         <artifactId>oddball-parent</artifactId>
         <groupId>uk.co.revsys.oddball</groupId>
-        <version>0.1.0</version>
+        <version>0.1.1</version>
     </parent>
 
     <artifactId>oddball-camel</artifactId>
     <packaging>bundle</packaging>
-    <version>0.1.0</version>
 
     <name>Oddball - Camel</name>
 
