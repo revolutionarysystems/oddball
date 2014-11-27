@@ -19,7 +19,7 @@
         <dependency>
             <groupId>uk.co.revsys.esb</groupId>
             <artifactId>esb-component</artifactId>
-            <version>0.2.0-SNAPSHOT</version>
+            <version>0.1.0</version>
         </dependency> 
         
         <dependency>
