@@ -22,17 +22,17 @@ public interface RuleSet {
 
     public void addExtraRule(Rule rule);
     
-    public Rule createRule(String prefix, String label, String ruleString, String source, ResourceRepository resourceRepository) throws RuleSetNotLoadedException;
+    public Rule createRule(String prefix, String label, String ruleString, String comment, String source, ResourceRepository resourceRepository) throws RuleSetNotLoadedException;
 
     public Rule findExtraRule(String prefix, String ruleString);
     
     public void removeExtraRule(Rule rule);
 
-    public void addPrefix(String prefix);
+    public void addPrefix(String prefix, String defaultValue);
     
-    public Set<Rule> getRules();
+    public List<Rule> getRules();
         
-    public Set<Rule> getAllRules();
+    public List<Rule> getAllRules();
         
     public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String forEachIn) throws InvalidCaseException;
 

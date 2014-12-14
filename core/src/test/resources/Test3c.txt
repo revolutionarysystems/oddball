@@ -4,8 +4,9 @@ aString:a.*
 allas:a*
 
 #blank line also ignored
-[anotherType]
+[anotherType:whoops!]
 abc-ish:abc.*
+abc-ish>abcd-ish:abcd.*
 
 [other]
 #other tags should have no prefix

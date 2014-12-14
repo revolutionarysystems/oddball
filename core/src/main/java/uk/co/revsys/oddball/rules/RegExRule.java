@@ -34,5 +34,15 @@ public class RegExRule extends RuleImpl {
             return new Assessment(content, ruleString, null);
         }
     }
+    
+    @Override
+    public boolean testOneOffRule(Case aCase, MongoDBHelper helper) {
+        String content = ((StringCase)aCase).getContent();
+        Pattern p = Pattern.compile(ruleString);
+        boolean success = p.matcher(content).matches();
+        return success;
+    }
+    
+
 
 }

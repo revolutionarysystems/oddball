@@ -6,6 +6,8 @@ allas:a*
 #blank line also ignored
 [anotherType]
 abc-ish:abc.*
+# multiple match
+alpha:ab.*
 
 [other]
 #other tags should have no prefix

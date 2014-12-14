@@ -25,9 +25,10 @@ public class VarianceStatsAccumulator implements PropertyAccumulator{
     }
                 
     @Override
-    public void accumulateProperty(String property){
+    public void accumulateProperty(Object property){
         if (property!=null){
-            float value = Float.parseFloat(property);
+            float value = Float.parseFloat(property.toString());
+            //float value = (Float)Float.property;
             total+= value;
             sumsquares+=value * value;
             nonNulls+=1;
@@ -40,6 +41,26 @@ public class VarianceStatsAccumulator implements PropertyAccumulator{
         }
     }
 
+    @Override
+    public Map assessProperty(Object property){
+        Map<Object, Object> results = new HashMap<Object, Object>();
+        results.put("value", property);
+        if (nonNulls > 0){
+            results.put("ratioToMin", (Float.parseFloat(property.toString()))/min);
+            results.put("ratioToMax", (Float.parseFloat(property.toString()))/max);
+            results.put("ratioToAve", (Float.parseFloat(property.toString()))/(total/nonNulls));
+        }
+        if (nonNulls > 1){
+            float var = (sumsquares - (total*total)/nonNulls)/(nonNulls-1);
+            results.put("std", Double.toString(Math.sqrt(var)));
+            results.put("standardisedDeviation", ((Float.parseFloat(property.toString()))-(total/nonNulls))/Math.sqrt(var));
+            double dev = (Float.parseFloat(property.toString())-(total/nonNulls))/Math.sqrt(var);
+            results.put("deviationBand", (int)(Math.signum(dev)*Math.round(Math.abs(dev)-0.49999)));
+        }
+        return results;
+    }
+
+    
     @Override
     public Map readOffResults(){
         Map<String, String> results = new HashMap<String, String>();

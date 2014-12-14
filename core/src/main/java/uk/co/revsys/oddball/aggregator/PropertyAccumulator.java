@@ -14,7 +14,9 @@ import java.util.Map;
  */
 public interface PropertyAccumulator {
 
-    public void accumulateProperty(String property);
+    public void accumulateProperty(Object property);
+
+    public Map assessProperty(Object property);
     
     public Map readOffResults();
     

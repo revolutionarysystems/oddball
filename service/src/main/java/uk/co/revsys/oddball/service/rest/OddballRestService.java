@@ -3,6 +3,7 @@ package uk.co.revsys.oddball.service.rest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -18,10 +19,12 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.co.revsys.oddball.FilterException;
 import uk.co.revsys.oddball.Oddball;
 import uk.co.revsys.oddball.ProcessorNotLoadedException;
 import uk.co.revsys.oddball.TransformerNotLoadedException;
 import uk.co.revsys.oddball.aggregator.AggregationException;
+import uk.co.revsys.oddball.aggregator.ComparisonException;
 import uk.co.revsys.oddball.bins.BinSetNotLoadedException;
 import uk.co.revsys.oddball.bins.UnknownBinException;
 import uk.co.revsys.oddball.cases.InvalidCaseException;
@@ -193,7 +196,7 @@ public class OddballRestService extends AbstractRestService {
         return findCasesService(ruleSet, options);
     }
 
-    public Response findCasesService(String ruleSets, HashMap<String, String> options) {
+    public Response findCasesService(String ruleSets, HashMap<String, String> options){
         String owner = getOwner(options.get("account"));
         if (owner == null) {
             return Response.status(Response.Status.FORBIDDEN).build();
@@ -226,11 +229,15 @@ public class OddballRestService extends AbstractRestService {
             return buildErrorResponse(ex);
         } catch (AggregationException ex) {
             return buildErrorResponse(ex);
+        } catch (ComparisonException ex) {
+            return buildErrorResponse(ex);
         } catch (UnknownBinException ex) {
             return buildErrorResponse(ex);
         } catch (IOException ex) {
             return buildErrorResponse(ex);
         } catch (DaoException ex) {
+            return buildErrorResponse(ex);
+        } catch (FilterException ex) {
             return buildErrorResponse(ex);
         }
         StringBuilder out = new StringBuilder("[ ");

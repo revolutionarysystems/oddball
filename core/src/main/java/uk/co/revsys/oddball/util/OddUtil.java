@@ -64,10 +64,10 @@ public class OddUtil {
         int openBrace = 1+templateString.substring(1).indexOf("{");
         int closeBrace = 1+templateString.substring(1).indexOf("}");
         String targetName = templateString.substring(openBrace+1, closeBrace);
-        String replacement = (String) aCase.get(targetName);
-        if (replacement==null){
-            replacement = "null";
-        }
+        String replacement = "null";
+        if (aCase.get(targetName)!=null){
+            replacement = aCase.get(targetName).toString();
+        } 
         return templateString.substring(0, openBrace)+replacement+templateString.substring(closeBrace+1);
     }
     
@@ -77,5 +77,21 @@ public class OddUtil {
         }
         return templateString;
     }
+
+    public Object getDeepProperty (Map aMap, String propertyPath){
+        Map subMap = aMap;
+        Object propertyValue=null;
+        while (propertyPath.contains(".")&& subMap!=null){
+            String key = propertyPath.substring(0, propertyPath.indexOf("."));
+            subMap = (Map) subMap.get(key);
+            propertyPath = propertyPath.substring(propertyPath.indexOf(".")+1);
+        }
+        if (subMap!=null){
+            propertyValue = subMap.get(propertyPath);
+        }
+        return propertyValue;
+    }
+    
+
     
 }

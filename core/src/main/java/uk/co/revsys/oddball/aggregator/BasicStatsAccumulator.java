@@ -25,9 +25,11 @@ public class BasicStatsAccumulator implements PropertyAccumulator{
     }
                 
     @Override
-    public void accumulateProperty(String property){
+    public void accumulateProperty(Object property){
         if (property!=null){
-            float value = Float.parseFloat(property);
+            
+            float value = Float.parseFloat(property.toString());
+            //float value = (Float)Float.property;
             total+= value;
             nonNulls+=1;
             if (value < min){
@@ -39,6 +41,19 @@ public class BasicStatsAccumulator implements PropertyAccumulator{
         }
     }
 
+    @Override
+    public Map assessProperty(Object property){
+        Map<Object, Object> results = new HashMap<Object, Object>();
+        results.put("value", property);
+        if (nonNulls > 0){
+            results.put("ratioToMin", (Float.parseFloat(property.toString()))/min);
+            results.put("ratioToMax", (Float.parseFloat(property.toString()))/max);
+            results.put("ratioToAve", (Float.parseFloat(property.toString()))/(total/nonNulls));
+        }
+        return results;
+    }
+
+    
     @Override
     public Map readOffResults(){
         Map<String, String> results = new HashMap<String, String>();

@@ -21,7 +21,7 @@
 
    <appender name="logFileAppender" class="org.apache.log4j.RollingFileAppender">
       <param name="Threshold" value="debug" />
-      <param name="File" value="/data/oddball/oddball-log.log"/>
+      <param name="File" value="/data/oddball/oddball.log" />
       <layout class="org.apache.log4j.PatternLayout">
          <param name="ConversionPattern" value="%d %-5p  [%c{1}] %m %n" />
       </layout>

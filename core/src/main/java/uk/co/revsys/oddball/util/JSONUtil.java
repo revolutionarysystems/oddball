@@ -46,20 +46,28 @@ public class JSONUtil {
                             out.append("\"");
                             out.append(", ");
                         }
-                        out.delete(out.length()-2, out.length());
+                        if (!((List) map.get(key)).isEmpty()){
+                            out.delete(out.length()-2, out.length());
+                        }
                         out.append ("]");
                     } else {
-                        try{
+                        if (map.get(key) instanceof String){
                             out.append("\""+map.get(key).toString().replace("\"", "\\\"")+"\" ");
-                        }
-                        catch (NullPointerException npe){
-                            out.append("null");
+                        } else {
+                            try{
+                                out.append(map.get(key).toString());
+                            }
+                            catch (NullPointerException npe){
+                                out.append("null");
+                            }
                         }
                     }
                 }
                 out.append(", ");
             }
-            out.delete(out.length()-2, out.length());
+            if (!(map.keySet().isEmpty())){
+                out.delete(out.length()-2, out.length());
+            }
             out.append(" }");
             return out.toString();
         }

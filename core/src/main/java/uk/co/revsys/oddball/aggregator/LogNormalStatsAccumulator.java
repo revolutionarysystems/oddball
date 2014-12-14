@@ -8,6 +8,8 @@ package uk.co.revsys.oddball.aggregator;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -25,22 +27,50 @@ public class LogNormalStatsAccumulator implements PropertyAccumulator{
     }
                 
     @Override
-    public void accumulateProperty(String property){
+    public void accumulateProperty(Object property){
         if (property!=null){
-            float rawValue = Float.parseFloat(property);
-            float value = (float) Math.log10(rawValue);
-            total+= value;
-            sumsquares+=value * value;
-            nonNulls+=1;
-            if (rawValue < min){
-                min= rawValue;
-            }
-            if (rawValue > max){
-                max= rawValue;
+            // protect against pseudo nulls
+            float rawValue = Float.parseFloat(property.toString());
+            if (rawValue > 0){ // zero's not ok for a log distribution
+                float value = (float) Math.log10(rawValue);
+                total+= value;
+                sumsquares+=value * value;
+                nonNulls+=1;
+                if (rawValue < min){
+                    min= rawValue;
+                }
+                if (rawValue > max){
+                    max= rawValue;
+                }
             }
         }
     }
 
+    @Override
+    public Map assessProperty(Object property){
+        Map<Object, Object> results = new HashMap<Object, Object>();
+        if (property!=null){
+            results.put("value", property);
+            if (Float.parseFloat(property.toString()) > 0){
+                if (nonNulls > 0){
+                    results.put("ratioToMin", (Float.parseFloat(property.toString()))/min);
+                    results.put("ratioToMax", (Float.parseFloat(property.toString()))/max);
+                    results.put("avelog", Float.toString(total/nonNulls));
+                    results.put("ratioLogToAveLog", (Math.log10(Float.parseFloat(property.toString()))/(total/nonNulls)));
+                }
+                if (nonNulls > 1){
+                    float var = (sumsquares - (total*total)/nonNulls)/(nonNulls-1);
+                    results.put("stdlog", Double.toString(Math.sqrt(var)));
+                    results.put("standardisedDeviationLog", ((Math.log10(Float.parseFloat(property.toString())))-(total/nonNulls))/Math.sqrt(var));
+                    double dev = (Math.log10(Float.parseFloat(property.toString()))-(total/nonNulls))/Math.sqrt(var);
+                    results.put("deviationBand", (int)(Math.signum(dev)*Math.round(Math.abs(dev)-0.49999)));
+                }
+            }
+        }
+        return results;
+    }
+
+    
     @Override
     public Map readOffResults(){
         Map<String, String> results = new HashMap<String, String>();
@@ -65,5 +95,6 @@ public class LogNormalStatsAccumulator implements PropertyAccumulator{
 
     }
 
+    static final Logger LOGGER = LoggerFactory.getLogger("oddball");
     
 }

@@ -7,9 +7,13 @@
 package uk.co.revsys.oddball.rules;
 
 import java.io.File;
+import java.util.List;
 import java.util.Set;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -54,7 +58,7 @@ public class RuleSetImplTest {
         RuleSetImpl instance = new RuleSetImpl("Test", true);
         instance.addRule(new RegExRule(".*", "string"));
         instance.addRule(new RegExRule("a.*", "aString"));
-        Set rules = instance.getRules();
+        List<Rule> rules = instance.getRules();
         assertTrue(rules.size()==2);
     }
 
@@ -95,6 +99,20 @@ public class RuleSetImplTest {
 
     ResourceRepository resourceRepository = new LocalDiskResourceRepository(new File("src/test/resources"));
 
+    @Test
+    public void testAssessCaseFromFile() throws Exception {
+        System.out.println("assessCase");
+        Case aCase = new StringCase("abc123");
+        RuleSet instance = RuleSetImpl.loadRuleSet("Test1", resourceRepository);
+        Opinion result = instance.assessCase(aCase, null, "Test1", RuleSet.NEVERPERSIST, null, null);
+        System.out.println(result.getEnrichedCase("Test1", aCase));
+        assertTrue(result.getLabel().contains("string"));
+        assertTrue(result.getLabel().contains("aString"));
+        assertFalse(result.getLabel().contains("allas"));
+    }
+    
+    
+    
     @Test
     public void testAssessCaseWithMultiples() throws Exception {
         System.out.println("assessCase");

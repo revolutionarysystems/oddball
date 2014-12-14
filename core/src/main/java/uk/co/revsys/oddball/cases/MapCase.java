@@ -6,6 +6,7 @@
 
 package uk.co.revsys.oddball.cases;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import java.io.IOException;
 import java.util.Map;
 import uk.co.revsys.oddball.util.JSONUtil;
@@ -44,6 +45,8 @@ public class MapCase implements Case{
         this.content = content;
         try {
             mapContent = JSONUtil.json2map(content);
+        } catch (JsonParseException e) {
+            throw new InvalidCaseException("Invalid Map Case - empty content - "+content, e);
         } catch (IOException ex) {
             try {
                 mapContent = JSONUtil.json2map(content.replace("\\", "\\\\"));

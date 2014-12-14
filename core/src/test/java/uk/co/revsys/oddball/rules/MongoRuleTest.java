@@ -9,6 +9,11 @@ package uk.co.revsys.oddball.rules;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -127,4 +132,25 @@ public class MongoRuleTest {
         assertEquals(expResult, result);
     }
     
+    @Test
+    public void testApplyOneOff() throws Exception{
+        System.out.println("applyOneOff");
+        Case aCase = new MapCase("{\"browser\":\"chrome\"}");
+        Rule instance = new MongoRule("{\"browser\":\"chrome\"}", "chrome");
+//        MongoRuleSet mrs = new MongoRuleSet("test", true);
+        boolean hit = instance.testOneOffRule(aCase,  new MongoDBHelper("test", true));
+        assertTrue(hit);
+    }
+
+    @Test
+    public void testApplyOneOffFail() throws Exception{
+        System.out.println("applyOneOff");
+        Case aCase = new MapCase("{\"browser\":\"IE\"}");
+        Rule instance = new MongoRule("{\"browser\":\"chrome\"}", "chrome");
+//        MongoRuleSet mrs = new MongoRuleSet("test", true);
+        boolean hit = instance.testOneOffRule(aCase,  new MongoDBHelper("test", true));
+        assertFalse(hit);
+    }
+
+
 }

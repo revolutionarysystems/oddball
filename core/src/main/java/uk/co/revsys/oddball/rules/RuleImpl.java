@@ -32,8 +32,13 @@ public abstract class RuleImpl implements Rule {
     
     protected String label;
 
+    private String description;
+
     @Override
     public abstract Assessment apply(Case aCase, RuleSet ruleSet, String key);
+    
+    @Override
+    public abstract boolean testOneOffRule(Case aCase, MongoDBHelper helper);
     
     /**
      * @return the ruleString
@@ -96,8 +101,10 @@ public abstract class RuleImpl implements Rule {
     public String asJSON()throws IOException{
         HashMap mapRule = new HashMap();
         mapRule.put("label", this.label);
-        mapRule.put("ruleString", this.ruleString.replace("\"","\\\""));
+//        mapRule.put("ruleString", this.ruleString.replace("\"","\\\""));
+        mapRule.put("ruleString", this.ruleString);
         mapRule.put("source", this.source);
+        mapRule.put("description", this.description);
         return JSONUtil.map2json(mapRule);
     }
 
@@ -135,6 +142,22 @@ public abstract class RuleImpl implements Rule {
         } else {
             return label;
         }
+    }
+
+    /**
+     * @return the description
+     */
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description the description to set
+     */
+    @Override
+    public void setDescription(String description) {
+        this.description = description;
     }
     
     

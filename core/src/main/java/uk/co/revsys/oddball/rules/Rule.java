@@ -18,6 +18,8 @@ public interface Rule {
     
     public Assessment apply(Case aCase, RuleSet ruleSet, String key);
     
+    public boolean testOneOffRule(Case aCase, MongoDBHelper helper);
+
     /**
      * @return the ruleString
      */
@@ -43,6 +45,10 @@ public interface Rule {
 
     public void setSource(String source);
     
+    public String getDescription();
+
+    public void setDescription(String description);
+
     public String asJSON()throws IOException;
 
     public String asRuleConfig()throws IOException;

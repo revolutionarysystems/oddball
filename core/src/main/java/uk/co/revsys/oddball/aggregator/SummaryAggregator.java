@@ -26,6 +26,16 @@ public class SummaryAggregator implements Aggregator{
     @Override
     public ArrayList<Map> aggregateCases(Iterable<String> caseStrings, Map<String, String> options, ResourceRepository resourceRepository) throws AggregationException, InvalidTimePeriodException{
         ArrayList<Map> response = new ArrayList<Map>();
+        ArrayList<Summary> summaries = summariseCases(caseStrings, options, resourceRepository);
+        for (Summary summary: summaries){
+            response.add(summary.asMap());
+        }
+        return response;
+    }
+        
+        
+    public ArrayList<Summary> summariseCases(Iterable<String> caseStrings, Map<String, String> options, ResourceRepository resourceRepository) throws AggregationException, InvalidTimePeriodException{
+        
         String summaryDefinitionName = options.get("summaryDefinition");
         try {
             this.summaryDefinition = new SummaryDefinition(summaryDefinitionName, resourceRepository);
@@ -33,7 +43,7 @@ public class SummaryAggregator implements Aggregator{
         catch (SummaryDefinitionNotLoadedException e){
             throw new AggregationException("Summary Definition could not be loaded", e);
         }
-        summaries = new ArrayList<Summary>();
+        ArrayList<Summary> summaries = new ArrayList<Summary>();
         // set up time window parameters
         String align = "now";
         if (options.get("align")!=null){
@@ -78,6 +88,17 @@ public class SummaryAggregator implements Aggregator{
                 }
                 reportStart = reportEnd - duration;
             }
+        } else {
+            if (options.get("caseRecent")!=null){
+                if (options.get("periodStart")==null && options.get("periods")==null){
+                    long duration = new OddUtil().parseTimePeriod((String) options.get("caseRecent"), "m");
+                    //long duration = Long.parseLong(options.get("recent"))*60*1000;
+                    if (align.equals("clock")){ //ensure at least the recent period is covered, when aligned to clock, this means 1 extra period
+                        duration+=periodms;
+                    }
+                    reportStart = reportEnd - duration;
+                }
+            }
         }
         if (align.equals("clock")){
             reportStart = periodms * Math.round(-0.499999+reportStart/(1.0*periodms));
@@ -100,7 +121,11 @@ public class SummaryAggregator implements Aggregator{
         for (String caseString:caseStrings){
             try {
                 Map<String, Object> caseMap = JSONUtil.json2map(caseString);
-                long caseTime = Long.parseLong((String)caseMap.get("timestamp")); //generalise
+                Object time = new OddUtil().getDeepProperty(caseMap, "case.time");
+                if (time==null){
+                    time = new OddUtil().getDeepProperty(caseMap, "timestamp");
+                }
+                long caseTime = Long.parseLong(time.toString());
                 for (Summary summary: summaries){
                 // if case belongs in Summary, incorporate it
                     if (caseTime >= summary.getStartTime() && caseTime < summary.getEndTime()){
@@ -114,12 +139,7 @@ public class SummaryAggregator implements Aggregator{
                 
                 
         }
-        // pull back summary representations
-        for (Summary summary: summaries){
-            response.add(summary.asMap());
-        }
-        return response;
-        
+        return summaries;
     }
 
     private ArrayList<Summary> summaries;

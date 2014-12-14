@@ -20,8 +20,13 @@ public class Event implements Comparable<Event> {
 
     public Event(String jsonCase) throws IOException, ParseException{
         Map<String, Object> mapCase = JSONUtil.json2map(jsonCase);
+        caseMap = mapCase;
         tagTime=Long.parseLong((String)mapCase.get("tagTime"));
-        eventTime=parseTime((String)mapCase.get("time"));
+        try {
+            eventTime=(Long)mapCase.get("time");
+        } catch (ClassCastException e) {
+            eventTime=parseTime((String)mapCase.get("time"));
+        }
         state=(String)mapCase.get("state");
         code=(String)mapCase.get("code");
         if (code.equals("odDball")){
@@ -45,7 +50,7 @@ public class Event implements Comparable<Event> {
             long time=Long.parseLong(timeString);
             return time;
         } catch (NumberFormatException ex){
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss,SSS");
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss.SSS");
             //SimpleDateFormat sdf = new SimpleDateFormat("dd MMM HH:mm:ss");
             try {
                 long time = sdf.parse(timeString).getTime();
@@ -77,6 +82,7 @@ public class Event implements Comparable<Event> {
     private String owner;
     private String agent;
     private String series;
+    private Map<String, Object> caseMap;
 
     /**
      * @return the tagTime
@@ -176,4 +182,13 @@ public class Event implements Comparable<Event> {
         this.series = series;
     }
     
+
+    /**
+     * @return the caseMap
+     */
+    public Map<String, Object> getCaseMap() {
+        return caseMap;
+    }
+
+
 }

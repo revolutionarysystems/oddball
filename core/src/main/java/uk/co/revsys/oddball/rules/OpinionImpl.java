@@ -51,23 +51,43 @@ public class OpinionImpl implements Opinion{
     }
 
     public String derivedProperties(){
-        StringBuilder propStr = new StringBuilder("{ \"derived\" : {");
-        HashSet<String> alreadyAdded = new HashSet<String>();
-        boolean empty = true;
+        HashMap<String, String> alreadyAdded = new HashMap<String, String>();
         for (String tag: tags){
             if (tag.contains(".")){
                 String[] parsed = tag.split("\\.",2);
-                if (!alreadyAdded.contains(parsed[0])){ // only allow one of each derived tag
-                    propStr.append("\""+parsed[0]+"\"");
-                    propStr.append(" : ");
-                    propStr.append("\""+parsed[1]+"\"");
-                    propStr.append(", ");
-                    alreadyAdded.add(parsed[0]);
+                String propname = parsed[0];
+                String propvalue = parsed[1];
+                if (!alreadyAdded.containsKey(propname)){ // if first instance of this derived tag
+                    if (!propvalue.contains(">")){ // tag refinement doesn't apply if parent tag not present
+                        alreadyAdded.put(propname, propvalue);
+                    }
+                } else {
+                    if (propvalue.contains(">")){ // tag refinement
+                        String[] parts= propvalue.split(">");
+                        propvalue = parts[1];
+                        String broadervalue = parts[0];
+                        String currentvalue = alreadyAdded.get(propname);
+                        if (currentvalue.contains(broadervalue)){
+                            alreadyAdded.put(propname, currentvalue.replace(broadervalue, propvalue));
+                        }
+                        System.out.println(alreadyAdded.get(propname));
+                    } else {
+                        if (!alreadyAdded.get(propname).contains(propvalue)){  // if we've not seen this value before
+                            alreadyAdded.put(propname, alreadyAdded.get(propname)+","+propvalue);
+                        }
+                    }
                 }
-                empty = false;
             } 
         }
-        if (!empty){
+
+        StringBuilder propStr = new StringBuilder("{ \"derived\" : {");
+        if (alreadyAdded.size()>0){
+            for (String key : alreadyAdded.keySet()){
+                propStr.append("\""+key+"\"");
+                propStr.append(" : ");
+                propStr.append("\""+alreadyAdded.get(key)+"\"");
+                propStr.append(", ");
+            }
             propStr.delete(propStr.length()-2, propStr.length());
         }
         propStr.append(" } }");
@@ -105,7 +125,7 @@ public class OpinionImpl implements Opinion{
         StringBuilder caseTime = new StringBuilder();
         try{
             HashMap caseMap = (HashMap)aCase.getContentObject();
-            if (caseMap.containsKey("time")){
+            if (caseMap.containsKey("time")&& caseMap.get("time")!=null){
                 caseTimeStr = caseMap.get("time").toString();
                 GregorianCalendar gc = new GregorianCalendar();
                 gc.setTimeInMillis(Long.parseLong(caseTimeStr));
@@ -146,8 +166,24 @@ public class OpinionImpl implements Opinion{
     @Override
     public void incorporate(Assessment as) {
         if (as.getLabelStr()!=null){
-            tags.add(as.getLabelStr());
-            evidence.add(as);
+            String tag = as.getLabelStr();
+            if (tag.contains(">")){ // tag refinement
+                String[] parts= tag.split("[.>]");
+                String refinedvalue = parts[2];
+                String broadervalue = parts[1];
+                String prefix = parts[0];
+                if (tags.contains(prefix+"."+broadervalue)){
+                    tags.remove(prefix+"."+broadervalue);
+                    as.setLabelStr(prefix+"."+refinedvalue);
+                    tags.add(as.getLabelStr());
+                    evidence.add(as);
+                }
+            } else {
+                tags.add(as.getLabelStr());
+                evidence.add(as);
+            }
+            
+            
         }
     }
 

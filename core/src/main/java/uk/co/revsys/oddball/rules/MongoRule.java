@@ -42,6 +42,16 @@ public class MongoRule extends RuleImpl {
         return hit;
     }
 
+    @Override
+    public boolean testOneOffRule(Case aCase, MongoDBHelper helper) {
+        String caseId = helper.insertCase(aCase.getContent());
+        boolean hit = helper.testCase(ruleString, caseId);
+        return hit;
+    }
+    
+    
+
+    
     /**
      * @param ruleString the ruleString to set
      * @param resourceRepository

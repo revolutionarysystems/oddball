@@ -8,6 +8,7 @@ package uk.co.revsys.oddball.aggregator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import uk.co.revsys.oddball.util.OddUtil;
 
 /**
  *
@@ -15,7 +16,7 @@ import java.util.Map;
  */
 public class Episode {
 
-    public Episode(String owner, String agent, String series, long startTime, long firstTagTime) {
+    public Episode(String owner, String agent, String series, long startTime, long firstTagTime, String watchList) {
         this.owner = owner;
         this.agent = agent;
         this.series = series;
@@ -24,13 +25,36 @@ public class Episode {
         this.states = new ArrayList<String>();
         this.status = Episode.OPEN;
         this.stateCodes = new StringBuilder("");
+        watches = new HashMap<String, ArrayList<String>>();
+        watchValues = new HashMap<String, String>();
+        alerts = new HashMap<String, String>();
+        if (watchList!=null && !watchList.equals("")){
+            String[]watchProperties = watchList.split(",");
+            for (String watchProperty : watchProperties){
+                watches.put(watchProperty.replace(".","~"), new ArrayList<String>());
+            } 
+        }
     }
 
-    public void recordState(String state, String code, long thisTime, long thisTagTime) {
+    public void recordState(String state, String code, long thisTime, long thisTagTime, Map<String, Object> caseMap) {
+//    public void recordState(String state, String code, long thisTime, long thisTagTime) {
         this.states.add(state);
         this.stateCodes.append(code);
         this.endTime = thisTime;
         this.lastTagTime = thisTagTime;
+        for (String watchProperty : watches.keySet()){
+            Object propertyValue = new OddUtil().getDeepProperty(caseMap, watchProperty.replace("~",".")); 
+            if (propertyValue!=null){
+                ArrayList<String> watchValues = watches.get(watchProperty);
+                if (!watchValues.isEmpty()){
+                    String prevValue = watchValues.get(watchValues.size()-1);
+                    if (!propertyValue.toString().equals(prevValue)){
+                        alerts.put("valueChanged", watchProperty);
+                    }
+                }
+                watches.get(watchProperty).add(propertyValue.toString());
+            }
+        }
     }
 
     public void recordInterval(long prevTime, long thisTime, long thisTagTime) {
@@ -70,6 +94,9 @@ public class Episode {
     private ArrayList<String> states;
     private int status;
     private StringBuilder stateCodes;
+    private Map<String, ArrayList<String>> watches;
+    private Map<String, String> watchValues;
+    private Map<String, String> alerts;
 
     /**
      * @return the owner
@@ -225,11 +252,32 @@ public class Episode {
         this.stateCodes = new StringBuilder(stateCodes);
     }
 
+    private ArrayList<String> condense(ArrayList<String> input){
+        boolean allAlike = true;
+        for (int i=1;i<input.size();i++){
+            if (!input.get(i).equals(input.get(0))){
+                allAlike = false;
+            }
+        }
+        if (allAlike){
+            ArrayList<String> returnCase = new ArrayList<String>();
+            returnCase.add(input.get(0));
+            return returnCase;
+        } else {
+            return input;
+        }
+    }
+    
+    private String initial(ArrayList<String> input){
+        return input.get(0);
+    }
+    
     public Map<String, Object> asMap() {
         Map<String, Object> episodeMap = new HashMap<String, Object>();
         episodeMap.put("owner", owner);
         episodeMap.put("agent", agent);
         episodeMap.put("series", series);
+        episodeMap.put("time", Long.toString(startTime));
         episodeMap.put("startTime", Long.toString(startTime));
         episodeMap.put("endTime", Long.toString(endTime));
         episodeMap.put("firstTagTime", Long.toString(firstTagTime));
@@ -242,6 +290,15 @@ public class Episode {
             episodeMap.put("status", "closed");
         }
         episodeMap.put("stateCodes", stateCodes.toString());
+        for (String watchProperty: watches.keySet()){
+            watches.put(watchProperty, condense(watches.get(watchProperty)));
+        }
+        for (String watchProperty: watches.keySet()){
+            watchValues.put(watchProperty, initial(watches.get(watchProperty)));
+        }
+        episodeMap.put("watches", watches);
+        episodeMap.put("watchValues", watchValues);
+        episodeMap.put("alerts", alerts);
         return episodeMap;
     }
 

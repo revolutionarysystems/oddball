@@ -26,6 +26,10 @@ public class EpisodeAggregator implements Aggregator {
         ArrayList<Map> response = new ArrayList<Map>();
         long timeOutPeriod = 600000L;
         long timeOutReference = new Date().getTime(); // default is now
+        String watchList = "";
+        if (options.containsKey("watchList")) {
+            watchList = options.get("watchList");
+        }
         if (options.containsKey("timeOutPeriod")) {
             try {
                 timeOutPeriod = new OddUtil().parseTimePeriod((String) options.get("timeOutPeriod"), "~");
@@ -44,7 +48,7 @@ public class EpisodeAggregator implements Aggregator {
             System.out.println(timeOutReference);    
         }
         try {
-            for (Episode ep : aggregateEvents(caseStrings, timeOutPeriod, timeOutReference)) {
+            for (Episode ep : aggregateEvents(caseStrings, timeOutPeriod, timeOutReference, watchList)) {
                 response.add(ep.asMap());
             }
         } catch (EventNotCreatedException e) {
@@ -53,7 +57,7 @@ public class EpisodeAggregator implements Aggregator {
         return response;
     }
 
-    public ArrayList<Episode> aggregateEvents(Iterable<String> eventStrings, long timeOutPeriod, long timeOutReference) throws EventNotCreatedException {
+    public ArrayList<Episode> aggregateEvents(Iterable<String> eventStrings, long timeOutPeriod, long timeOutReference, String watchList) throws EventNotCreatedException {
         ArrayList<Event> eventList = new ArrayList<Event>();
         for (String eventString : eventStrings) {
             try {
@@ -73,17 +77,17 @@ public class EpisodeAggregator implements Aggregator {
         Episode currentEpisode = null;
         for (Event event : eventList) {
             if (currentEpisode == null) {
-                currentEpisode = new Episode(event.getOwner(), event.getAgent(), event.getSeries(), event.getEventTime(), event.getTagTime());
+                currentEpisode = new Episode(event.getOwner(), event.getAgent(), event.getSeries(), event.getEventTime(), event.getTagTime(), watchList);
             } else {
                 if (event.getEventTime() - previousEventTime > timeOutPeriod) {   //timedout
                     currentEpisode.close(event.getEventTime() - previousEventTime, event.getTagTime());
                     episodes.add(currentEpisode);
-                    currentEpisode = new Episode(event.getOwner(), event.getAgent(), event.getSeries(), event.getEventTime(), event.getTagTime());
+                    currentEpisode = new Episode(event.getOwner(), event.getAgent(), event.getSeries(), event.getEventTime(), event.getTagTime(), watchList);
                 } else {  //not Timed out
                     currentEpisode.recordInterval(previousEventTime, event.getEventTime(), event.getTagTime());
                 }
             }
-            currentEpisode.recordState(event.getState(), event.getCode(), event.getEventTime(), event.getTagTime());
+            currentEpisode.recordState(event.getState(), event.getCode(), event.getEventTime(), event.getTagTime(), event.getCaseMap());
             previousEventTime = event.getEventTime();
             previousTagTime = event.getTagTime();
         }

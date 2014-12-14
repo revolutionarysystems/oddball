@@ -85,7 +85,9 @@ public class MongoDBHelper {
     public boolean testCase(String query, String caseId) {
         String queryMod = "{ \"_id\" : \"" + caseId + "\", " + query.substring(1);
         FindOne found = cases.findOne(queryMod);
-        return found.as(Map.class) != null;
+        boolean foundBool = found.as(Map.class)!= null;
+//        System.out.println("Test Query: "+queryMod+Boolean.toString(foundBool));
+        return foundBool;
     }
 
     public boolean testCase(String query) {
@@ -147,6 +149,18 @@ public class MongoDBHelper {
         if (options.get("before") != null) {
             addBeforeQuery(query, options.get("before"));
         }
+        if (options.get("caseRecent") != null) {
+            addCaseRecentQuery(query, options.get("caseRecent"));
+        }
+        if (options.get("caseAgo") != null) {
+            addCaseAgoQuery(query, options.get("caseAgo"));
+        }
+        if (options.get("caseSince") != null) {
+            addCaseSinceQuery(query, options.get("caseSince"));
+        }
+        if (options.get("caseBefore") != null) {
+            addCaseBeforeQuery(query, options.get("caseBefore"));
+        }
         if (options.get("forEach") != null) {
             addForEachQuery(query, options.get("forEach"), options.get("forEachValue"));
         }
@@ -162,11 +176,13 @@ public class MongoDBHelper {
         if (options.get("userId") != null) {
             addUserIdQuery(query, options.get("userId"));
         }
+        System.out.println("Query="+query.toString());
         return query;
     }
     
     public Collection<String> findCasesForOwner(String owner, String queryString, Map<String, String> options) throws IOException, DaoException, InvalidTimePeriodException {
         BasicDBObject query = buildQuery(owner, queryString, options);
+        LOGGER.debug(query.toString());
         ArrayList<String> caseList = new ArrayList<String>();
         if (options.get("distinct") !=null){
             List foundCases = cases.getDBCollection().distinct(options.get("distinct"), query);
@@ -269,24 +285,74 @@ public class MongoDBHelper {
             long now = Calendar.getInstance().getTimeInMillis();
             long cutoff = now - millis;
             BasicDBObject subQuery = new BasicDBObject("$gt", Long.toString(cutoff));
-            query.append("timestamp", subQuery);
+            if (query.containsField("timestamp")){
+                ((BasicDBObject)query.get("timestamp")).append("$gt", Long.toString(cutoff));
+            } else {
+                query.append("timestamp", subQuery);
+            }
     }
    
+    private void addCaseRecentQuery(BasicDBObject query, String recent) throws InvalidTimePeriodException{
+            long millis = new OddUtil().parseTimePeriod(recent, "m");
+            long now = Calendar.getInstance().getTimeInMillis();
+            long cutoff = now - millis;
+            BasicDBObject subQuery = new BasicDBObject("$gt", Long.toString(cutoff));
+            if (query.containsField("case.time")){
+                ((BasicDBObject)query.get("case.time")).append("$gt", Long.toString(cutoff));
+            } else {
+                query.append("case.time", subQuery);
+            }
+    }
+
     private void addAgoQuery(BasicDBObject query, String ago) throws InvalidTimePeriodException{
             long millis = new OddUtil().parseTimePeriod(ago, "m");
             long now = Calendar.getInstance().getTimeInMillis();
             long cutoff = now - millis;
             BasicDBObject subQuery = new BasicDBObject("$lte", Long.toString(cutoff));
-            query.append("timestamp", subQuery);
+            if (query.containsField("timestamp")){
+                ((BasicDBObject)query.get("timestamp")).append("$lte", Long.toString(cutoff));
+            } else {
+                query.append("timestamp", subQuery);
+            }
     }
    
+    private void addCaseAgoQuery(BasicDBObject query, String ago) throws InvalidTimePeriodException{
+            long millis = new OddUtil().parseTimePeriod(ago, "m");
+            long now = Calendar.getInstance().getTimeInMillis();
+            long cutoff = now - millis;
+            BasicDBObject subQuery = new BasicDBObject("$lte", Long.toString(cutoff));
+            if (query.containsField("case.time")){
+                ((BasicDBObject)query.get("case.time")).append("$lte", Long.toString(cutoff));
+            } else {
+                query.append("case.time", subQuery);
+            }
+    }
+
+    
     private void addSinceQuery(BasicDBObject query, String since){
             long cutoff = 0;
             try {
                 cutoff = Long.parseLong(since);
             } catch (java.lang.NumberFormatException e) {}
             BasicDBObject subQuery = new BasicDBObject("$gte", Long.toString(cutoff));
-            query.append("timestamp", subQuery);
+            if (query.containsField("timestamp")){
+                ((BasicDBObject)query.get("timestamp")).append("$gte", Long.toString(cutoff));
+            } else {
+                query.append("timestamp", subQuery);
+            }
+    }
+   
+    private void addCaseSinceQuery(BasicDBObject query, String since){
+            long cutoff = 0;
+            try {
+                cutoff = Long.parseLong(since);
+            } catch (java.lang.NumberFormatException e) {}
+            BasicDBObject subQuery = new BasicDBObject("$gte", Long.toString(cutoff));
+            if (query.containsField("case.time")){
+                ((BasicDBObject)query.get("case.time")).append("$gte", Long.toString(cutoff));
+            } else {
+                query.append("case.time", subQuery);
+            }
     }
    
     private void addBeforeQuery(BasicDBObject query, String before){
@@ -295,7 +361,24 @@ public class MongoDBHelper {
                 cutoff = Long.parseLong(before);
             } catch (java.lang.NumberFormatException e) {}
             BasicDBObject subQuery = new BasicDBObject("$lt", Long.toString(cutoff));
-            query.append("timestamp", subQuery);
+            if (query.containsField("time")){
+                ((BasicDBObject)query.get("time")).append("$lt", Long.toString(cutoff));
+            } else {
+                query.append("time", subQuery);
+            }
+    }
+   
+    private void addCaseBeforeQuery(BasicDBObject query, String before){
+            long cutoff = 0;
+            try {
+                cutoff = Long.parseLong(before);
+            } catch (java.lang.NumberFormatException e) {}
+            BasicDBObject subQuery = new BasicDBObject("$lt", Long.toString(cutoff));
+            if (query.containsField("case.time")){
+                ((BasicDBObject)query.get("case.time")).append("$lt", Long.toString(cutoff));
+            } else {
+                query.append("case.time", subQuery);
+            }
     }
    
     private void addForEachQuery(BasicDBObject query, String forEach, String forEachValue){

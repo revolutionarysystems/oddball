@@ -20,6 +20,9 @@ import org.slf4j.LoggerFactory;
 import uk.co.revsys.jsont.JSONTransformer;
 import uk.co.revsys.oddball.aggregator.AggregationException;
 import uk.co.revsys.oddball.aggregator.Aggregator;
+import uk.co.revsys.oddball.aggregator.Comparator;
+import uk.co.revsys.oddball.aggregator.ComparatorMap;
+import uk.co.revsys.oddball.aggregator.ComparisonException;
 import uk.co.revsys.oddball.bins.BinSet;
 import uk.co.revsys.oddball.bins.BinSetImpl;
 import uk.co.revsys.oddball.bins.BinSetNotLoadedException;
@@ -32,6 +35,7 @@ import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.rules.Rule;
 import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.rules.RuleSetImpl;
+import uk.co.revsys.oddball.rules.MongoDBHelper;
 import uk.co.revsys.oddball.rules.RuleSetNotLoadedException;
 import uk.co.revsys.oddball.util.InvalidTimePeriodException;
 import uk.co.revsys.oddball.util.JSONUtil;
@@ -71,7 +75,6 @@ public class Oddball {
             aCase.setContent(this.transformCase(aCase.getContent(), inboundTransformer));
         }
         return ruleSet.assessCase(aCase, null, ruleSetName, persistOption, duplicateQuery);
-
     }
 
     public Opinion assessCase(String ruleSetName, String inboundTransformer, Case aCase) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException {
@@ -109,13 +112,13 @@ public class Oddball {
         if (duplicate != null) {
             ruleSet.removeExtraRule(duplicate);
         }
-        ruleSet.addExtraRule(ruleSet.createRule(prefix, label, ruleString, source, resourceRepository));
+        ruleSet.addExtraRule(ruleSet.createRule(prefix, label, ruleString, null, source, resourceRepository));
         return ruleSet;
     }
 
     public Collection<String> findRules(String ruleSetName, Map<String, String> options) throws RuleSetNotLoadedException, IOException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
-        Set<Rule> rules = ruleSet.getAllRules();
+        List<Rule> rules = ruleSet.getAllRules();
         ArrayList<String> response = new ArrayList<String>();
         String prefix = "";
         String source = "";
@@ -138,7 +141,7 @@ public class Oddball {
 
     public Collection<String> saveRules(String ruleSetName, Map<String, String> options) throws RuleSetNotLoadedException, IOException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
-        Set<Rule> rules = ruleSet.getAllRules();
+        List<Rule> rules = ruleSet.getAllRules();
         ArrayList<String> response = new ArrayList<String>();
         String prefix = "ALL";
         String source = "ALL";
@@ -235,6 +238,25 @@ public class Oddball {
         }
     }
 
+    private Collection<String> filterResults(Iterable<String> results, Map<String, String> options) throws FilterException {
+        String filterQuery = options.get("filter");
+        ArrayList<String> filtered = new ArrayList<String>();
+        Class ruleClass = new RuleTypeMap().get("mongo");
+        try{
+            Rule ruleInstance = (Rule) ruleClass.newInstance();
+            ruleInstance.setRuleString(filterQuery, resourceRepository);
+            for (String caseStr : results) {
+                boolean hit = ruleInstance.testOneOffRule(new MapCase(caseStr), new MongoDBHelper("filter", true));
+                if (hit) {
+                    filtered.add(caseStr);
+                }
+            }
+        } catch (Exception e) {
+            throw new FilterException("failed applying filter:"+filterQuery);
+        }
+        return filtered;
+    }
+
     private Collection<String> transformResults(Iterable<String> results, String transformerName) throws TransformerNotLoadedException {
         ArrayList<String> transformed = new ArrayList<String>();
         String transformStr = getTransformer(transformerName, resourceRepository);
@@ -279,9 +301,64 @@ public class Oddball {
         }
     }
 
-    private Collection<String> tagResults(Iterable<String> results, Map<String, String> options) throws RuleSetNotLoadedException, InvalidCaseException {
+    private Collection<String> compareResults(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, IOException, DaoException {
+        Collection<String> comparisonResults = comparisonResults(ruleSet, query, options, owner);
+        
+        ArrayList<String> comparedResults = new ArrayList<String>();
+        Class comparatorClass = new ComparatorMap().get(options.get("comparator"));
+        options.put("periodDivision", "1Y");
+        
+        try {
+            Comparator comp = (Comparator) comparatorClass.newInstance();
+            for (String result: results){
+                Map compared = comp.compare(result, comparisonResults, options, resourceRepository);
+                String compString = JSONUtil.map2json((Map) compared);
+                compString=compString.replace(":  }", ":{ }");
+                comparedResults.add(compString);
+            }
+            return comparedResults;
+        } catch (IOException e) {
+            throw new ComparisonException("IOException: " + options.get("comparator"), e);
+        } catch (InstantiationException e) {
+            throw new ComparisonException("Could not instantiate aggregator: " + options.get("comparator"), e);
+        } catch (IllegalAccessException e) {
+            throw new ComparisonException("Could not instantiate aggregator: " + options.get("comparator"), e);
+        }
+    }
+
+
+    private Collection<String> comparisonResults(RuleSet ruleSet, String query, Map<String, String> options, String owner) throws UnknownBinException, IOException, DaoException, InvalidTimePeriodException{
+        Map<String, String> comparisonOptions = new HashMap<String, String> ();
+        comparisonOptions.putAll(options);
+        if (options.containsKey("comparisonQuery")){
+            comparisonOptions.put("query", options.get("comparisonQuery"));
+        }
+        if (options.containsKey("comparisonAgo")){
+            comparisonOptions.put("ago", options.get("comparisonAgo"));
+        }
+        if (options.containsKey("comparisonRecent")){
+            comparisonOptions.put("recent", options.get("comparisonRecent"));
+        }
+        if (options.get("comparisonBinLabel")!=null){
+            String binLabel = options.get("comparisonBinLabel");
+            String binQuery = this.getBinQuery(binLabel, comparisonOptions);
+            comparisonOptions.put("binQuery", binQuery);
+        }
+        comparisonOptions.remove("selector");
+        Collection<String> result = ruleSet.getPersist().findCasesForOwner(owner, query, comparisonOptions);
+        return result;
+    }
+    
+    
+    private Collection<String> tagResults(Iterable<String> results, Map<String, String> options) throws RuleSetNotLoadedException, InvalidCaseException, TransformerNotLoadedException {
         ArrayList<String> taggedResults = new ArrayList<String>();
         String ruleSetName = options.get("tagger");
+        String incomingXform = null;
+        if (ruleSetName.contains(":")){
+            String[] nameSplit = ruleSetName.split(":");
+            ruleSetName = nameSplit[0];
+            incomingXform = nameSplit[1];
+        }
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         for (String result:results){
             MapCase aCase = new MapCase(result);
@@ -291,21 +368,23 @@ public class Oddball {
                 persistOption=RuleSet.UPDATEPERSIST;
                 duplicateQuery = options.get("duplicateQuery");
             }
-            Opinion caseOp = ruleSet.assessCase(aCase, null, ruleSetName, persistOption, duplicateQuery);
+//    public Opinion assessCase(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException {
+            Opinion caseOp = this.assessCase(ruleSetName, incomingXform, aCase, persistOption, duplicateQuery);
+//            Opinion caseOp = ruleSet.assessCase(aCase, incomingXform, ruleSetName, persistOption, duplicateQuery);
             taggedResults.add(caseOp.getEnrichedCase(ruleSetName, aCase));
         }
         return taggedResults;
     }
 
     
-    private Collection<String> applyProcessor(Iterable<String> results, Map<String, String> options) throws InvalidTimePeriodException, AggregationException,TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, ProcessorNotLoadedException {
+    private Collection<String> applyProcessor(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, IOException, DaoException, TransformerNotLoadedException, AggregationException, RuleSetNotLoadedException, InvalidCaseException, ProcessorNotLoadedException, FilterException {
         String processor = options.get("processor");
         String processorChain = loadProcessor(processor, resourceRepository);
         options.put("processorChain", processorChain);
-        return applyProcessorChain(results, options);
+        return applyProcessorChain(results, options, ruleSet, query, owner);
     }
     
-    private Collection<String> applyProcessorChain(Iterable<String> results, Map<String, String> options) throws InvalidTimePeriodException, AggregationException,TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException {
+    private Collection<String> applyProcessorChain(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, IOException, DaoException, TransformerNotLoadedException, AggregationException, RuleSetNotLoadedException, InvalidCaseException, FilterException {
         ArrayList<String> processedResults = new ArrayList<String>();
         ArrayList<String> interimResults = new ArrayList<String>();
         String processorChain = options.get("processorChain");
@@ -314,7 +393,6 @@ public class Oddball {
             ArrayList<Object> chainSteps = (ArrayList<Object>) chain.get("chain");
             for (Object step:chainSteps){
                 interimResults = new ArrayList<String>();
-                System.out.println(step);
                 Map<String, String> stepMap = (Map<String, String>)step;
                 if (stepMap.get("transformer")!=null){
                     interimResults.addAll(transformResults(results,(String)stepMap.get("transformer")));
@@ -326,8 +404,27 @@ public class Oddball {
                     }
                     interimResults.addAll(aggregateResults(results, subOptions));
                 }
+                if (stepMap.get("comparator")!=null){
+                    Map<String, String> subOptions = (Map<String, String>)stepMap;
+                    if (options.get("recent")!=null){
+                        subOptions.put("recent", options.get("recent"));
+                    }
+                    if (options.get("query")!=null){
+                        subOptions.put("query", options.get("query"));
+                    }
+                    if (options.get("forEach")!=null){
+                        subOptions.put("forEach", options.get("forEach"));
+                    }
+                    if (options.get("forEachValue")!=null){
+                        subOptions.put("forEachValue", options.get("forEachValue"));
+                    }
+                    interimResults.addAll(compareResults(results, subOptions, ruleSet, query, owner));
+                }
                 if (stepMap.get("tagger")!=null){
                     interimResults.addAll(tagResults(results,(Map<String, String>)stepMap));
+                }
+                if (stepMap.get("filter")!=null){
+                    interimResults.addAll(filterResults(results,(Map<String, String>)stepMap));
                 }
                 results = interimResults;
             }
@@ -336,7 +433,7 @@ public class Oddball {
             throw new InvalidCaseException("{\"chain\":"+processorChain+"}");
         }
         processedResults.addAll(interimResults);
-        return interimResults;
+        return processedResults;
     }
 
     private String getDefaultedTransformer(String ruleSetName, Map<String, String> options) {
@@ -356,7 +453,7 @@ public class Oddball {
         return result;
     }
 
-        public Collection<String> findQueryCasesForEach(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException, InvalidTimePeriodException, ProcessorNotLoadedException {
+        public Collection<String> findQueryCasesForEach(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException, InvalidTimePeriodException, ProcessorNotLoadedException, ComparisonException, FilterException {
             ArrayList<String> cases = new ArrayList<String>();
             String forEach = options.get("forEach");
             HashMap<String, String> distinctOptions = new HashMap<String, String>();
@@ -366,7 +463,10 @@ public class Oddball {
             distinctOptions.remove("aggregator");
             distinctOptions.remove("selector");
             distinctOptions.remove("tagger");
+            distinctOptions.remove("filter");
             distinctOptions.remove("forEach");
+            distinctOptions.remove("processor");
+            distinctOptions.remove("processorChain");
             ArrayList<String> allDistinct = new ArrayList<String>();
             allDistinct.addAll(findQueryCases(ruleSetName, query, distinctOptions));
             for (String distinctValue : allDistinct){
@@ -377,7 +477,7 @@ public class Oddball {
         }
 
     
-    public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException, InvalidTimePeriodException, ProcessorNotLoadedException {
+    public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException, InvalidTimePeriodException, ProcessorNotLoadedException, ComparisonException, FilterException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.NONE;
         if (options.get("owner") != null) {
@@ -396,14 +496,20 @@ public class Oddball {
         if (options.get("aggregator") != null) {
             result = aggregateResults(result, options);
         }
+        if (options.get("comparator") != null) {
+            result = compareResults(result, options, ruleSet, query, owner);
+        }
         if (options.get("tagger") != null) {
             result = tagResults(result, options);
         }
-        if (options.get("processorChain") != null) {
-            result = applyProcessorChain(result, options);
+        if (options.get("filter") != null) {
+            result = filterResults(result, options);
         }
-        if (options.get("processor") != null) {
-            result = applyProcessor(result, options);
+        if (options.get("processorChain") != null) {
+            result = applyProcessorChain(result, options, ruleSet, query, owner);
+        }
+        if (options.get("processorChain") == null && options.get("processor") != null) {
+            result = applyProcessor(result, options, ruleSet, query, owner);
         }
         return result;
     }

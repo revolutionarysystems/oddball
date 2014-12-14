@@ -3,6 +3,7 @@ package uk.co.revsys.oddball.aggregator;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import uk.co.revsys.oddball.util.OddUtil;
 
 /**
  *
@@ -14,6 +15,7 @@ public class Summary {
         this.owner = owner;
         this.startTime = startTime;
         this.duration = duration;
+        this.count = 0;
         this.endTime = startTime+duration;
         this.summaryDefinition = summaryDefinition;
         this.accumulators = new HashMap<String, PropertyAccumulator>();
@@ -45,13 +47,26 @@ public class Summary {
     private long firstTagTime;
     private long lastTagTime;
     private long duration;
+    private long count=0;
     private final Map<String, PropertyAccumulator> accumulators;
     private final Map<String, String> properties;
     
 
     public void incorporate(Map<String, Object> caseMap){
         for (String accName : accumulators.keySet()){
-            String propertyValue = null;
+            String propertyPath = properties.get(accName);
+            Object propertyValue = new OddUtil().getDeepProperty(caseMap, propertyPath); 
+            accumulators.get(accName).accumulateProperty(propertyValue);
+        }
+        count++;
+    }
+    
+
+    
+    public Map<String, Object> assess(Map<String, Object> caseMap){
+        Map<String, Object> comparisonMap = new HashMap<String, Object>();
+        for (String accName : accumulators.keySet()){
+            Object propertyValue = null;
             String propertyPath = properties.get(accName);
             Map subMap = caseMap;
             while (propertyPath.contains(".")&& subMap!=null){
@@ -65,11 +80,13 @@ public class Summary {
 //                System.out.println(propertyPath);
             }
             if (subMap!=null){
-                propertyValue = (String) subMap.get(propertyPath);
+                propertyValue = subMap.get(propertyPath);
             }
-            accumulators.get(accName).accumulateProperty(propertyValue);
+            comparisonMap.put(accName, accumulators.get(accName).assessProperty(propertyValue));
         }
+        return comparisonMap;
     }
+    
     
     
     /**
@@ -159,11 +176,14 @@ public class Summary {
     public Map<String, Object> asMap(){
         Map<String, Object> summaryMap = new HashMap<String, Object>();
         summaryMap.put("owner", owner);
-        summaryMap.put("startTime", Long.toString(startTime));
-        summaryMap.put("endTime", Long.toString(endTime));
-//        summaryMap.put("firstTagTime", Long.toString(firstTagTime));
-//        summaryMap.put("lastTagTime", Long.toString(lastTagTime));
-        summaryMap.put("duration", Long.toString(duration));
+//        summaryMap.put("startTime", Long.toString(startTime));
+//        summaryMap.put("endTime", Long.toString(endTime));
+//        summaryMap.put("duration", Long.toString(duration));
+//        summaryMap.put("count", Long.toString(count));
+        summaryMap.put("startTime", startTime);
+        summaryMap.put("endTime", endTime);
+        summaryMap.put("duration", duration);
+        summaryMap.put("count", count);
         for (String accName : accumulators.keySet()){
             summaryMap.put(accName, accumulators.get(accName).readOffResults());
             
