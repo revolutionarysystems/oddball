@@ -258,7 +258,7 @@ public class SummaryAggregatorTest{
         assertEquals("0.0152", ((String)statsMap.get("varlog")).substring(0, 6));
         assertEquals("0.1235", ((String)statsMap.get("stdlog")).substring(0, 6));
         assertEquals("124.88", ((String)statsMap.get("centre")).substring(0, 6));
-        assertEquals("93.954", ((String)statsMap.get("lowMargin")).substring(0, 6));
+        assertEquals("93.95", ((String)statsMap.get("lowMargin")).substring(0, 5));
         assertEquals("165.99", ((String)statsMap.get("highMargin")).substring(0, 6));
     }
         
