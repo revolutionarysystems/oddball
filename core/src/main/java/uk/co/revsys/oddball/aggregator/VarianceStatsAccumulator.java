@@ -16,7 +16,7 @@ import java.util.Map;
 public class VarianceStatsAccumulator implements PropertyAccumulator{
 
     private float min = Float.MAX_VALUE;
-    private float max = Float.MIN_VALUE;
+    private float max = -Float.MAX_VALUE;
     private float total = 0;
     private float sumsquares = 0;
     private int nonNulls = 0;

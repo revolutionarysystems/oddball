@@ -182,12 +182,19 @@ public class MongoDBHelper {
     
     public Collection<String> findCasesForOwner(String owner, String queryString, Map<String, String> options) throws IOException, DaoException, InvalidTimePeriodException {
         BasicDBObject query = buildQuery(owner, queryString, options);
-        LOGGER.debug(query.toString());
         ArrayList<String> caseList = new ArrayList<String>();
         if (options.get("distinct") !=null){
             List foundCases = cases.getDBCollection().distinct(options.get("distinct"), query);
             for (Object foundCase : foundCases) {
-                caseList.add("\"" + foundCase.toString() + "\"");
+                if (foundCase!=null){
+                    if (foundCase instanceof String){
+                        caseList.add("\"" + foundCase.toString() + "\"");
+                    } else {
+                        caseList.add(foundCase.toString());
+                    }
+                } else {
+                    caseList.add("\"" + "null" + "\"");
+                }
             }
         } else if (options.get("selector")!=null){
             String selector = options.get("selector");
@@ -196,12 +203,29 @@ public class MongoDBHelper {
                 sort = new BasicDBObject("timestamp", 1);
             }
             int retrieveCount = 1;
+            int skipCount = 0;
             if (selector.contains(" ")){
                 try {
-                    retrieveCount = Integer.parseInt(selector.substring(selector.indexOf(" ")+1, selector.length()));
+                    String retrieveCountStr = selector.substring(selector.indexOf(" ")+1, selector.length());
+                    if (retrieveCountStr.contains("-")){
+                        String [] limits = retrieveCountStr.split("-");
+                            int upperLimit = Integer.parseInt(limits[1].trim());
+                            skipCount = Integer.parseInt(limits[0].trim())-1;
+                            retrieveCount = upperLimit - skipCount;
+                            if (retrieveCount <1){
+                                retrieveCount = 1;
+                            }
+                    } else {
+                        retrieveCount = Integer.parseInt(retrieveCountStr);
+                    }
                 } catch (NumberFormatException e){}
             }
-            List<DBObject> foundCases = cases.getDBCollection().find(query).sort(sort).limit(retrieveCount).toArray();
+            List<DBObject> foundCases;
+            if (skipCount <= 0){
+                foundCases = cases.getDBCollection().find(query).sort(sort).limit(retrieveCount).toArray();
+            } else {
+                foundCases = cases.getDBCollection().find(query).sort(sort).skip(skipCount).limit(retrieveCount).toArray();
+            }
             for (DBObject foundCase : foundCases) {
                 Map result = JSONUtil.json2map(foundCase.toString());
                 result.put("_id", foundCase.get("_id").toString());
@@ -227,6 +251,7 @@ public class MongoDBHelper {
                 caseList.add(json);
             }
         }
+        LOGGER.debug(caseList.toString());
         return caseList;
     }
 

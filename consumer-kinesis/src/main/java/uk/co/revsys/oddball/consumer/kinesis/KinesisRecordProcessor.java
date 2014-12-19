@@ -118,19 +118,24 @@ public class KinesisRecordProcessor implements IRecordProcessor {
                                 Map<String, String> splitRuleSetName= this.splitRuleSetName(ruleSetName);
                                 String ruleSet = splitRuleSetName.get("ruleSet");
                                 String inboundTransformer = splitRuleSetName.get("inboundTransformer");
+
                                 if (ruleSet.indexOf("{") >= 0) {
                                     String placeholder = extractPropertyName(ruleSet);
                                     String replacement = extractProperty(placeholder, data);
                                     ruleSet = ruleSet.replace("{" + placeholder + "}", replacement);
-                                    LOG.debug("Assessing " + ruleSet);
-                                    try {
-                                        oddball.assessCase(ruleSet, inboundTransformer, new StringCase(data));
-                                    } catch (Throwable t) {
-                                        LOG.warn("Caught throwable attempting ruleSet: " + ruleSet);
-                                    }
-                                } else {
-                                    LOG.debug("Assessing " + ruleSet);
+                                }
+                                
+                                if (inboundTransformer!=null && inboundTransformer.indexOf("{") >= 0) {
+                                    String placeholder = extractPropertyName(inboundTransformer);
+                                    String replacement = extractProperty(placeholder, data);
+                                    inboundTransformer = inboundTransformer.replace("{" + placeholder + "}", replacement);
+                                }
+                                LOG.debug("Assessing " + ruleSet);
+                                try {
                                     oddball.assessCase(ruleSet, inboundTransformer, new StringCase(data));
+                                } catch (Throwable t) {
+                                    LOG.warn("Caught throwable attempting ruleSet: " + ruleSet);
+                                    LOG.debug("throwable", t);
                                 }
                             }
                             processedSuccessfully = true;

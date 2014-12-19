@@ -23,6 +23,9 @@ public class CollationAccumulator implements PropertyAccumulator{
                 
     @Override
     public void accumulateProperty(Object property){
+        if (property!=null){
+            property=((String)property).replace("\"","");
+        }
         if (collation.containsKey(property)){
             collation.put(property, ((Integer)collation.get(property))+1);
         } else {
@@ -35,8 +38,6 @@ public class CollationAccumulator implements PropertyAccumulator{
     public Map assessProperty(Object property){
         Map<Object, Object> results = new HashMap<Object, Object>();
         int totalCount = 0;
-        System.out.println("Collation");
-        System.out.println(collation);
         for (Object item:collation.keySet()){
             totalCount+=(Integer)collation.get(item);
         }

@@ -38,7 +38,8 @@ public class RuleSetImpl implements RuleSet{
     }
     
     public RuleSetImpl(String name, boolean inMemory){
-        setPersist(new MongoDBHelper(name+"-persist", inMemory));
+        String dbName = name.replace("/","-")+"-persist";
+        setPersist(new MongoDBHelper(dbName, inMemory));
         this.name = name;
     }
 
@@ -323,8 +324,13 @@ public class RuleSetImpl implements RuleSet{
     }
     
     public static List<String> getRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException{
+        String path = ".";
+        if (ruleSetName.contains("/")){
+            path = path+"/"+ruleSetName.substring(0, ruleSetName.lastIndexOf("/"));
+            ruleSetName = ruleSetName.substring(ruleSetName.lastIndexOf("/")+1);
+        }
         try{
-            List<Resource> resources = resourceRepository.listResources(".");
+            List<Resource> resources = resourceRepository.listResources(path);
             List<String> rules = new ArrayList<String>();
             boolean rulesetFound = false;
             for (Resource resource : resources){
@@ -379,7 +385,7 @@ public class RuleSetImpl implements RuleSet{
 //            LOGGER.debug(Integer.toString(rulePort));
             Class<? extends RuleSetImpl> ruleSetClass = new RuleSetMap().get(ruleType);
             RuleSet ruleSet = (RuleSet) ruleSetClass.newInstance();
-            ruleSet.setPersist(new MongoDBHelper(ruleSetName+"-persist", inMemory));
+            ruleSet.setPersist(new MongoDBHelper(ruleSetName.replace("/","-")+"-persist", inMemory));
             
             ruleSet.setRuleType(ruleType);
             Class ruleClass = new RuleTypeMap().get(ruleType);

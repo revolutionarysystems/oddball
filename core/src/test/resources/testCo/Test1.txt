@@ -1,0 +1,4 @@
+string:.* ## any string
+aString:a.* ## starts with "a"
+allas:a* 
+abc-ish:abc.*
