@@ -251,7 +251,6 @@ public class MongoDBHelper {
                 caseList.add(json);
             }
         }
-        LOGGER.debug(caseList.toString());
         return caseList;
     }
 

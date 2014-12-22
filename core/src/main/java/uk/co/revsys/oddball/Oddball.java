@@ -498,10 +498,15 @@ public class Oddball {
     
     private Collection<String> initialQuery(String owner, String ruleSetNames, String query, Map<String, String> options) throws RuleSetNotLoadedException, UnknownBinException, IOException, DaoException, InvalidTimePeriodException, TransformerNotLoadedException{
 
+        String path = "";
+        if (ruleSetNames.contains("/")){
+            path = ruleSetNames.substring(0,ruleSetNames.lastIndexOf("/")+1);
+            ruleSetNames = ruleSetNames.substring(ruleSetNames.lastIndexOf("/")+1);
+        }
         String ruleSets[]=ruleSetNames.split("\\+");
         Collection<String> result = new ArrayList<String> ();
         for (String ruleSetName : ruleSets){
-            RuleSet ruleSet = ensureRuleSet(ruleSetName);
+            RuleSet ruleSet = ensureRuleSet(path+ruleSetName);
             if (options.get("binLabel")!=null){
                 String binLabel = options.get("binLabel");
                 String binQuery = this.getBinQuery(binLabel, options);
@@ -509,7 +514,7 @@ public class Oddball {
             }
             Collection<String> interimResult = ruleSet.getPersist().findCasesForOwner(owner, query, options);
             if (options.get("transformer") != null) {
-                interimResult = transformResults(interimResult, getDefaultedTransformer(ruleSetName, options));
+                interimResult = transformResults(interimResult, getDefaultedTransformer(path+ruleSetName, options));
             }
             result.addAll(interimResult);
         }

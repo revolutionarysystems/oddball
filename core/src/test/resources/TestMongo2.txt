@@ -1,0 +1,5 @@
+$ruleType:mongo
+ruleB:{"browser":"chrome"}
+ruleB:{"browser":"chromium"}
+ruleB:{"browser":"google"}
+ruleC:{"platform":"windows"}

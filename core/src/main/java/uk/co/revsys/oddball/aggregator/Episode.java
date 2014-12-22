@@ -259,7 +259,7 @@ public class Episode {
                 allAlike = false;
             }
         }
-        if (allAlike){
+        if (allAlike && input.size()>0){
             ArrayList<String> returnCase = new ArrayList<String>();
             returnCase.add(input.get(0));
             return returnCase;
@@ -269,7 +269,11 @@ public class Episode {
     }
     
     private String initial(ArrayList<String> input){
-        return input.get(0);
+        if (input.size()>0){
+            return input.get(0);
+        } else {
+            return null;
+        }
     }
     
     public Map<String, Object> asMap() {
