@@ -14,9 +14,19 @@
 
         <route>
             <from uri="direct-vm://esb.service.oddball.proxy"/>
-            <recipientList>
-				<simple>{{service.endpoint}}?bridgeEndpoint=true&amp;throwExceptionOnFailure=true</simple>
-			</recipientList>
+            <choice>
+                <when>
+                    <simple>${property.authenticate} == 'true'</simple>
+                    <recipientList>
+                        <simple>{{service.endpoint}}?bridgeEndpoint=true&amp;throwExceptionOnFailure=true&amp;authMethod=${property.authMethod}&amp;authUsername=${property.authUsername}&amp;authPassword=${property.authPassword}</simple>
+                    </recipientList>
+                </when>
+                <otherwise>
+                    <recipientList>
+                        <simple>{{service.endpoint}}?bridgeEndpoint=true&amp;throwExceptionOnFailure=true</simple>
+                    </recipientList>
+                </otherwise>
+            </choice>
         </route>
         
     </camelContext>
