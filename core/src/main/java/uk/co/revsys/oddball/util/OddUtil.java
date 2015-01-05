@@ -6,6 +6,9 @@
 
 package uk.co.revsys.oddball.util;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -90,6 +93,53 @@ public class OddUtil {
             propertyValue = subMap.get(propertyPath);
         }
         return propertyValue;
+    }
+    
+    
+    public Map<String, Object> list2map(List<String> aList){
+        Map<String, Object> aMap = new HashMap<String, Object>();
+        for (int i=0; i<aList.size(); i++){
+            aMap.put(Integer.toString(i), aList.get(i));
+        }
+        return aMap;
+    }
+    
+    public boolean isDeep(List l){
+        for (Object item:l){
+            if (item instanceof Map){
+                return true;
+            }
+            if (item instanceof Collection){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public Map<String, Object> flatten (Map<String, Object> aMap){
+        Map<String, Object> flatMap = new HashMap<String, Object>();
+        for(String key : aMap.keySet()){
+            if (aMap.get(key) instanceof Map){
+                Map<String, String> flatSubMap = flatten((Map)aMap.get(key));
+                for(String innerKey : flatSubMap.keySet()){
+                    flatMap.put(key+"."+innerKey.replace(",","-"), flatSubMap.get(innerKey));
+                }
+            } else {
+                if (aMap.get(key) instanceof List){
+                    if (isDeep((List)aMap.get(key))){
+                        Map<String, String> flatSubMap = flatten(list2map((List)aMap.get(key)));
+                        for(String innerKey : flatSubMap.keySet()){
+                            flatMap.put(key+"."+innerKey.replace(",","-"), flatSubMap.get(innerKey));
+                        }
+                    } else {
+                       flatMap.put(key, aMap.get(key).toString());
+                    }
+                } else {
+                    flatMap.put(key, aMap.get(key));
+                }
+            }
+        }
+        return flatMap;
     }
     
 

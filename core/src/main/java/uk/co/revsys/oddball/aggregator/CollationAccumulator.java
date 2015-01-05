@@ -6,6 +6,7 @@
 
 package uk.co.revsys.oddball.aggregator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,13 +53,26 @@ public class CollationAccumulator implements PropertyAccumulator{
         return results;
     }
 
+//    @Override
+//    public Map readOffResults(){
+//        Map<Object, Object> results = new HashMap<Object, Object>();
+//        for (Object item:collation.keySet()){
+//            results.put(item, collation.get(item));
+//        }
+//        return results;
+//    }
+//
     @Override
     public Map readOffResults(){
         Map<Object, Object> results = new HashMap<Object, Object>();
+        ArrayList<Map<String, Object>> innerResults = new ArrayList<Map<String, Object>> ();
         for (Object item:collation.keySet()){
-//            results.put(item, collation.get(item).toString());
-            results.put(item, collation.get(item));
+            Map<String, Object> cell = new HashMap<String, Object>();
+            cell.put("value", item);
+            cell.put("count", collation.get(item));
+            innerResults.add(cell);
         }
+        results.put("distribution", innerResults);
         return results;
     }
 

@@ -134,7 +134,7 @@ public class SummaryAggregator implements Aggregator{
                     }
                 }
             } catch (IOException e){
-                throw new AggregationException("Case could not be parsed", e);
+                throw new AggregationException("Case could not be parsed:"+caseString, e);
             }
                 
                 

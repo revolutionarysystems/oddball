@@ -27,7 +27,7 @@ public class Episode {
         this.stateCodes = new StringBuilder("");
         watches = new HashMap<String, ArrayList<String>>();
         watchValues = new HashMap<String, String>();
-        alerts = new HashMap<String, String>();
+        alerts = new HashMap<String, Object>();
         if (watchList!=null && !watchList.equals("")){
             String[]watchProperties = watchList.split(",");
             for (String watchProperty : watchProperties){
@@ -48,8 +48,15 @@ public class Episode {
                 ArrayList<String> watchValues = watches.get(watchProperty);
                 if (!watchValues.isEmpty()){
                     String prevValue = watchValues.get(watchValues.size()-1);
+                    String step= Integer.toString(watchValues.size());
                     if (!propertyValue.toString().equals(prevValue)){
-                        alerts.put("valueChanged", watchProperty);
+                        Map<String, Object> change = new HashMap<String, Object>();
+                        if (alerts.containsKey("valueChanged-"+watchProperty)){
+                            change = (HashMap<String, Object>) alerts.get("valueChanged-"+watchProperty);
+                        }else {
+                            alerts.put("valueChanged-"+watchProperty, change);
+                        }
+                        change.put(step, prevValue+","+propertyValue.toString());
                     }
                 }
                 watches.get(watchProperty).add(propertyValue.toString());
@@ -96,7 +103,7 @@ public class Episode {
     private StringBuilder stateCodes;
     private Map<String, ArrayList<String>> watches;
     private Map<String, String> watchValues;
-    private Map<String, String> alerts;
+    private Map<String, Object> alerts;
 
     /**
      * @return the owner

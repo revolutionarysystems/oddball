@@ -148,7 +148,7 @@ public class EpisodeAggregatorTest{
         System.out.println(ep2.asMap());
         assertEquals("[paris, lyon, lyon]",(new OddUtil().getDeepProperty(ep2.asMap(), "watches.place")).toString());
         assertEquals("paris",(new OddUtil().getDeepProperty(ep2.asMap(), "watchValues.place")).toString());
-        assertEquals("{valueChanged=place}",(new OddUtil().getDeepProperty(ep2.asMap(), "alerts")).toString());
+        assertEquals("{valueChanged-place={1=paris,lyon}}",(new OddUtil().getDeepProperty(ep2.asMap(), "alerts")).toString());
         List<Episode> episodes3 = ea.aggregateEvents(events, 150, 1409589263988L, "place");
         assertTrue(episodes3.size()==2);
         Episode ep3a = episodes3.get(0);

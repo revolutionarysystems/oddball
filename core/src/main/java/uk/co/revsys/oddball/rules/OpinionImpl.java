@@ -132,7 +132,8 @@ public class OpinionImpl implements Opinion{
                 caseTime.append("\"caseTime\" : { ");
                 String displayTime = new Date(gc.getTimeInMillis()).toString();
                 caseTime.append("\"display\" : \"" + displayTime + "\", ");
-                String hod = Integer.toString(gc.get(GregorianCalendar.HOUR_OF_DAY));
+//                String hod = Integer.toString(gc.get(GregorianCalendar.HOUR_OF_DAY));
+                String hod = String.format("%02d",gc.get(GregorianCalendar.HOUR_OF_DAY));
                 caseTime.append("\"hod\" : \"" + hod + "\", ");
                 String dow = Integer.toString(gc.get(GregorianCalendar.DAY_OF_WEEK));
                 caseTime.append("\"dow\" : \"" + dow + "\"");

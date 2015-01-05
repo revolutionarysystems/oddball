@@ -34,6 +34,7 @@ import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.rules.RuleSetNotLoadedException;
 import uk.co.revsys.oddball.util.InvalidTimePeriodException;
+import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.user.manager.model.User;
 
 @Path("/")
@@ -193,7 +194,13 @@ public class OddballRestService extends AbstractRestService {
         if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = options.get("ruleSet");
         }
-        return findCasesService(ruleSet, options, "");
+        ruleSet=ruleSet.replace(" ", "+");
+        String ownerPrefix = "";
+        if (ruleSet.contains("/")){
+            ownerPrefix=ruleSet.substring(0, ruleSet.indexOf("/")+1);
+            ruleSet = ruleSet.substring(ruleSet.indexOf("/")+1);
+        }
+        return findCasesService(ruleSet, options, ownerPrefix);
     }
 
     @GET
@@ -219,6 +226,7 @@ public class OddballRestService extends AbstractRestService {
         options.put("owner", owner);
         String query = options.get("query");
         ArrayList<String> cases = new ArrayList<String>();
+        String output = "";
         try {
             String[] ruleSetNames = ruleSets.split(",");
             for (String ruleSet : ruleSetNames) {
@@ -230,6 +238,19 @@ public class OddballRestService extends AbstractRestService {
                     } else {
                         cases.addAll(oddball.findQueryCases(ruleOwnerPrefix+ruleSet.trim(), query, options));
                     }
+                }
+            }
+            String format = "json";
+            if (options.get("format")!=null){
+                format=options.get("format");
+            }
+            if (format.equals("json")){
+                output=new JSONUtil().jsonWrap(cases);
+            } else {
+                if (format.equals("csv")){
+                    output=new JSONUtil().json2csv(cases);
+                } else {
+                    throw new BadFormatException(format);
                 }
             }
         } catch (InvalidTimePeriodException ex) {
@@ -254,17 +275,23 @@ public class OddballRestService extends AbstractRestService {
             return buildErrorResponse(ex);
         } catch (FilterException ex) {
             return buildErrorResponse(ex);
+        } catch (BadFormatException ex) {
+            return buildErrorResponse(ex);
         }
-        StringBuilder out = new StringBuilder("[ ");
-        for (String aCase : cases) {
-            out.append(aCase);
-            out.append(", ");
-        }
-        if (out.length() > 2) {
-            out.delete(out.length() - 2, out.length());
-        }
-        out.append("]");
-        return Response.ok(out.toString()).build();
+
+        return Response.ok(output).build();
+
+        
+//        StringBuilder out = new StringBuilder("[ ");
+//        for (String aCase : cases) {
+//            out.append(aCase);
+//            out.append(", ");
+//        }
+//        if (out.length() > 2) {
+//            out.delete(out.length() - 2, out.length());
+//        }
+//        out.append("]");
+//        return Response.ok(out.toString()).build();
     }
 
     @GET
