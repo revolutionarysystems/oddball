@@ -116,8 +116,8 @@ public class OddUtil {
         return false;
     }
     
-    public Map<String, Object> flatten (Map<String, Object> aMap){
-        Map<String, Object> flatMap = new HashMap<String, Object>();
+    public Map<String, String> flatten (Map<String, Object> aMap){
+        Map<String, String> flatMap = new HashMap<String, String>();
         for(String key : aMap.keySet()){
             if (aMap.get(key) instanceof Map){
                 Map<String, String> flatSubMap = flatten((Map)aMap.get(key));
@@ -135,7 +135,7 @@ public class OddUtil {
                        flatMap.put(key, aMap.get(key).toString());
                     }
                 } else {
-                    flatMap.put(key, aMap.get(key));
+                    flatMap.put(key, aMap.get(key).toString());
                 }
             }
         }
