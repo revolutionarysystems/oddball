@@ -733,6 +733,38 @@ public class OddballRestService extends AbstractRestService {
     }
 
     @GET
+    @Path("/{ruleSet}/rule/{label}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response showRules(@PathParam("ruleSet") String ruleSet, @PathParam("label") String label, @QueryParam("transformer") String transformer) {
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        Iterable<String> rules;
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("transformer", transformer);
+        options.put("label", label);
+        try {
+            rules = oddball.findRules(ruleSet, options);
+        } catch (RuleSetNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (IOException ex) {
+            return buildErrorResponse(ex);
+//        } catch (TransformerNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+        }
+        StringBuilder out = new StringBuilder("[ ");
+        for (String rule : rules) {
+            out.append(rule);
+            out.append(", ");
+        }
+        if (out.length() > 2) {
+            out.delete(out.length() - 2, out.length());
+        }
+        out.append("]");
+        return Response.ok(out.toString()).build();
+    }
+
+    @GET
     @Path("/{owner}/{ruleSet}/rule/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response showRules2(@PathParam("ruleSet") String ruleSet, @PathParam("owner") String owner, @QueryParam("transformer") String transformer, @QueryParam("prefix") String prefix, @QueryParam("source") String source) {
@@ -747,6 +779,41 @@ public class OddballRestService extends AbstractRestService {
         options.put("transformer", transformer);
         options.put("prefix", prefix);
         options.put("source", source);
+        try {
+            rules = oddball.findRules(ruleSet, options);
+        } catch (RuleSetNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (IOException ex) {
+            return buildErrorResponse(ex);
+//        } catch (TransformerNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+        }
+        StringBuilder out = new StringBuilder("[ ");
+        for (String rule : rules) {
+            out.append(rule);
+            out.append(", ");
+        }
+        if (out.length() > 2) {
+            out.delete(out.length() - 2, out.length());
+        }
+        out.append("]");
+        return Response.ok(out.toString()).build();
+    }
+
+    @GET
+    @Path("/{owner}/{ruleSet}/rule/{label}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response showRule(@PathParam("ruleSet") String ruleSet, @PathParam("owner") String owner, @PathParam("label") String label, @QueryParam("transformer") String transformer) {
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        if (owner!=null){
+            ruleSet=owner+"/"+ruleSet;
+        }
+        Iterable<String> rules;
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("transformer", transformer);
+        options.put("label", label);
         try {
             rules = oddball.findRules(ruleSet, options);
         } catch (RuleSetNotLoadedException ex) {

@@ -122,16 +122,22 @@ public class Oddball {
         ArrayList<String> response = new ArrayList<String>();
         String prefix = "";
         String source = "";
+        String label = "";
         if (options.get("prefix") != null) {
             prefix = options.get("prefix");
         }
         if (options.get("source") != null) {
             source = options.get("source");
         }
+        if (options.get("label") != null) {
+            label = options.get("label");
+        }
         for (Rule rule : rules) {
             if (prefix.equals("ALL") || rule.getLabel().indexOf(prefix) == 0) {
                 if (source.equals("ALL") || rule.getSource().indexOf(source) == 0) {
-                    response.add(rule.asJSON());
+                    if (label.equals("") || rule.getLabel().contains(label)) {
+                        response.add(rule.asJSON());
+                    }
                 }
             }
         }
