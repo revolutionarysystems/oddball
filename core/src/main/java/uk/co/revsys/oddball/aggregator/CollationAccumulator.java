@@ -7,6 +7,8 @@
 package uk.co.revsys.oddball.aggregator;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +16,7 @@ import java.util.Map;
  *
  * @author Andrew
  */
-public class CollationAccumulator implements PropertyAccumulator{
+public class CollationAccumulator implements PropertyAccumulator, Comparator{
     
     Map<Object, Object> collation;
 
@@ -22,6 +24,11 @@ public class CollationAccumulator implements PropertyAccumulator{
         this.collation = new HashMap<Object, Object>();
     }
                 
+    public int compare(Object o1, Object o2){
+        return ((Integer)((HashMap)o2).get("count"))-((Integer)((HashMap)o1).get("count"));
+//        return ((String)((HashMap)o2).get("value")).compareTo((String)((HashMap)o1).get("value"));
+    }
+    
     @Override
     public void accumulateProperty(Object property){
         if (property!=null){
@@ -72,6 +79,7 @@ public class CollationAccumulator implements PropertyAccumulator{
             cell.put("count", collation.get(item));
             innerResults.add(cell);
         }
+        Collections.sort(innerResults, this);
         results.put("distribution", innerResults);
         return results;
     }

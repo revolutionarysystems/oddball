@@ -16,7 +16,7 @@ import uk.co.revsys.resource.repository.ResourceRepository;
  *
  * @author Andrew
  */
-public interface Comparator {
+public interface CaseComparator {
 
     Map compare(String caseString, Iterable<String> comparisonStrings, Map<String, String> options, ResourceRepository resourceRepository) throws ComparisonException, InvalidTimePeriodException, IOException;
     

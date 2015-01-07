@@ -22,7 +22,7 @@ import uk.co.revsys.resource.repository.ResourceRepository;
  *
  * @author Andrew
  */
-public class SummaryComparator implements Comparator{
+public class SummaryComparator implements CaseComparator{
     
     
     public Map compare(String caseString, Iterable<String> comparisonCases, Map<String, String> options, ResourceRepository resourceRepository) throws ComparisonException, InvalidTimePeriodException, IOException{

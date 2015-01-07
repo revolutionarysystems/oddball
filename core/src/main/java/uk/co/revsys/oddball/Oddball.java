@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import uk.co.revsys.jsont.JSONTransformer;
 import uk.co.revsys.oddball.aggregator.AggregationException;
 import uk.co.revsys.oddball.aggregator.Aggregator;
-import uk.co.revsys.oddball.aggregator.Comparator;
+import uk.co.revsys.oddball.aggregator.CaseComparator;
 import uk.co.revsys.oddball.aggregator.ComparatorMap;
 import uk.co.revsys.oddball.aggregator.ComparisonException;
 import uk.co.revsys.oddball.bins.BinSet;
@@ -325,7 +325,7 @@ public class Oddball {
         options.put("periodDivision", "1Y");
         
         try {
-            Comparator comp = (Comparator) comparatorClass.newInstance();
+            CaseComparator comp = (CaseComparator) comparatorClass.newInstance();
             for (String result: results){
                 Map compared = comp.compare(result, comparisonResults, options, resourceRepository);
                 String compString = JSONUtil.map2json((Map) compared);
