@@ -115,6 +115,7 @@ public class OddUtil {
         }
         return false;
     }
+
     
     public Map<String, String> flatten (Map<String, Object> aMap){
         Map<String, String> flatMap = new HashMap<String, String>();
@@ -132,10 +133,20 @@ public class OddUtil {
                             flatMap.put(key+"."+innerKey.replace(",","-"), flatSubMap.get(innerKey));
                         }
                     } else {
-                       flatMap.put(key, aMap.get(key).toString());
+                        try {
+                            flatMap.put(key, aMap.get(key).toString());
+                        }
+                        catch (NullPointerException ex){
+                            flatMap.put(key, "null");
+                        }
                     }
                 } else {
-                    flatMap.put(key, aMap.get(key).toString());
+                    try {
+                        flatMap.put(key, aMap.get(key).toString());
+                    }
+                    catch (NullPointerException ex){
+                        flatMap.put(key, "null");
+                    }
                 }
             }
         }
