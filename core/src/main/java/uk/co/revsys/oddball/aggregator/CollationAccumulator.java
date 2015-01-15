@@ -73,14 +73,29 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
     public Map readOffResults(){
         Map<Object, Object> results = new HashMap<Object, Object>();
         ArrayList<Map<String, Object>> innerResults = new ArrayList<Map<String, Object>> ();
+        int totalCount= 0;
+        double totalInfo= 0;
         for (Object item:collation.keySet()){
             Map<String, Object> cell = new HashMap<String, Object>();
             cell.put("value", item);
             cell.put("count", collation.get(item));
+            totalCount+=(Integer)collation.get(item);
             innerResults.add(cell);
         }
         Collections.sort(innerResults, this);
+        if (innerResults.size()>0){
+            int maxCount = (Integer) innerResults.get(0).get("count");
+            for (Map<String, Object> entry: innerResults){
+                entry.put("relFreq", ((Integer)entry.get("count")*1.0)/maxCount);
+                double absFreq = ((Integer)entry.get("count")*1.0)/totalCount;
+                entry.put("absFreq", absFreq);
+                double info = -Math.log(absFreq)/Math.log(2) * absFreq;
+                totalInfo+=info;
+                entry.put("info", -Math.log(absFreq)/Math.log(2));
+            }
+        }
         results.put("distribution", innerResults);
+        results.put("information", totalInfo);
         return results;
     }
 

@@ -1343,6 +1343,27 @@ public class OddballTest {
         }
     }
     
+    @Test
+    public void testFindCasesQueryWithSummaryProcessorChain() throws Exception {
+        System.out.println("findCases");
+        String ruleSetName = "TestMongoEvent";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, null, theCase);
+        instance.assessCase(ruleSetName, null, anotherCase);
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        long future = new Date().getTime()+1000000;
+        options.put("processorChain", "[{\"aggregator\":\"summary\", \"summaryDefinition\":\"testSummaryDef.json\"}, {\"transformer\":\"TestSummaryXform.json\"}]");
+        //options.put("processorChain", "[{\"aggregator\":\"summary\", \"summaryDefinition\":\"testSummaryDef.json\"}]");
+        Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        assertTrue(cases0.size()>0);
+        for (String aCase : cases0){
+            System.out.println(aCase);
+            assertTrue(aCase.contains("\"duration\":3600000"));
+        }
+    }
 
 
     

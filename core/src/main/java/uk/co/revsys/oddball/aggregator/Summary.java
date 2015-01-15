@@ -17,6 +17,8 @@ public class Summary {
         this.duration = duration;
         this.count = 0;
         this.endTime = startTime+duration;
+        this.firstCaseTime = endTime;
+        this.lastCaseTime = startTime;
         this.summaryDefinition = summaryDefinition;
         this.accumulators = new HashMap<String, PropertyAccumulator>();
         this.properties= new HashMap<String, String>();
@@ -44,19 +46,25 @@ public class Summary {
     private final SummaryDefinition summaryDefinition;
     private long startTime;
     private long endTime;
-    private long firstTagTime;
-    private long lastTagTime;
+    private long firstCaseTime;
+    private long lastCaseTime;
     private long duration;
     private long count=0;
     private final Map<String, PropertyAccumulator> accumulators;
     private final Map<String, String> properties;
     
 
-    public void incorporate(Map<String, Object> caseMap){
+    public void incorporate(Map<String, Object> caseMap, long caseTime){
         for (String accName : accumulators.keySet()){
             String propertyPath = properties.get(accName);
             Object propertyValue = new OddUtil().getDeepProperty(caseMap, propertyPath); 
             accumulators.get(accName).accumulateProperty(propertyValue);
+        }
+        if (caseTime<this.firstCaseTime){
+            firstCaseTime=caseTime;
+        }
+        if (caseTime>this.lastCaseTime){
+            lastCaseTime=caseTime;
         }
         count++;
     }
@@ -131,34 +139,34 @@ public class Summary {
         this.endTime = endTime;
     }
 
-//    /**
-//     * @return the firstTagTime
-//     */
-//    public long getFirstTagTime() {
-//        return firstTagTime;
-//    }
-//
-//    /**
-//     * @param firstTagTime the firstTagTime to set
-//     */
-//    public void setFirstTagTime(long firstTagTime) {
-//        this.firstTagTime = firstTagTime;
-//    }
-//
-//    /**
-//     * @return the lastTagTime
-//     */
-//    public long getLastTagTime() {
-//        return lastTagTime;
-//    }
-//
-//    /**
-//     * @param lastTagTime the lastTagTime to set
-//     */
-//    public void setLastTagTime(long lastTagTime) {
-//        this.lastTagTime = lastTagTime;
-//    }
-//
+    /**
+     * @return the firstCaseTime
+     */
+    public long getFirstCaseTime() {
+        return firstCaseTime;
+    }
+
+    /**
+     * @param firstCaseTime the firstCaseTime to set
+     */
+    public void setFirstCaseTime(long firstCaseTime) {
+        this.firstCaseTime = firstCaseTime;
+    }
+
+    /**
+     * @return the lastCaseTime
+     */
+    public long getLastCaseTime() {
+        return lastCaseTime;
+    }
+
+    /**
+     * @param lastCaseTime the lastCaseTime to set
+     */
+    public void setLastCaseTime(long lastCaseTime) {
+        this.lastCaseTime = lastCaseTime;
+    }
+
     /**
      * @return the duration
      */
@@ -182,6 +190,12 @@ public class Summary {
 //        summaryMap.put("count", Long.toString(count));
         summaryMap.put("startTime", startTime);
         summaryMap.put("endTime", endTime);
+        if (firstCaseTime<endTime){
+            summaryMap.put("firstCaseTime", firstCaseTime);
+        }
+        if (lastCaseTime>startTime){
+            summaryMap.put("lastCaseTime", lastCaseTime);
+        }
         summaryMap.put("duration", duration);
         summaryMap.put("count", count);
         for (String accName : accumulators.keySet()){

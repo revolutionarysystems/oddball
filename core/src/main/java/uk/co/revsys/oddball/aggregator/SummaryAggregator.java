@@ -129,7 +129,7 @@ public class SummaryAggregator implements Aggregator{
                 for (Summary summary: summaries){
                 // if case belongs in Summary, incorporate it
                     if (caseTime >= summary.getStartTime() && caseTime < summary.getEndTime()){
-                        summary.incorporate(caseMap);
+                        summary.incorporate(caseMap, caseTime);
                         break;
                     }
                 }

@@ -1,0 +1,7 @@
+{
+	"$": {
+            "session": "{{$.case.sessionId}}",
+            "duration":"{{$.duration}}",
+            "city":"{{$.city.distribution}}"
+	}
+}
