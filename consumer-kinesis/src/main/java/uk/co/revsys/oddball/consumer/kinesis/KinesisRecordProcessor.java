@@ -7,6 +7,8 @@ import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorCheckpointer;
 import com.amazonaws.services.kinesis.clientlibrary.types.ShutdownReason;
 import com.amazonaws.services.kinesis.model.Record;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -102,8 +104,8 @@ public class KinesisRecordProcessor implements IRecordProcessor {
             String data = null;
             LOG.debug("Processing record");
             for (int i = 0; i < numRetries; i++) {
-                try {
-                    data = decoder.decode(record.getData()).toString();
+                try {                    
+                    data = new String(record.getData().array(), Charset.forName("UTF-8"));
                     if (data.equals("")){
                         LOG.error("Blank data");
                     } else {
@@ -142,9 +144,6 @@ public class KinesisRecordProcessor implements IRecordProcessor {
                         }
                         break;
                     }
-                } catch (CharacterCodingException e) {
-                    LOG.error("Malformed data: " + data, e);
-                    break;
                 } catch (Throwable t) {
                     LOG.warn("Caught throwable while processing record " + record, t);
                 }
