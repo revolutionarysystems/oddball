@@ -317,7 +317,7 @@ public class Oddball {
         }
     }
 
-    private Collection<String> compareResults(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, IOException, DaoException {
+    private Collection<String> compareResults(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, IOException, DaoException, TransformerNotLoadedException {
         Collection<String> comparisonResults = comparisonResults(ruleSet, query, options, owner);
         
         ArrayList<String> comparedResults = new ArrayList<String>();
@@ -343,7 +343,7 @@ public class Oddball {
     }
 
 
-    private Collection<String> comparisonResults(RuleSet ruleSet, String query, Map<String, String> options, String owner) throws UnknownBinException, IOException, DaoException, InvalidTimePeriodException{
+    private Collection<String> comparisonResults(RuleSet ruleSet, String query, Map<String, String> options, String owner) throws UnknownBinException, IOException, DaoException, InvalidTimePeriodException, TransformerNotLoadedException{
         Map<String, String> comparisonOptions = new HashMap<String, String> ();
         comparisonOptions.putAll(options);
         if (options.containsKey("comparisonQuery")){
@@ -362,6 +362,10 @@ public class Oddball {
         }
         comparisonOptions.remove("selector");
         Collection<String> result = ruleSet.getPersist().findCasesForOwner(owner, query, comparisonOptions);
+        if (options.get("transformer") != null) {
+            result = transformResults(result, getDefaultedTransformer("", options));
+            //todo respect variables in transformername
+        }
         return result;
     }
     
@@ -487,6 +491,7 @@ public class Oddball {
             distinctOptions.remove("transformer");
             distinctOptions.remove("aggregator");
             distinctOptions.remove("selector");
+            distinctOptions.remove("comparator");
             distinctOptions.remove("tagger");
             distinctOptions.remove("filter");
             distinctOptions.remove("forEach");

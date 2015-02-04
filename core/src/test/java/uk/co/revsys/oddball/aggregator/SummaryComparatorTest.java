@@ -42,6 +42,12 @@ public class SummaryComparatorTest{
                 + "\"agent-name\": \"chrome\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
                 + "\"timestamp\": \"1000001\","
+                + "\"response\": \"100\","
+                + "\"city\": \"london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"chrome\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000001\","
                 + "\"response\": \"150\","
                 + "\"city\": \"london\","
                 + "\"state\": \"login\","
@@ -81,8 +87,10 @@ public class SummaryComparatorTest{
         System.out.println("comparison");
         System.out.println(comparison);
         assertEquals("chrome", ((Map)comparison.get("agent-name")).get("value"));
-        assertEquals(2, ((Map)comparison.get("agent-name")).get("count"));
-        assertEquals((float)0.4, ((Map)comparison.get("agent-name")).get("proportion"));
+        assertEquals(3, ((Map)comparison.get("agent-name")).get("count"));
+        assertEquals((float)0.5, ((Map)comparison.get("agent-name")).get("proportion"));
+        assertTrue(0.0001> Math.abs(1.0 - (Double)((Map)comparison.get("agent-name")).get("info")));
+        assertTrue(0.0001> Math.abs(-0.79248 - (Double)((Map)comparison.get("agent-name")).get("relInfo")));
     }
 
     

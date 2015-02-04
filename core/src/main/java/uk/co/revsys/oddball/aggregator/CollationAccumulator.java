@@ -42,6 +42,21 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
             
     }
 
+    public void removeProperty(Object property){
+        if (property!=null){
+            property=((String)property).replace("\"","");
+        }
+        if (collation.containsKey(property)){
+            if ((Integer)collation.get(property)>1){
+                collation.put(property, ((Integer)collation.get(property))-1);
+            } else {
+                collation.remove(property);
+            }
+        }
+            
+    }
+
+    
     @Override
     public Map assessProperty(Object property){
         Map<Object, Object> results = new HashMap<Object, Object>();
@@ -56,6 +71,19 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
         } else {
             results.put("count", 0);
             results.put("proportion", (float)0.0);
+        }
+        boolean novel = false;
+        if (collation.get(property)==null){
+            novel = true;
+        }
+        if (novel){
+            accumulateProperty(property); // for info measurement purposes
+        }
+        computeInfo();
+        results.put("info", itemInfo.get(property));
+        results.put("relInfo", itemInfo.get(property)-totalInfo);
+        if (novel){
+            removeProperty(property); // for info measurement purposes
         }
         return results;
     }
@@ -74,7 +102,6 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
         Map<Object, Object> results = new HashMap<Object, Object>();
         ArrayList<Map<String, Object>> innerResults = new ArrayList<Map<String, Object>> ();
         int totalCount= 0;
-        double totalInfo= 0;
         for (Object item:collation.keySet()){
             Map<String, Object> cell = new HashMap<String, Object>();
             cell.put("value", item);
@@ -98,6 +125,41 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
         results.put("information", totalInfo);
         return results;
     }
+    
+    public void computeInfo(){
+        //Map<Object, Object> results = new HashMap<Object, Object>();
+        ArrayList<Map<String, Object>> innerResults = new ArrayList<Map<String, Object>> ();
+        for (Object item:collation.keySet()){
+            Map<String, Object> cell = new HashMap<String, Object>();
+            cell.put("value", item);
+            cell.put("count", (Integer)collation.get(item));
+            totalCount+=(Integer)collation.get(item);
+            innerResults.add(cell);
+        }
+//        Collections.sort(innerResults, this);
+        if (innerResults.size()>0){
+//            int maxCount = (Integer) innerResults.get(0).get("count");
+            for (Map<String, Object> entry: innerResults){
+  //              entry.put("relFreq", ((Integer)entry.get("count")*1.0)/maxCount);
+                double absFreq = ((Integer)entry.get("count")*1.0)/totalCount;
+//                entry.put("absFreq", absFreq);
+                double info = -Math.log(absFreq)/Math.log(2);
+                itemInfo.put((String)entry.get("value"), info);
+                totalInfo+=info * absFreq;
+//                entry.put("info", -Math.log(absFreq)/Math.log(2));
+            }
+        }
+//        results.put("distribution", innerResults);
+//        results.put("information", totalInfo);
+//        return results;
+    }
+    
+
+    
+    int totalCount= 0;
+    double totalInfo= 0;
+    Map<String, Double> itemInfo = new HashMap<String, Double>();
+    
 
     
 }
