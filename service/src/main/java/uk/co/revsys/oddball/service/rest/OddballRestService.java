@@ -199,6 +199,9 @@ public class OddballRestService extends AbstractRestService {
         if (ruleSet.contains("/")){
             ownerPrefix=ruleSet.substring(0, ruleSet.indexOf("/")+1);
             ruleSet = ruleSet.substring(ruleSet.indexOf("/")+1);
+            for (String key : queryParams.keySet()) {
+                options.put(key, queryParams.getFirst(key).replace("{owner}",ownerPrefix).replace("{account}",ownerPrefix));
+            }
         }
         return findCasesService(ruleSet, options, ownerPrefix);
     }
@@ -214,6 +217,9 @@ public class OddballRestService extends AbstractRestService {
         }
         if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = options.get("ruleSet");
+        }
+        for (String key : queryParams.keySet()) {
+            options.put(key, queryParams.getFirst(key).replace("{owner}",owner+"/").replace("{account}",owner+"/"));
         }
         return findCasesService(ruleSet, options, owner+"/");
     }
@@ -231,7 +237,7 @@ public class OddballRestService extends AbstractRestService {
             String[] ruleSetNames = ruleSets.split(",");
             for (String ruleSet : ruleSetNames) {
                 if (options.get("action") != null && options.get("action").equals("delete")) {
-                    oddball.deleteQueryCases(ruleSet.trim(), query, options);
+                    oddball.deleteQueryCases(ruleOwnerPrefix+ruleSet.trim(), query, options);
                 } else {
                     if (options.get("forEach") != null) {
                         cases.addAll(oddball.findQueryCasesForEach(ruleOwnerPrefix+ruleSet.trim(), query, options));

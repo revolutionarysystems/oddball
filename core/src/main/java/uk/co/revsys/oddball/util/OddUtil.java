@@ -10,6 +10,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -153,6 +155,17 @@ public class OddUtil {
         return flatMap;
     }
     
+    public String removeChar(String value, int ch) {
+        value = value.replaceAll(String.valueOf(java.lang.Character.toChars(ch)), "");
+        return value;
+    }
+
+    public String removeStr(String value, String str) {
+        value = value.replaceAll(String.valueOf(str), "");
+        return value;
+    }
+
+    static final Logger LOGGER = LoggerFactory.getLogger("oddball");
 
     
 }

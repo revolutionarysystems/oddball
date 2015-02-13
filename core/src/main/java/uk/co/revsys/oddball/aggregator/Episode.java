@@ -288,12 +288,12 @@ public class Episode {
         episodeMap.put("owner", owner);
         episodeMap.put("agent", agent);
         episodeMap.put("series", series);
-        episodeMap.put("time", Long.toString(startTime));
-        episodeMap.put("startTime", Long.toString(startTime));
-        episodeMap.put("endTime", Long.toString(endTime));
-        episodeMap.put("firstTagTime", Long.toString(firstTagTime));
-        episodeMap.put("lastTagTime", Long.toString(lastTagTime));
-        episodeMap.put("duration", Long.toString(duration));
+        episodeMap.put("time", startTime);
+        episodeMap.put("startTime", startTime);
+        episodeMap.put("endTime", endTime);
+        episodeMap.put("firstTagTime", firstTagTime);
+        episodeMap.put("lastTagTime", lastTagTime);
+        episodeMap.put("duration", duration);
         episodeMap.put("states", states);
         if (isOpen()) {
             episodeMap.put("status", "open");

@@ -17,6 +17,7 @@ public class PropertyAccumulatorMap extends HashMap<String, Class>{
 
 	public PropertyAccumulatorMap() {
 		put("collate", CollationAccumulator.class);
+		put("simpleCollate", SimpleCollationAccumulator.class);
 		put("stats1", BasicStatsAccumulator.class);
 		put("stats2", VarianceStatsAccumulator.class);
 		put("lognormal", LogNormalStatsAccumulator.class);

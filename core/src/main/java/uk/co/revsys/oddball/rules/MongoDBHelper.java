@@ -320,9 +320,9 @@ public class MongoDBHelper {
             long millis = new OddUtil().parseTimePeriod(recent, "m");
             long now = Calendar.getInstance().getTimeInMillis();
             long cutoff = now - millis;
-            BasicDBObject subQuery = new BasicDBObject("$gt", Long.toString(cutoff));
+            BasicDBObject subQuery = new BasicDBObject("$gt", cutoff);
             if (query.containsField("case.time")){
-                ((BasicDBObject)query.get("case.time")).append("$gt", Long.toString(cutoff));
+                ((BasicDBObject)query.get("case.time")).append("$gt", cutoff);
             } else {
                 query.append("case.time", subQuery);
             }
@@ -344,9 +344,9 @@ public class MongoDBHelper {
             long millis = new OddUtil().parseTimePeriod(ago, "m");
             long now = Calendar.getInstance().getTimeInMillis();
             long cutoff = now - millis;
-            BasicDBObject subQuery = new BasicDBObject("$lte", Long.toString(cutoff));
+            BasicDBObject subQuery = new BasicDBObject("$lte", cutoff);
             if (query.containsField("case.time")){
-                ((BasicDBObject)query.get("case.time")).append("$lte", Long.toString(cutoff));
+                ((BasicDBObject)query.get("case.time")).append("$lte", cutoff);
             } else {
                 query.append("case.time", subQuery);
             }
