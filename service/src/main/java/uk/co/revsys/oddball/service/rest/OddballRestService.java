@@ -1,6 +1,7 @@
 package uk.co.revsys.oddball.service.rest;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -185,11 +186,12 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}/case/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCases(@PathParam("ruleSet") String ruleSet, @Context UriInfo ui) {
+    public Response findCases(@PathParam("ruleSet") String ruleSet, @Context UriInfo ui) throws UnsupportedEncodingException {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+", " "));
+            options.put(key, java.net.URLDecoder.decode(queryParams.getFirst(key), "UTF-8"));
+//            options.put(key, queryParams.getFirst(key).replaceAll("\\+", " "));
         }
         if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = options.get("ruleSet");
@@ -199,8 +201,8 @@ public class OddballRestService extends AbstractRestService {
         if (ruleSet.contains("/")){
             ownerPrefix=ruleSet.substring(0, ruleSet.indexOf("/")+1);
             ruleSet = ruleSet.substring(ruleSet.indexOf("/")+1);
-            for (String key : queryParams.keySet()) {
-                options.put(key, queryParams.getFirst(key).replace("{owner}",ownerPrefix).replace("{account}",ownerPrefix));
+            for (String key : options.keySet()) {
+                options.put(key, options.get(key).replace("{owner}",ownerPrefix).replace("{account}",ownerPrefix));
             }
         }
         return findCasesService(ruleSet, options, ownerPrefix);
@@ -209,17 +211,18 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{owner}/{ruleSet}/case/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCases2(@PathParam("ruleSet") String ruleSet,@PathParam("owner") String owner, @Context UriInfo ui) {
+    public Response findCases2(@PathParam("ruleSet") String ruleSet,@PathParam("owner") String owner, @Context UriInfo ui) throws UnsupportedEncodingException {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("+", " "));
+            options.put(key, java.net.URLDecoder.decode(queryParams.getFirst(key), "UTF-8"));
+//            options.put(key, queryParams.getFirst(key).replaceAll("\\+", " "));
         }
         if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = options.get("ruleSet");
         }
-        for (String key : queryParams.keySet()) {
-            options.put(key, queryParams.getFirst(key).replace("{owner}",owner+"/").replace("{account}",owner+"/"));
+        for (String key : options.keySet()) {
+            options.put(key, options.get(key).replace("{owner}",owner+"/").replace("{account}",owner+"/"));
         }
         return findCasesService(ruleSet, options, owner+"/");
     }

@@ -22,10 +22,14 @@ public class Event implements Comparable<Event> {
         Map<String, Object> mapCase = JSONUtil.json2map(jsonCase);
         caseMap = mapCase;
         tagTime=Long.parseLong((String)mapCase.get("tagTime"));
-        try {
-            eventTime=(Long)mapCase.get("time");
-        } catch (ClassCastException e) {
-            eventTime=parseTime((String)mapCase.get("time"));
+        if (mapCase.get("time")!=null){
+            try {
+                eventTime=(Long)mapCase.get("time");
+            } catch (ClassCastException e) {
+                eventTime=parseTime((String)mapCase.get("time"));
+            }
+        } else {
+            eventTime=(Long)mapCase.get("clientTime");
         }
         state=(String)mapCase.get("state");
         code=(String)mapCase.get("code");
