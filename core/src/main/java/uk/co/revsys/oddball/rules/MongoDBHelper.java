@@ -15,6 +15,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.FindOne;
@@ -50,9 +51,13 @@ public class MongoDBHelper {
         cases.drop();
     }
 
-    public String insertCase(String content) {
+    public String insertCase(String content) throws IOException {
         // jongo interprets # as parameter.
         content = content.replace("#", "(hash)");
+        if (!content.contains("_id")){
+            String id = UUID.randomUUID().toString();
+            content = content.substring(0, content.lastIndexOf("}"))+", \"_id\":\""+id+"\" }";
+        }
         WriteResult wr = cases.insert(content);
         if (content.contains("{}") || content.contains(":  }")) {
             LOGGER.debug("Writing empty or bad json object");
@@ -63,8 +68,11 @@ public class MongoDBHelper {
         //System.out.println(wr.getUpsertedId());
         //return wr.getUpsertedId().toString();
         // for now
-        FindOne found = cases.findOne(content);
-        return (String) found.as(Map.class).get("_id").toString();
+
+
+        String id = (String)JSONUtil.json2map(content).get("_id");
+        return id;
+    
     }
 
     public String checkAlreadyExists(String duplicateQuery) {
@@ -77,8 +85,8 @@ public class MongoDBHelper {
     }
 
     public void removeCase(String caseId) {
-//        cases.remove("{ \"_id\": \"" + caseId + "\" }");
-        cases.remove("{_id: #}", new ObjectId(caseId));
+        cases.remove("{ \"_id\": \"" + caseId + "\" }");
+//        cases.remove("{_id: #}", new ObjectId(caseId));
 
     }
 
@@ -269,10 +277,16 @@ public class MongoDBHelper {
     }
 
     public Collection<String> findCaseById(String owner, String id) throws DaoException {
-//        try {
-        Find found = cases.find("{_id: #}", new ObjectId(id));
-        Iterable<Map> foundCases = found.as(Map.class);
         ArrayList<String> caseList = new ArrayList<String>();
+        Find found;
+        try {
+            found = cases.find("{_id: #}", new ObjectId(id));
+        } 
+        catch (IllegalArgumentException e){
+            found = cases.find("{_id: #}", id);
+        }
+        
+        Iterable<Map> foundCases = found.as(Map.class);
         for (Map foundCase : foundCases) {
             String json = JSONUtil.map2json(foundCase);
             if (json.contains(":  }")) {

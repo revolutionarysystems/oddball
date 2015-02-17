@@ -127,6 +127,8 @@ public class OddballRestService extends AbstractRestService {
             Opinion op;
             try {
                 op = oddball.assessCase(ruleSet, inboundTransformer, new StringCase(caseStr), persistOption, duplicateRule);
+            } catch (IOException ex) {
+                return buildErrorResponse(ex);
             } catch (RuleSetNotLoadedException ex) {
                 return buildErrorResponse(ex);
             } catch (TransformerNotLoadedException ex) {

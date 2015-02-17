@@ -18,7 +18,7 @@ public interface Rule {
     
     public Assessment apply(Case aCase, RuleSet ruleSet, String key);
     
-    public boolean testOneOffRule(Case aCase, MongoDBHelper helper);
+    public boolean testOneOffRule(Case aCase, MongoDBHelper helper) throws IOException;
 
     /**
      * @return the ruleString

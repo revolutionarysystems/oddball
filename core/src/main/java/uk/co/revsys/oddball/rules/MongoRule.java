@@ -43,7 +43,7 @@ public class MongoRule extends RuleImpl {
     }
 
     @Override
-    public boolean testOneOffRule(Case aCase, MongoDBHelper helper) {
+    public boolean testOneOffRule(Case aCase, MongoDBHelper helper) throws IOException{
         String caseId = helper.insertCase(aCase.getContent());
         boolean hit = helper.testCase(ruleString, caseId);
         return hit;

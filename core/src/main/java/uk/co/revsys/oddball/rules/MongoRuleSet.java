@@ -5,6 +5,7 @@
  */
 package uk.co.revsys.oddball.rules;
 
+import java.io.IOException;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.InvalidCaseException;
 import uk.co.revsys.oddball.cases.MapCase;
@@ -36,7 +37,7 @@ public class MongoRuleSet extends RuleSetImpl {
     }
 
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String forEachIn) throws InvalidCaseException {
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String forEachIn) throws InvalidCaseException, IOException {
         String caseStr = aCase.getContent();
         Case theCase = new MapCase(caseStr);
         if (forEachIn == null) {  //lowest level of nesting

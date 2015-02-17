@@ -38,7 +38,7 @@ public abstract class RuleImpl implements Rule {
     public abstract Assessment apply(Case aCase, RuleSet ruleSet, String key);
     
     @Override
-    public abstract boolean testOneOffRule(Case aCase, MongoDBHelper helper);
+    public abstract boolean testOneOffRule(Case aCase, MongoDBHelper helper) throws IOException;
     
     /**
      * @return the ruleString

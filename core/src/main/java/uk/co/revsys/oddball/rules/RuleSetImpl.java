@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -96,13 +97,13 @@ public class RuleSetImpl implements RuleSet{
     }
 
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery) throws InvalidCaseException{
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery) throws InvalidCaseException, IOException{
         return assessCase(aCase, key, ruleSetStr, persistOption, duplicateQuery, this.forEachIn);
     }
 
     
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String forEachIn) throws InvalidCaseException{
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String forEachIn) throws InvalidCaseException, IOException{
 
         Opinion op = new OpinionImpl();
         MapCase aMapCase;
@@ -181,7 +182,7 @@ public class RuleSetImpl implements RuleSet{
                 op.getTags().clear();
             } else {
                 if (persistOption != NEVERPERSIST){
-                    String persistCase = op.getEnrichedCase(ruleSetStr, aCase);
+                    String persistCase = op.getEnrichedCase(ruleSetStr, aCase, true);
                     if (persistOption == UPDATEPERSIST){
                         String caseDuplicateQuery= null;
                         if (duplicateQuery!=null){
@@ -193,6 +194,7 @@ public class RuleSetImpl implements RuleSet{
                             id = getPersist().checkAlreadyExists(caseDuplicateQuery);
                         }
                     }
+                    String uid=UUID.randomUUID().toString();
                     getPersist().insertCase(persistCase);
                     //LOGGER.debug("inserting:"+duplicateQuery);
                 }

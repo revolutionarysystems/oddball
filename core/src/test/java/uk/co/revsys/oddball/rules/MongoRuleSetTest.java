@@ -49,7 +49,7 @@ public class MongoRuleSetTest {
         instance.addRule(new MongoRule("{\"platform\": {$in:[\"Win32\", \"Win64\"]}}", "WinXX"));
         Opinion result = instance.assessCase(aCase, null, "Test", RuleSet.ALWAYSPERSIST, null);
         assertTrue(result.getLabel().contains("WinXX"));
-        assertTrue(result.getEnrichedCase("Test", aCase).contains("Test"));
+        assertTrue(result.getEnrichedCase("Test", aCase, false).contains("Test"));
         MongoDBHelper assessDb = instance.getAssess();
         assertFalse(assessDb.testCase("{ \"ruleSet\" : \"Test\"}"));
         assertFalse(assessDb.testCase("{ \"case\" : { \"platform\" : \"Win32\", \"userId\" : \"10A\" } }"));

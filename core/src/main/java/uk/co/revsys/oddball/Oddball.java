@@ -72,7 +72,7 @@ public class Oddball {
         return ruleSet;
     }
 
-    public Opinion assessCase(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException {
+    public Opinion assessCase(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, IOException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         if (inboundTransformer != null) {
             LOGGER.debug("Applying transformation:" + inboundTransformer);
@@ -81,7 +81,7 @@ public class Oddball {
         return ruleSet.assessCase(aCase, null, ruleSetName, persistOption, duplicateQuery);
     }
 
-    public Opinion assessCase(String ruleSetName, String inboundTransformer, Case aCase) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException {
+    public Opinion assessCase(String ruleSetName, String inboundTransformer, Case aCase) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, IOException {
         return this.assessCase(ruleSetName, inboundTransformer, aCase, RuleSet.ALWAYSPERSIST, null);
     }
 
@@ -383,7 +383,7 @@ public class Oddball {
         return result;
     }
 
-    private Collection<String> tagResults(Iterable<String> results, Map<String, String> options) throws RuleSetNotLoadedException, InvalidCaseException, TransformerNotLoadedException {
+    private Collection<String> tagResults(Iterable<String> results, Map<String, String> options) throws RuleSetNotLoadedException, InvalidCaseException, TransformerNotLoadedException, IOException {
         ArrayList<String> taggedResults = new ArrayList<String>();
         String ruleSetName = options.get("tagger");
         String incomingXform = null;
@@ -404,7 +404,7 @@ public class Oddball {
 //    public Opinion assessCase(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException {
             Opinion caseOp = this.assessCase(ruleSetName, incomingXform, aCase, persistOption, duplicateQuery);
 //            Opinion caseOp = ruleSet.assessCase(aCase, incomingXform, ruleSetName, persistOption, duplicateQuery);
-            taggedResults.add(caseOp.getEnrichedCase(ruleSetName, aCase));
+            taggedResults.add(caseOp.getEnrichedCase(ruleSetName, aCase, true));
         }
         return taggedResults;
     }

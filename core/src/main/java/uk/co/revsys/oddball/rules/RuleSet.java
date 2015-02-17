@@ -6,6 +6,7 @@
 
 package uk.co.revsys.oddball.rules;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import uk.co.revsys.oddball.cases.Case;
@@ -34,9 +35,9 @@ public interface RuleSet {
         
     public List<Rule> getAllRules();
         
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String forEachIn) throws InvalidCaseException;
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String forEachIn) throws InvalidCaseException, IOException;
 
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery) throws InvalidCaseException;
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery) throws InvalidCaseException, IOException;
     
     public String getRuleType();
 

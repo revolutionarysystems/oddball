@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.cases.Case;
@@ -114,7 +115,7 @@ public class OpinionImpl implements Opinion{
     }
 
     @Override
-    public String getEnrichedCase(String ruleSet, Case aCase) {
+    public String getEnrichedCase(String ruleSet, Case aCase, boolean generateUid) {
         String tags = getLabel();
         String caseStr = aCase.getJSONisedContent();
         if (assessTime==0){
@@ -152,6 +153,10 @@ public class OpinionImpl implements Opinion{
         enrichedCase.append("\"ruleSet\" : \"" + ruleSet + "\", ");
         enrichedCase.append("\"case\" : " + caseStr + ", ");
         enrichedCase.append(tags.substring(1, tags.length() - 1)+ ", ");
+        if (generateUid){
+            String uid = UUID.randomUUID().toString();
+            enrichedCase.append("\"_id\" : \"" + uid + "\", ");
+        }
         String propStr = derivedProperties();
         enrichedCase.append(propStr.substring(1, propStr.length() - 1));
         enrichedCase.append(" }");
