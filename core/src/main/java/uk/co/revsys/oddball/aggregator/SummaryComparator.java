@@ -10,9 +10,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.co.revsys.oddball.TransformerNotLoadedException;
+import uk.co.revsys.oddball.bins.UnknownBinException;
+import uk.co.revsys.oddball.rules.DaoException;
+import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.util.InvalidTimePeriodException;
 import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.oddball.util.OddUtil;
@@ -30,7 +35,7 @@ public class SummaryComparator implements CaseComparator{
         try {
 //            LOGGER.debug("compareToSummary");
 //            LOGGER.debug(caseString);
-            Collection<Summary> comparisons = sa.summariseCases(comparisonCases, options, resourceRepository);
+////            Collection<Summary> comparisons = sa.summariseCases(comparisonCases, options, resourceRepository);
 //            LOGGER.debug(Integer.toString(comparisons.size()));
 //            LOGGER.debug(comparisons.toString());
             Summary comparison = sa.summariseCases(comparisonCases, options, resourceRepository).get(0); // should be just the 1
@@ -54,6 +59,8 @@ public class SummaryComparator implements CaseComparator{
         
     }
 
+    
+    
     private SummaryDefinition summaryDefinition;     
 
 

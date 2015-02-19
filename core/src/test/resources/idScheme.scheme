@@ -1,0 +1,17 @@
+    {"identificationScheme": 
+        [
+        {
+               "name":"ref",
+                "rank":"primary",
+                "include-fields":["ref"],
+        	 "query-fields":["case.ref"]
+
+        },     
+        {
+            "name":"city",
+             "rank":"secondary",
+             "include-fields":["city"],
+            "query-fields":["case.city"]
+        }     
+        ]
+     }   

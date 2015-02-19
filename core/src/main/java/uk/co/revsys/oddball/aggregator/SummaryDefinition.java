@@ -19,7 +19,7 @@ import uk.co.revsys.resource.repository.model.Resource;
  *
  * @author Andrew
  */
-class SummaryDefinition {
+public class SummaryDefinition {
         public SummaryDefinition(String summaryDefinitionName, ResourceRepository resourceRepository)  throws SummaryDefinitionNotLoadedException{
                 this.name = summaryDefinitionName;
                 definition = loadSummaryDefinition(this.name, resourceRepository);

@@ -32,7 +32,7 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
     @Override
     public void accumulateProperty(Object property){
         if (property!=null){
-            property=((String)property).replace("\"","");
+            property=(property.toString()).replace("\"","");
         }
         if (collation.containsKey(property)){
             collation.put(property, ((Integer)collation.get(property))+1);
@@ -81,7 +81,7 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
         }
         computeInfo();
         results.put("info", itemInfo.get(property));
-        results.put("relInfo", itemInfo.get(property)-totalInfo);
+        results.put("relInfo", itemInfo.get(property)-itemInfo.get("total"));
         if (novel){
             removeProperty(property); // for info measurement purposes
         }
@@ -102,6 +102,7 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
         Map<Object, Object> results = new HashMap<Object, Object>();
         ArrayList<Map<String, Object>> innerResults = new ArrayList<Map<String, Object>> ();
         int totalCount= 0;
+        double totalInfo = 0.0;
         for (Object item:collation.keySet()){
             Map<String, Object> cell = new HashMap<String, Object>();
             cell.put("value", item);
@@ -137,6 +138,7 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
             innerResults.add(cell);
         }
 //        Collections.sort(innerResults, this);
+        double totalInfo=0;
         if (innerResults.size()>0){
 //            int maxCount = (Integer) innerResults.get(0).get("count");
             for (Map<String, Object> entry: innerResults){
@@ -148,6 +150,7 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
                 totalInfo+=info * absFreq;
 //                entry.put("info", -Math.log(absFreq)/Math.log(2));
             }
+            itemInfo.put("total", totalInfo);
         }
 //        results.put("distribution", innerResults);
 //        results.put("information", totalInfo);
@@ -157,7 +160,7 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
 
     
     int totalCount= 0;
-    double totalInfo= 0;
+//    double totalInfo= 0;
     Map<String, Double> itemInfo = new HashMap<String, Double>();
     
 
