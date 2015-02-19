@@ -30,6 +30,7 @@ import uk.co.revsys.oddball.bins.BinSetNotLoadedException;
 import uk.co.revsys.oddball.bins.UnknownBinException;
 import uk.co.revsys.oddball.cases.InvalidCaseException;
 import uk.co.revsys.oddball.cases.StringCase;
+import uk.co.revsys.oddball.identifier.IdentificationSchemeNotLoadedException;
 import uk.co.revsys.oddball.rules.DaoException;
 import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.rules.RuleSet;
@@ -107,7 +108,7 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response applyRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("ruleSet") String altRuleSet, @QueryParam("case") String caseStr, @QueryParam("inboundTransformer") String inboundTransformer, @QueryParam("persist") String persist, @QueryParam("duplicateRule") String duplicateRule) {
+    public Response applyRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("ruleSet") String altRuleSet, @QueryParam("case") String caseStr, @QueryParam("inboundTransformer") String inboundTransformer, @QueryParam("persist") String persist, @QueryParam("duplicateRule") String duplicateRule, @QueryParam("avoidRule") String avoidRule, @QueryParam("ensureIndexes") String ensureIndexes) throws IOException {
         if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = altRuleSet;
         }
@@ -126,9 +127,7 @@ public class OddballRestService extends AbstractRestService {
         } else {
             Opinion op;
             try {
-                op = oddball.assessCase(ruleSet, inboundTransformer, new StringCase(caseStr), persistOption, duplicateRule);
-            } catch (IOException ex) {
-                return buildErrorResponse(ex);
+                op = oddball.assessCase(ruleSet, inboundTransformer, new StringCase(caseStr), persistOption, duplicateRule, null, null);
             } catch (RuleSetNotLoadedException ex) {
                 return buildErrorResponse(ex);
             } catch (TransformerNotLoadedException ex) {
@@ -273,6 +272,8 @@ public class OddballRestService extends AbstractRestService {
         } catch (TransformerNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (ProcessorNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (IdentificationSchemeNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (AggregationException ex) {
             return buildErrorResponse(ex);

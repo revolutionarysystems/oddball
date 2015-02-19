@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.util.InvalidTimePeriodException;
 import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.oddball.util.OddUtil;
@@ -144,4 +146,7 @@ public class SummaryAggregator implements Aggregator{
 
     private ArrayList<Summary> summaries;
     private SummaryDefinition summaryDefinition;     
+
+    static final Logger LOGGER = LoggerFactory.getLogger("oddball");
+
 }

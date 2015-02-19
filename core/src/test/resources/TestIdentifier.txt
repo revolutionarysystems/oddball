@@ -1,0 +1,4 @@
+$ruleType:mongo,inMemory
+
+[type:unknown]
+ruleC:{"platform":"windows"}

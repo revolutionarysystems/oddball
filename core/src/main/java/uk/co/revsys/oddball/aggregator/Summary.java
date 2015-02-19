@@ -71,8 +71,8 @@ public class Summary {
     
 
     
-    public Map<String, Object> assess(Map<String, Object> caseMap){
-        Map<String, Object> comparisonMap = new HashMap<String, Object>();
+    public Map<String, Map<String, Object>> assess(Map<String, Object> caseMap){
+        Map<String, Map<String, Object>> comparisonMap = new HashMap<String, Map<String, Object>>();
         for (String accName : accumulators.keySet()){
             Object propertyValue = null;
             String propertyPath = properties.get(accName);

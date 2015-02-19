@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -73,6 +74,13 @@ public class MongoDBHelper {
         String id = (String)JSONUtil.json2map(content).get("_id");
         return id;
     
+    }
+    
+    public void ensureIndexes(String indexList){
+        String[] indexes = indexList.split(",");
+        for (String index:indexes){
+            cases.ensureIndex(index);
+        }
     }
 
     public String checkAlreadyExists(String duplicateQuery) {
@@ -192,6 +200,7 @@ public class MongoDBHelper {
         BasicDBObject query = buildQuery(owner, queryString, options);
         ArrayList<String> caseList = new ArrayList<String>();
         if (options.get("distinct") != null) {
+            long time = new Date().getTime();
             List foundCases = cases.getDBCollection().distinct(options.get("distinct"), query);
             for (Object foundCase : foundCases) {
                 if (foundCase != null) {
@@ -236,6 +245,7 @@ public class MongoDBHelper {
                 }
             }
             List<DBObject> foundCases;
+            long time = new Date().getTime();
             if (skipCount <= 0) {
                 foundCases = cases.getDBCollection().find(query).sort(sort).limit(retrieveCount).toArray();
             } else {
@@ -253,16 +263,18 @@ public class MongoDBHelper {
                 caseList.add(json);
             }
         } else {
+            long time = new Date().getTime();
             List<DBObject> foundCases = cases.getDBCollection().find(query).toArray();
             for (DBObject foundCase : foundCases) {
-                Map result = JSONUtil.json2map(foundCase.toString());
-                result.put("_id", foundCase.get("_id").toString());
-                String json = JSONUtil.map2json(result);
-                if (json.contains(":  }")) {
-                    LOGGER.debug("Reading bad json object");
-                    LOGGER.debug(json);
-                    json = json.replace(":  }", ": {}");
-                }
+//                Map result = JSONUtil.json2map(foundCase.toString());
+//                result.put("_id", foundCase.get("_id").toString());
+//                String json = JSONUtil.map2json(result);
+                String json = foundCase.toString();
+//                if (json.contains(":  }")) {
+//                    LOGGER.debug("Reading bad json object");
+//                    LOGGER.debug(json);
+//                    json = json.replace(":  }", ": {}");
+//                }
                 caseList.add(json);
             }
         }
