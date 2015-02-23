@@ -93,9 +93,6 @@ public class SummaryIdentifier implements CaseIdentifier{
                 queryField = queryFields.get(0);
             }
         }
-        System.out.println("Query");
-        System.out.println(queryField);
-        System.out.println(assessment);
         String query = "{\""+queryField+"\":\""+assessment.get(applicableField).get("value")+"\"}";
 
         //options

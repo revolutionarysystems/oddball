@@ -507,7 +507,7 @@ public class Oddball {
                     if (options.get("caseRecent") != null) {
                         subOptions.put("caseRecent", options.get("caseRecent"));
                     }
-                    if (options.get("query") != null) {
+                    if (options.get("query") != null && subOptions.get("query") == null) {
                         subOptions.put("query", options.get("query"));
                     }
                     if (options.get("forEach") != null) {
@@ -519,7 +519,7 @@ public class Oddball {
                     if (stepMap.get("identityTransformer") != null) {
                         subOptions.put("transformer", stepMap.get("identityTransformer"));
                     }
-                    interimResults.addAll(identifyResults(results, subOptions, ruleSet, query, owner));
+                    interimResults.addAll(identifyResults(results, subOptions, ruleSet, subOptions.get("query"), owner));
                 }
                 if (stepMap.get("tagger") != null) {
                     interimResults.addAll(tagResults(results, (Map<String, String>) stepMap));
