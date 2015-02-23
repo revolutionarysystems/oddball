@@ -476,7 +476,9 @@ public class OddballTest {
         
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, null, theCase); // should be added
-        instance.assessCase(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"{series}\"}", null, null);         instance.assessCase(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"{series}\"}", null, null);         HashMap<String, String> options = new HashMap<String, String>();
+        instance.assessCase(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"<series>\"}", null, null);         
+        instance.assessCase(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"<series>\"}", null, null);         
+        HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
         int count = 0;
@@ -1337,6 +1339,53 @@ public class OddballTest {
             System.out.println(aCase);
             Map episodeMap = JSONUtil.json2map(aCase);
             assertEquals("A0BX", ((Map<String, Object>)episodeMap.get("case")).get("stateCodes"));
+        }
+    }
+    
+    @Test
+    public void testFindCasesQueryWithRetrieverProcessorChain() throws Exception {
+        System.out.println("findCases");
+        String ruleSetName = "TestMongoEvent";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, null, theCase);
+        instance.assessCase(ruleSetName, null, anotherCase);
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        options.put("retriever", "none");
+        options.put("ruleSet", ruleSetName);
+        long future = new Date().getTime()+1000000;
+        options.put("processorChain", "[{\"retriever\":\"caseRetriever\"},{\"transformer\":\"event.json\"},{\"aggregator\":\"episode\", \"timeOutReference\":\""+Long.toString(future)+"\"}]");
+        Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        assertTrue(cases0.size()>0);
+        for (String aCase : cases0){
+            System.out.println(aCase);
+            Map episodeMap = JSONUtil.json2map(aCase);
+            assertEquals("A0BX", episodeMap.get("stateCodes"));
+        }
+    }
+    
+    @Test
+    public void testFindCasesQueryWithRetrieverProcessorChain2() throws Exception {
+        System.out.println("findCases");
+        String ruleSetName = "TestMongoEvent";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, null, theCase);
+        instance.assessCase(ruleSetName, null, anotherCase);
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        options.put("retriever", "none");
+        long future = new Date().getTime()+1000000;
+        options.put("processorChain", "[{\"retriever\":\"caseRetriever\", \"ruleSet\":\"TestMongoEvent\"},{\"transformer\":\"event.json\"},{\"aggregator\":\"episode\", \"timeOutReference\":\""+Long.toString(future)+"\"}]");
+        Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        assertTrue(cases0.size()>0);
+        for (String aCase : cases0){
+            System.out.println(aCase);
+            Map episodeMap = JSONUtil.json2map(aCase);
+            assertEquals("A0BX", episodeMap.get("stateCodes"));
         }
     }
     

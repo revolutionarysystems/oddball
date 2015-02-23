@@ -55,9 +55,9 @@ public class MongoDBHelper {
     public String insertCase(String content) throws IOException {
         // jongo interprets # as parameter.
         content = content.replace("#", "(hash)");
-        if (!content.contains("_id")){
+        if (!content.contains("_id")) {
             String id = UUID.randomUUID().toString();
-            content = content.substring(0, content.lastIndexOf("}"))+", \"_id\":\""+id+"\" }";
+            content = content.substring(0, content.lastIndexOf("}")) + ", \"_id\":\"" + id + "\" }";
         }
         WriteResult wr = cases.insert(content);
         if (content.contains("{}") || content.contains(":  }")) {
@@ -70,24 +70,26 @@ public class MongoDBHelper {
         //return wr.getUpsertedId().toString();
         // for now
 
-
-        String id = (String)JSONUtil.json2map(content).get("_id");
+        String id = (String) JSONUtil.json2map(content).get("_id");
         return id;
-    
+
     }
-    
-    public void ensureIndexes(String indexList){
+
+    public void ensureIndexes(String indexList) {
         String[] indexes = indexList.split(",");
-        for (String index:indexes){
+        for (String index : indexes) {
             cases.ensureIndex(index);
         }
     }
 
     public String checkAlreadyExists(String duplicateQuery) {
+        LOGGER.debug(duplicateQuery);
         FindOne found = cases.findOne(duplicateQuery);
         if (found.as(Map.class) == null) {
+            LOGGER.debug("not found");
             return null;
         } else {
+            LOGGER.debug("found");
             return (String) found.as(Map.class).get("_id").toString();
         }
     }
@@ -293,11 +295,10 @@ public class MongoDBHelper {
         Find found;
         try {
             found = cases.find("{_id: #}", new ObjectId(id));
-        } 
-        catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             found = cases.find("{_id: #}", id);
         }
-        
+
         Iterable<Map> foundCases = found.as(Map.class);
         for (Map foundCase : foundCases) {
             String json = JSONUtil.map2json(foundCase);

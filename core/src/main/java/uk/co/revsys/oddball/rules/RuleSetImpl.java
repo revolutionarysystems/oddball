@@ -188,17 +188,20 @@ public class RuleSetImpl implements RuleSet{
                 if (persistOption != NEVERPERSIST){
                     String persistCase = op.getEnrichedCase(ruleSetStr, aCase, true);
                     String caseAvoidQuery= null;
+                    LOGGER.debug("avoidQuery");
+                    LOGGER.debug(avoidQuery);
                     if (avoidQuery!=null){
                         caseAvoidQuery=new OddUtil().replacePlaceholders(avoidQuery, (Map<String, Object>)aCase.getContentObject());
+                        LOGGER.debug("caseAvoidQuery");
+                        LOGGER.debug(caseAvoidQuery);
                     }
-                    String id = getPersist().checkAlreadyExists(caseAvoidQuery);
                     if (caseAvoidQuery==null || getPersist().checkAlreadyExists(caseAvoidQuery)==null){
                         if (persistOption == UPDATEPERSIST){
                             String caseDuplicateQuery= null;
                             if (duplicateQuery!=null){
                                 caseDuplicateQuery=new OddUtil().replacePlaceholders(duplicateQuery, (Map<String, Object>)aCase.getContentObject());
                             }
-                            id = getPersist().checkAlreadyExists(caseDuplicateQuery);
+                            String id = getPersist().checkAlreadyExists(caseDuplicateQuery);
                             while (id != null){
                                 getPersist().removeCase(id);
                                 id = getPersist().checkAlreadyExists(caseDuplicateQuery);

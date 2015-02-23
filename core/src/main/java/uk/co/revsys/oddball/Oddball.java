@@ -364,7 +364,7 @@ public class Oddball {
     private Collection<String> identifyResults(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, IOException, DaoException, TransformerNotLoadedException, IdentificationSchemeNotLoadedException, AggregationException {
         options.put("owner", owner);
         Collection<String> comparisonResults = comparisonResults(ruleSet, query, options);
-        
+
         ArrayList<String> identifiedResults = new ArrayList<String>();
         Class identifierClass = new IdentifierMap().get(options.get("identifier"));
         options.put("periodDivision", "1Y");
@@ -412,7 +412,6 @@ public class Oddball {
         return result;
     }
 
-
     private Collection<String> tagResults(Iterable<String> results, Map<String, String> options) throws RuleSetNotLoadedException, InvalidCaseException, TransformerNotLoadedException, IOException {
         ArrayList<String> taggedResults = new ArrayList<String>();
         String ruleSetName = options.get("tagger");
@@ -428,17 +427,17 @@ public class Oddball {
             int persistOption = RuleSet.NEVERPERSIST;
             String duplicateQuery = "";
             String avoidQuery = "";
-            if (options.get("persist") != null && options.get("persist").equals("true")){
+            if (options.get("persist") != null && options.get("persist").equals("true")) {
                 persistOption = RuleSet.UPDATEPERSIST;
-                if ((options.get("duplicateQuery") != null) && (!options.get("duplicateQuery").equals(""))){
+                if ((options.get("duplicateQuery") != null) && (!options.get("duplicateQuery").equals(""))) {
                     duplicateQuery = options.get("duplicateQuery");
                 }
-                if ((options.get("avoidQuery") != null) && (!options.get("avoidQuery").equals(""))){
+                if ((options.get("avoidQuery") != null) && (!options.get("avoidQuery").equals(""))) {
                     avoidQuery = options.get("avoidQuery");
                 }
             }
 //    public Opinion assessCase(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException {
-            Opinion caseOp = this.assessCase(ruleSetName, incomingXform, aCase, persistOption, duplicateQuery, null, null);
+            Opinion caseOp = this.assessCase(ruleSetName, incomingXform, aCase, persistOption, duplicateQuery, avoidQuery, null);
 //            Opinion caseOp = ruleSet.assessCase(aCase, incomingXform, ruleSetName, persistOption, duplicateQuery);
             taggedResults.add(caseOp.getEnrichedCase(ruleSetName, aCase, true));
         }
@@ -463,9 +462,14 @@ public class Oddball {
                 interimResults = new ArrayList<String>();
                 Map<String, String> stepMap = (Map<String, String>) step;
                 for (String key : stepMap.keySet()) {
-                    stepMap.put(key, stepMap.get(key).replace("{owner}",owner+"/").replace("{account}",owner+"/"));
+                    stepMap.put(key, stepMap.get(key).replace("{owner}", owner + "/").replace("{account}", owner + "/"));
                 }
-                
+
+                if (stepMap.get("retriever") != null) {
+                    Map<String, String> subOptions = (Map<String, String>) options;
+                    subOptions.putAll(stepMap);
+                    interimResults.addAll(initialQuery(owner, options.get("ruleSet"), query, subOptions));
+                }
                 if (stepMap.get("transformer") != null) {
                     interimResults.addAll(transformResults(results, (String) stepMap.get("transformer")));
                 }
@@ -584,26 +588,27 @@ public class Oddball {
     }
 
     private Collection<String> initialQuery(String owner, String ruleSetNames, String query, Map<String, String> options) throws RuleSetNotLoadedException, UnknownBinException, IOException, DaoException, InvalidTimePeriodException, TransformerNotLoadedException {
-
-        String path = "";
-        if (ruleSetNames.contains("/")) {
-            path = ruleSetNames.substring(0, ruleSetNames.lastIndexOf("/") + 1);
-            ruleSetNames = ruleSetNames.substring(ruleSetNames.lastIndexOf("/") + 1);
-        }
-        String ruleSets[] = ruleSetNames.split("\\+");
         Collection<String> result = new ArrayList<String>();
-        for (String ruleSetName : ruleSets) {
-            RuleSet ruleSet = ensureRuleSet(path + ruleSetName);
-            if (options.get("binLabel") != null) {
-                String binLabel = options.get("binLabel");
-                String binQuery = this.getBinQuery(binLabel, options);
-                options.put("binQuery", binQuery);
+        if (options.get("retriever").equals("caseRetriever")){
+            String path = "";
+            if (ruleSetNames.contains("/")) {
+                path = ruleSetNames.substring(0, ruleSetNames.lastIndexOf("/") + 1);
+                ruleSetNames = ruleSetNames.substring(ruleSetNames.lastIndexOf("/") + 1);
             }
-            Collection<String> interimResult = ruleSet.getPersist().findCasesForOwner(owner, query, options);
-            if (options.get("transformer") != null) {
-                interimResult = transformResults(interimResult, getDefaultedTransformer(path + ruleSetName, options));
+            String ruleSets[] = ruleSetNames.split("\\+");
+            for (String ruleSetName : ruleSets) {
+                RuleSet ruleSet = ensureRuleSet(path + ruleSetName);
+                if (options.get("binLabel") != null) {
+                    String binLabel = options.get("binLabel");
+                    String binQuery = this.getBinQuery(binLabel, options);
+                    options.put("binQuery", binQuery);
+                }
+                Collection<String> interimResult = ruleSet.getPersist().findCasesForOwner(owner, query, options);
+                if (options.get("transformer") != null) {
+                    interimResult = transformResults(interimResult, getDefaultedTransformer(path + ruleSetName, options));
+                }
+                result.addAll(interimResult);
             }
-            result.addAll(interimResult);
         }
         return result;
     }
@@ -612,6 +617,9 @@ public class Oddball {
         String owner = Oddball.NONE;
         if (options.get("owner") != null) {
             owner = options.get("owner");
+        }
+        if (options.get("retriever")==null){
+            options.put("retriever", "caseRetriever");
         }
         Collection<String> result = initialQuery(owner, ruleSetName, query, options);
         String comparisonRuleSet = ruleSetName;

@@ -66,8 +66,8 @@ public class OddUtil {
     }
     
     private String replacePlaceholder(String templateString, Map<String, Object> aCase){
-        int openBrace = 1+templateString.substring(1).indexOf("{");
-        int closeBrace = 1+templateString.substring(1).indexOf("}");
+        int openBrace = 1+templateString.substring(1).indexOf("<");
+        int closeBrace = 1+templateString.substring(1).indexOf(">");
         String targetName = templateString.substring(openBrace+1, closeBrace);
         String replacement = "null";
         if (aCase.get(targetName)!=null){
@@ -77,7 +77,7 @@ public class OddUtil {
     }
     
     public String replacePlaceholders(String templateString, Map<String, Object> aCase){
-        while (templateString.substring(1).indexOf("{")>=0){
+        while (templateString.substring(1).indexOf("<")>=0){
             templateString=replacePlaceholder(templateString, aCase);
         }
         return templateString;
