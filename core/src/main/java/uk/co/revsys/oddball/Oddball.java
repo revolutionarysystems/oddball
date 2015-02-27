@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,7 +102,17 @@ public class Oddball {
     }
 
     private RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException {
-        return RuleSetImpl.loadRuleSet(ruleSetName, resourceRepository);
+        if (ruleSetName.contains(".rules")){
+            try{
+                return RuleSetImpl.loadJSONRuleSet(ruleSetName, resourceRepository);
+            } 
+            catch (RuleSetNotLoadedException e){   // not a json file
+                return RuleSetImpl.loadRuleSet(ruleSetName, resourceRepository);
+            }
+        }
+        else {
+            return RuleSetImpl.loadRuleSet(ruleSetName, resourceRepository);
+        }
     }
 
     public RuleSet reloadRuleSet(String ruleSetName) throws RuleSetNotLoadedException {
@@ -589,7 +600,7 @@ public class Oddball {
 
     private Collection<String> initialQuery(String owner, String ruleSetNames, String query, Map<String, String> options) throws RuleSetNotLoadedException, UnknownBinException, IOException, DaoException, InvalidTimePeriodException, TransformerNotLoadedException {
         Collection<String> result = new ArrayList<String>();
-        if (options.get("retriever").equals("caseRetriever")){
+        if (options.get("retriever").equals("caseRetriever")) {
             String path = "";
             if (ruleSetNames.contains("/")) {
                 path = ruleSetNames.substring(0, ruleSetNames.lastIndexOf("/") + 1);
@@ -618,7 +629,7 @@ public class Oddball {
         if (options.get("owner") != null) {
             owner = options.get("owner");
         }
-        if (options.get("retriever")==null){
+        if (options.get("retriever") == null) {
             options.put("retriever", "caseRetriever");
         }
         Collection<String> result = initialQuery(owner, ruleSetName, query, options);
@@ -734,6 +745,47 @@ public class Oddball {
             }
         }
         return ownerBinSet;
+    }
+
+    public String showResource(String resourceName) throws ResourceNotLoadedException {
+        try {
+
+            Resource resource = new Resource("", resourceName);
+            InputStream inputStream = resourceRepository.read(resource);
+            List<String> lines = IOUtils.readLines(inputStream);
+            StringBuilder processorStringBuilder = new StringBuilder();
+            for (String line : lines) {
+                processorStringBuilder.append(line);
+            }
+            String processorString = processorStringBuilder.toString();
+            return processorString;
+        } catch (IOException ex) {
+            throw new ResourceNotLoadedException(resourceName, ex);
+        }
+    }
+
+    public List<String> showResourceList(String filter) throws ResourceNotLoadedException {
+        String path = ".";
+        if (filter.contains("/")) {
+            path = path + "/" + filter.substring(0, filter.lastIndexOf("/"));
+            filter = filter.substring(filter.lastIndexOf("/") + 1);
+        }
+        try {
+            List<Resource> resources = resourceRepository.listResources(path);
+            List<String> matchedResources = new ArrayList<String>();
+            boolean rulesetFound = false;
+            filter = filter.replace(".", "\\.").replace("*", ".*");
+            Pattern p = Pattern.compile(filter);
+            for (Resource resource : resources) {
+                if (p.matcher(resource.getName()).matches()) {
+                    String quoted = "\"" + resource.getName().replace("\"", "\\\"") + "\"";
+                    matchedResources.add(quoted);
+                }
+            }
+            return matchedResources;
+        } catch (IOException ex) {
+            throw new ResourceNotLoadedException(filter, ex);
+        }
     }
 
     public static final String ALL = "_all";

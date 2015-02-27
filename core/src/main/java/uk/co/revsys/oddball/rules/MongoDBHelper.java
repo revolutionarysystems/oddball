@@ -101,6 +101,9 @@ public class MongoDBHelper {
     }
 
     public boolean testCase(String query, String caseId) {
+        if (query.length() < 1){
+            query = "{ }";
+        }
         String queryMod = "{ \"_id\" : \"" + caseId + "\", " + query.substring(1);
         FindOne found = cases.findOne(queryMod);
         boolean foundBool = found.as(Map.class) != null;

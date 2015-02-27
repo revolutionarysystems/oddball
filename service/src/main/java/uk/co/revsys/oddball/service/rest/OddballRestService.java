@@ -3,7 +3,9 @@ package uk.co.revsys.oddball.service.rest;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -23,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.FilterException;
 import uk.co.revsys.oddball.Oddball;
 import uk.co.revsys.oddball.ProcessorNotLoadedException;
+import uk.co.revsys.oddball.ResourceNotLoadedException;
 import uk.co.revsys.oddball.TransformerNotLoadedException;
 import uk.co.revsys.oddball.aggregator.AggregationException;
 import uk.co.revsys.oddball.aggregator.ComparisonException;
@@ -908,6 +911,89 @@ public class OddballRestService extends AbstractRestService {
         return Response.ok(out.toString()).build();
     }
 
+    @GET
+    @Path("/resources/{resourceName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response showConfigList(@PathParam("resourceName") String resourceName ){
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        HashMap<String, String> options = new HashMap<String, String>();
+        List<String> resources = new ArrayList<String>();
+        try {
+            resources = oddball.showResourceList(resourceName);
+//        } catch (TransformerNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+        } catch (ResourceNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        }
+        return Response.ok(resources.toString()).build();
+    }
+
+
+    
+    @GET
+    @Path("/resource/{resourceName}/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response showConfig(@PathParam("resourceName") String resourceName ){
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        HashMap<String, String> options = new HashMap<String, String>();
+        String doc = "";
+        try {
+            doc = oddball.showResource(resourceName);
+//        } catch (TransformerNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+        } catch (ResourceNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        }
+        return Response.ok(doc.toString()).build();
+    }
+
+    
+
+    @GET
+    @Path("/{owner}/resource/{resourceName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response showConfig(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName ){
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        HashMap<String, String> options = new HashMap<String, String>();
+        String doc = "";
+        try {
+            doc = oddball.showResource(owner+"/"+resourceName);
+//        } catch (TransformerNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+        } catch (ResourceNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        }
+        return Response.ok(doc.toString()).build();
+    }
+
+
+    @GET
+    @Path("/{owner}/resources/{resourceName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response showConfigList(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName ){
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        HashMap<String, String> options = new HashMap<String, String>();
+        List<String> resources = new ArrayList<String>();
+        try {
+            resources = oddball.showResourceList(owner+"/"+resourceName);
+//        } catch (TransformerNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+        } catch (ResourceNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        }
+        return Response.ok(resources.toString()).build();
+    }
+
+    
+    
     /**
      * ********************
      */

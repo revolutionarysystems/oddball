@@ -115,7 +115,7 @@ public class SummaryAggregator implements Aggregator{
         for (int i=periods-1 ; i>=endIteration; i--){
             try {
                 summaries.add(new Summary(options.get("owner"), reportStart+i*periodms, periodms, summaryDefinition));
-            } catch (AccumulationException e){
+                } catch (AccumulationException e){
                 throw new AggregationException("Problem in Accumulation", e);
             }
         }

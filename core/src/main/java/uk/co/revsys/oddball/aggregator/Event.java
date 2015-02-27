@@ -9,6 +9,7 @@ package uk.co.revsys.oddball.aggregator;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Map;
 import uk.co.revsys.oddball.util.JSONUtil;
 
@@ -19,34 +20,93 @@ import uk.co.revsys.oddball.util.JSONUtil;
 public class Event implements Comparable<Event> {
 
     public Event(String jsonCase) throws IOException, ParseException{
-        Map<String, Object> mapCase = JSONUtil.json2map(jsonCase);
-        caseMap = mapCase;
-        tagTime=Long.parseLong((String)mapCase.get("tagTime"));
-        if (mapCase.get("time")!=null){
+        Map<String, Object> eventMap = JSONUtil.json2map(jsonCase);
+        caseMap = eventMap;
+        Map<String, Object> eventSubcaseMap = new HashMap<String, Object>();
+        if (eventMap.get("case")!=null){
+            eventSubcaseMap = (Map<String, Object>) eventMap.get("case");
+        }
+        Map<String, Object> derivedMap = (Map<String, Object>) eventMap.get("derived");
+        if (eventMap.get("tagTime")!=null){
+            tagTime=Long.parseLong((String)eventMap.get("tagTime"));
+        } else {
+            tagTime=Long.parseLong((String)eventMap.get("timestamp"));
+        }
+        if (eventMap.get("time")!=null){
             try {
-                eventTime=(Long)mapCase.get("time");
+                eventTime=(Long)eventMap.get("time");
             } catch (ClassCastException e) {
-                eventTime=parseTime((String)mapCase.get("time"));
+                eventTime=parseTime((String)eventMap.get("time"));
             }
         } else {
-            eventTime=(Long)mapCase.get("clientTime");
+            if (eventSubcaseMap.get("time")!=null){
+                try {
+                    eventTime=(Long)eventSubcaseMap.get("time");
+                } catch (ClassCastException e) {
+                    eventTime=parseTime((String)eventSubcaseMap.get("time"));
+                }
+            } else {
+                if (eventMap.get("clientTime")!=null){
+                    eventTime=(Long)eventMap.get("clientTime");
+                } else {
+                    if (eventSubcaseMap.get("clientTime")!=null){
+                        eventTime=(Long)eventSubcaseMap.get("clientTime");
+                    }
+                }
+            }
         }
-        state=(String)mapCase.get("state");
-        code=(String)mapCase.get("code");
+        if (eventMap.get("state")!=null){    
+            state=(String)eventMap.get("state");
+        } else {
+            state=(String)derivedMap.get("state");
+        }
+        
+        if (eventMap.get("code")!=null){    
+            code=(String)eventMap.get("code");
+        } else {
+            code=(String)derivedMap.get("code");
+        }
+        
         if (code.equals("odDball")){
             code="?";
         } else {
             code=code.substring(0,1);
         }
-        owner=(String)mapCase.get("accountId");
-        agent=(String)mapCase.get("userId");
+
+        if (eventMap.get("accountId")!=null){    
+            owner=(String)eventMap.get("accountId");
+        } else {
+            owner=(String)eventSubcaseMap.get("accountId");
+        }
+        
+        if (eventMap.get("userId")!=null){    
+            agent=(String)eventMap.get("userId");
+        } else {
+            agent=(String)eventSubcaseMap.get("userId");
+        }
+        
         if (agent==null){
-            agent=(String)mapCase.get("agent");
+            if (eventMap.get("agent")!=null){    
+                agent=(String)eventMap.get("agent");
+            } else {
+                agent=(String)eventSubcaseMap.get("agent");
+            }
         }
-        series=(String)mapCase.get("sessionId");
+
+        if (eventMap.get("sessionId")!=null){    
+            series=(String)eventMap.get("sessionId");
+        } else {
+            series=(String)eventSubcaseMap.get("sessionId");
+        }
+        
         if (series==null){
-            series=(String)mapCase.get("series");
+            if (eventMap.get("series")!=null){    
+                series=(String)eventMap.get("series");
+            } else {
+                series=(String)eventSubcaseMap.get("series");
+            }
         }
+
     }
     
     private long parseTime(String timeString) throws ParseException{
