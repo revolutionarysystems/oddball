@@ -464,20 +464,25 @@ public class RuleSetImpl implements RuleSet {
                 ruleStringBuilder.append(line);
             }
             ruleString = ruleStringBuilder.toString();
-            Map ruleSetMap = null;
+            Map<String, Object> ruleSetMap = null;
+            System.out.println(ruleString);
             try {
-                ruleSetMap = JSONUtil.json2map(ruleString);
+                ruleSetMap = (Map<String, Object>) JSONUtil.json2map(ruleString).get("ruleSet");
             } 
             catch (Exception e){
+                System.out.println(e.toString());
                 throw new RuleSetNotLoadedException("Not valid json");
             }
             String forEachIn = null;
             String ruleType = "default";
             String ruleHost = "inMemory";
             boolean inMemory = true;
+            System.out.println("Loading JSON rules");
+            System.out.println(ruleSetMap);
             if (ruleSetMap.get("ruleType")!=null){
                 ruleType = (String) ruleSetMap.get("ruleType");
             }
+            System.out.println(ruleType);
             if (ruleSetMap.get("persistence")!=null){
                 ruleHost = (String) ruleSetMap.get("persistence");
             }

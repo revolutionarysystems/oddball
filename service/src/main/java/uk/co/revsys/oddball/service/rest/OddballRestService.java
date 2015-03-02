@@ -26,6 +26,7 @@ import uk.co.revsys.oddball.FilterException;
 import uk.co.revsys.oddball.Oddball;
 import uk.co.revsys.oddball.ProcessorNotLoadedException;
 import uk.co.revsys.oddball.ResourceNotLoadedException;
+import uk.co.revsys.oddball.ResourceNotUploadedException;
 import uk.co.revsys.oddball.TransformerNotLoadedException;
 import uk.co.revsys.oddball.aggregator.AggregationException;
 import uk.co.revsys.oddball.aggregator.ComparisonException;
@@ -951,6 +952,25 @@ public class OddballRestService extends AbstractRestService {
         return Response.ok(doc.toString()).build();
     }
 
+
+    @POST
+    @Path("/resource/{resourceName}/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response uploadConfig(@PathParam("resourceName") String resourceName, @QueryParam("resource") String resourceString ){
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        HashMap<String, String> options = new HashMap<String, String>();
+        try {
+            oddball.uploadResource(resourceName, resourceString);
+//        } catch (TransformerNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+        } catch (ResourceNotUploadedException ex) {
+            return buildErrorResponse(ex);
+        }
+        return Response.ok("Resource loaded").build();
+    }
+
     
 
     @GET
@@ -1010,6 +1030,18 @@ public class OddballRestService extends AbstractRestService {
         }
         oddball.clearTransformers();
         return Response.ok("Transformers cleared.").build();
+    }
+
+
+    @GET
+    @Path("/processor/clear")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response clearProcessors() {
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        oddball.clearProcessors();
+        return Response.ok("Processors cleared.").build();
     }
 
     static final Logger RESULTSLOGGER = LoggerFactory.getLogger("oddball-results");

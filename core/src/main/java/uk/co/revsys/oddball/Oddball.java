@@ -8,6 +8,7 @@ package uk.co.revsys.oddball;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -61,6 +62,7 @@ public class Oddball {
     BinSet binSet;
     HashMap<String, BinSet> privateBinSets = new HashMap<String, BinSet>();
     HashMap<String, String> transformers = new HashMap<String, String>();
+    HashMap<String, String> processors = new HashMap<String, String>();
 
     public Oddball(ResourceRepository resourceRepository, String binSetName) throws BinSetNotLoadedException {
         this.resourceRepository = resourceRepository;
@@ -68,6 +70,8 @@ public class Oddball {
     }
 
     private RuleSet ensureRuleSet(String ruleSetName) throws RuleSetNotLoadedException {
+        System.out.println("Loading");
+        System.out.println(ruleSetName);
         RuleSet ruleSet = ruleSets.get(ruleSetName);
         if (ruleSet == null) {
             ruleSet = loadRuleSet(ruleSetName, resourceRepository);
@@ -101,16 +105,20 @@ public class Oddball {
         transformers.clear();
     }
 
+    public void clearProcessors() {
+        processors.clear();
+    }
+
     private RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException {
-        if (ruleSetName.contains(".rules")){
-            try{
+        if (ruleSetName.contains(".rules")) {
+            try {
+                System.out.println("Looks like JSON");
                 return RuleSetImpl.loadJSONRuleSet(ruleSetName, resourceRepository);
-            } 
-            catch (RuleSetNotLoadedException e){   // not a json file
+            } catch (RuleSetNotLoadedException e) {   // not a json file
+                System.out.println("Failed to parse JSON");
                 return RuleSetImpl.loadRuleSet(ruleSetName, resourceRepository);
             }
-        }
-        else {
+        } else {
             return RuleSetImpl.loadRuleSet(ruleSetName, resourceRepository);
         }
     }
@@ -247,6 +255,7 @@ public class Oddball {
                 processorStringBuilder.append(line);
             }
             String processorString = processorStringBuilder.toString();
+            this.processors.put(processorName, processorString);
             return processorString;
         } catch (IOException ex) {
             throw new ProcessorNotLoadedException(processorName, ex);
@@ -258,6 +267,14 @@ public class Oddball {
             return (String) transformers.get(transformerName);
         } else {
             return loadTransformer(transformerName, resourceRepository);
+        }
+    }
+
+    public String getProcessor(String processorName, ResourceRepository resourceRepository) throws ProcessorNotLoadedException {
+        if (processors.get(processorName) != null) {
+            return (String) processors.get(processorName);
+        } else {
+            return loadProcessor(processorName, resourceRepository);
         }
     }
 
@@ -457,7 +474,8 @@ public class Oddball {
 
     private Collection<String> applyProcessor(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, IOException, DaoException, TransformerNotLoadedException, AggregationException, RuleSetNotLoadedException, InvalidCaseException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException {
         String processor = options.get("processor");
-        String processorChain = loadProcessor(processor, resourceRepository);
+//        String processorChain = loadProcessor(processor, resourceRepository);
+        String processorChain = getProcessor(processor, resourceRepository);
         options.put("processorChain", processorChain);
         return applyProcessorChain(results, options, ruleSet, query, owner);
     }
@@ -753,14 +771,25 @@ public class Oddball {
             Resource resource = new Resource("", resourceName);
             InputStream inputStream = resourceRepository.read(resource);
             List<String> lines = IOUtils.readLines(inputStream);
-            StringBuilder processorStringBuilder = new StringBuilder();
+            StringBuilder resourceStringBuilder = new StringBuilder();
             for (String line : lines) {
-                processorStringBuilder.append(line);
+                resourceStringBuilder.append(line);
             }
-            String processorString = processorStringBuilder.toString();
-            return processorString;
+            String resourceString = resourceStringBuilder.toString();
+            return resourceString;
         } catch (IOException ex) {
             throw new ResourceNotLoadedException(resourceName, ex);
+        }
+    }
+
+    public void uploadResource(String resourceName, String resourceString) throws ResourceNotUploadedException {
+        try {
+
+            Resource resource = new Resource("", resourceName);
+            InputStream stream = new ByteArrayInputStream(resourceString.getBytes(Charset.forName("UTF-8")));
+            resourceRepository.write(resource, stream);
+        } catch (IOException ex) {
+            throw new ResourceNotUploadedException(resourceName, ex);
         }
     }
 

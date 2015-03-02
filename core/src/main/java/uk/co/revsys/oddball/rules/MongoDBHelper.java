@@ -83,13 +83,10 @@ public class MongoDBHelper {
     }
 
     public String checkAlreadyExists(String duplicateQuery) {
-        LOGGER.debug(duplicateQuery);
         FindOne found = cases.findOne(duplicateQuery);
         if (found.as(Map.class) == null) {
-            LOGGER.debug("not found");
             return null;
         } else {
-            LOGGER.debug("found");
             return (String) found.as(Map.class).get("_id").toString();
         }
     }
