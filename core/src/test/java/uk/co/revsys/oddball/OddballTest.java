@@ -1193,6 +1193,43 @@ public class OddballTest {
     }
 
     @Test
+    public void testShowRules() throws Exception {
+        System.out.println("findRules");
+        String ruleSetName = "Test2.txt";
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        HashMap<String, String> options = new HashMap<String, String>();
+        String foundRules = instance.showRules(ruleSetName, options);
+        System.out.println("found: " + foundRules);
+
+    }
+
+
+    @Test
+    public void testShowRules2() throws Exception {
+        System.out.println("findRules");
+        String ruleSetName = "Test3c.txt";
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        HashMap<String, String> options = new HashMap<String, String>();
+        String foundRules = instance.showRules(ruleSetName, options);
+        System.out.println("found: " + foundRules);
+
+    }
+
+
+    @Test
+    public void testShowRules3() throws Exception {
+        System.out.println("findRules");
+        String ruleSetName = "TestMongoEvent";
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        HashMap<String, String> options = new HashMap<String, String>();
+        String foundRules = instance.showRules(ruleSetName, options);
+        System.out.println("found: " + foundRules);
+
+    }
+
+
+    
+    @Test
     public void testSaveRules() throws Exception {
         System.out.println("findRules");
         String ruleSetName = "Test4.txt";

@@ -171,6 +171,43 @@ public class Oddball {
 
     }
 
+    public String showRules(String ruleSetName, Map<String, String> options) throws RuleSetNotLoadedException, IOException {
+        RuleSet ruleSet = ensureRuleSet(ruleSetName);
+        List<Rule> rules = ruleSet.getAllRules();
+        Map<String, Object> response = new HashMap<String, Object>();
+        Map<String, Object> ruleSetMap = new HashMap<String, Object>();
+        ruleSetMap.put("ruleType", ruleSet.getRuleType());
+        ruleSetMap.put("persistence", ruleSet.getRuleHost());
+        Map<String, ArrayList<Map<String, Object>>> prefixes = new HashMap<String, ArrayList<Map<String, Object>>>();
+        for (Rule rule : rules) {
+            String prefix = "other";
+            String label = rule.getLabel();
+            if (label.contains(".")){
+                String[] labelParts = label.split("\\.");
+                prefix = labelParts[0];
+                label = labelParts[1];
+            }
+            if (!prefixes.containsKey(prefix)){
+                prefixes.put(prefix, new ArrayList<Map<String, Object>>());
+            }
+            Map ruleMap = rule.asMap();
+            ruleMap.put("label", ((String)ruleMap.get("label")).replace(prefix+".", ""));
+            prefixes.get(prefix).add(ruleMap);
+        }
+        ArrayList<Map<String, Object>> tagTypes = new ArrayList<Map<String, Object>>();
+        for (String key : prefixes.keySet()){
+            Map<String, Object> tagType = new HashMap<String, Object>();
+            tagType.put("tagType", key);
+            tagType.put("default", ruleSet.getPrefixDefault(key+"."));
+            tagType.put("rules", prefixes.get(key));
+            tagTypes.add(tagType);
+        }
+        ruleSetMap.put("tagTypes", tagTypes);
+        response.put("ruleSet", ruleSetMap);
+        return JSONUtil.map2json(response);
+
+    }
+
     public Collection<String> saveRules(String ruleSetName, Map<String, String> options) throws RuleSetNotLoadedException, IOException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         List<Rule> rules = ruleSet.getAllRules();
@@ -504,7 +541,7 @@ public class Oddball {
                 }
                 if (stepMap.get("aggregator") != null) {
                     Map<String, String> subOptions = (Map<String, String>) stepMap;
-                    if (options.get("recent") != null) {
+                    if (options.get("recent") != null && subOptions.get("recent") == null) {
                         subOptions.put("recent", options.get("recent"));
                     }
                     interimResults.addAll(aggregateResults(results, subOptions));
@@ -569,7 +606,7 @@ public class Oddball {
         String transformerStr = options.get("transformer");
         if (transformerStr != null) {
             if (transformerStr.equals("default")) {
-                return ruleSetName + ".default.json";
+                return ruleSetName + ".default.xform";
             }
             if (transformerStr.contains("{ruleSet}")) {
                 return transformerStr.replace("{ruleSet}", ruleSetName);

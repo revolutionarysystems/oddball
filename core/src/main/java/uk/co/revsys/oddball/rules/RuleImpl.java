@@ -8,6 +8,7 @@ package uk.co.revsys.oddball.rules;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.resource.repository.ResourceRepository;
@@ -106,6 +107,17 @@ public abstract class RuleImpl implements Rule {
         mapRule.put("source", this.source);
         mapRule.put("description", this.description);
         return JSONUtil.map2json(mapRule);
+    }
+
+    @Override
+    public Map asMap(){
+        HashMap mapRule = new HashMap();
+        mapRule.put("label", this.label);
+//        mapRule.put("ruleString", this.ruleString.replace("\"","\\\""));
+        mapRule.put("ruleString", this.ruleString);
+        mapRule.put("source", this.source);
+        mapRule.put("description", this.description);
+        return mapRule;
     }
 
     @Override

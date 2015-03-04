@@ -147,6 +147,43 @@ public class OddballRestService extends AbstractRestService {
     }
 
     @GET
+    @Path("/{owner}/{ruleSet}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response applyOwnerRuleSet(@PathParam("owner") String owner, @PathParam("ruleSet") String ruleSet, @QueryParam("ruleSet") String altRuleSet, @QueryParam("case") String caseStr, @QueryParam("inboundTransformer") String inboundTransformer, @QueryParam("persist") String persist, @QueryParam("duplicateRule") String duplicateRule, @QueryParam("avoidRule") String avoidRule, @QueryParam("ensureIndexes") String ensureIndexes) throws IOException {
+        if (ruleSet == null || ruleSet.equals("null")) {
+            ruleSet = altRuleSet;
+        }
+        int persistOption = RuleSet.ALWAYSPERSIST;
+        if (persist != null) {
+            if (persist.equals("never")) {
+                persistOption = RuleSet.NEVERPERSIST;
+            } else {
+                if (persist.equals("update")) {
+                    persistOption = RuleSet.UPDATEPERSIST;
+                }
+            }
+        }
+        if (caseStr == null) {
+            return Response.ok(ruleSet).build();
+        } else {
+            Opinion op;
+            try {
+                op = oddball.assessCase(owner+"/"+ruleSet, inboundTransformer, new StringCase(caseStr), persistOption, duplicateRule, null, null);
+            } catch (RuleSetNotLoadedException ex) {
+                return buildErrorResponse(ex);
+            } catch (TransformerNotLoadedException ex) {
+                return buildErrorResponse(ex);
+            } catch (InvalidCaseException ex) {
+                return buildErrorResponse(ex);
+            }
+            String enrichedCase = op.getEnrichedCase(ruleSet, caseStr);
+            enrichedCase = enrichedCase.replace("\\\"", "\"");
+            RESULTSLOGGER.info(enrichedCase);
+            return buildResponse(enrichedCase);
+        }
+    }
+
+    @GET
     @Path("/{ruleSet}/id/{id}/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findCase(@PathParam("ruleSet") String ruleSets, @PathParam("id") String id, @QueryParam("account") String owner, @QueryParam("transformer") String transformer, @QueryParam("action") String action) {
@@ -749,6 +786,27 @@ public class OddballRestService extends AbstractRestService {
     }
 
     @GET
+    @Path("/{ruleSet}/rules/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response showRuleSet(@PathParam("ruleSet") String ruleSet) {
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        String rules;
+        HashMap<String, String> options = new HashMap<String, String>();
+        try {
+            rules = oddball.showRules(ruleSet, options);
+        } catch (RuleSetNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (IOException ex) {
+            return buildErrorResponse(ex);
+//        } catch (TransformerNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+        }
+        return Response.ok(rules).build();
+    }
+
+    @GET
     @Path("/{ruleSet}/rule/{label}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response showRules(@PathParam("ruleSet") String ruleSet, @PathParam("label") String label, @QueryParam("transformer") String transformer) {
@@ -814,6 +872,27 @@ public class OddballRestService extends AbstractRestService {
         }
         out.append("]");
         return Response.ok(out.toString()).build();
+    }
+
+    @GET
+    @Path("/{owner}/{ruleSet}/rules/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response showOwnerRuleSet(@PathParam("owner") String owner, @PathParam("ruleSet") String ruleSet) {
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        String rules;
+        HashMap<String, String> options = new HashMap<String, String>();
+        try {
+            rules = oddball.showRules(owner+"/"+ruleSet, options);
+        } catch (RuleSetNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (IOException ex) {
+            return buildErrorResponse(ex);
+//        } catch (TransformerNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+        }
+        return Response.ok(rules).build();
     }
 
     @GET
@@ -1010,6 +1089,24 @@ public class OddballRestService extends AbstractRestService {
             return buildErrorResponse(ex);
         }
         return Response.ok(resources.toString()).build();
+    }
+
+    @POST
+    @Path("/{owner}/resource/{resourceName}/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response uploadOwnerConfig(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName, @QueryParam("resource") String resourceString ){
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        HashMap<String, String> options = new HashMap<String, String>();
+        try {
+            oddball.uploadResource(owner+"/"+resourceName, resourceString);
+//        } catch (TransformerNotLoadedException ex) {
+//            return buildErrorResponse(ex);
+        } catch (ResourceNotUploadedException ex) {
+            return buildErrorResponse(ex);
+        }
+        return Response.ok("Resource loaded").build();
     }
 
     

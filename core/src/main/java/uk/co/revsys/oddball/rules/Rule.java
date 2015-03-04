@@ -7,6 +7,7 @@
 package uk.co.revsys.oddball.rules;
 
 import java.io.IOException;
+import java.util.Map;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.resource.repository.ResourceRepository;
 
@@ -50,6 +51,8 @@ public interface Rule {
     public void setDescription(String description);
 
     public String asJSON()throws IOException;
+
+    public Map asMap();
 
     public String asRuleConfig()throws IOException;
 }

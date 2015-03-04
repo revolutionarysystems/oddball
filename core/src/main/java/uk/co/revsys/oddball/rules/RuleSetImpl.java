@@ -50,6 +50,7 @@ public class RuleSetImpl implements RuleSet {
 
     private String name;
     private String ruleType;
+    private String ruleHost;
     private String forEachIn;
 
     @Override
@@ -94,6 +95,11 @@ public class RuleSetImpl implements RuleSet {
     @Override
     public void addPrefix(String prefix, String defaultValue) {
         prefixes.put(prefix, defaultValue);
+    }
+
+    @Override
+    public String getPrefixDefault(String prefix) {
+        return (String) prefixes.get(prefix);
     }
 
     @Override
@@ -255,6 +261,23 @@ public class RuleSetImpl implements RuleSet {
         this.ruleType = ruleType;
     }
 
+    /**
+     * @return the ruleType
+     */
+
+    @Override
+    public String getRuleHost() {
+        return ruleHost;
+    }
+
+    /**
+     * @param ruleHost the ruleHost to set
+     */
+    @Override
+    public void setRuleHost(String ruleHost) {
+        this.ruleHost = ruleHost;
+    }
+
     @Override
     public MongoDBHelper getPersist() {
         return persist;
@@ -358,7 +381,7 @@ public class RuleSetImpl implements RuleSet {
                 String source = "config";
                 String label = (String) rule.get("label");
                 if (rule.get("source")!=null){
-                    label = (String)rule.get("source");
+                    source = (String)rule.get("source");
                 }
                 String description = "";
                 if (rule.get("description")!=null){
@@ -439,6 +462,7 @@ public class RuleSetImpl implements RuleSet {
             ruleSet.setPersist(new MongoDBHelper(ruleSetName.replace("/", "-") + "-persist", inMemory));
 
             ruleSet.setRuleType(ruleType);
+            ruleSet.setRuleHost(ruleHost);
             Class ruleClass = new RuleTypeMap().get(ruleType);
             ruleSet.setName(ruleSetName);
             ruleSet.setRuleClass(ruleClass);
@@ -477,12 +501,9 @@ public class RuleSetImpl implements RuleSet {
             String ruleType = "default";
             String ruleHost = "inMemory";
             boolean inMemory = true;
-            System.out.println("Loading JSON rules");
-            System.out.println(ruleSetMap);
             if (ruleSetMap.get("ruleType")!=null){
                 ruleType = (String) ruleSetMap.get("ruleType");
             }
-            System.out.println(ruleType);
             if (ruleSetMap.get("persistence")!=null){
                 ruleHost = (String) ruleSetMap.get("persistence");
             }

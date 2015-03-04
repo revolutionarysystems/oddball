@@ -30,6 +30,8 @@ public interface RuleSet {
     
     public void removeExtraRule(Rule rule);
 
+    public String getPrefixDefault(String prefix);
+
     public void addPrefix(String prefix, String defaultValue);
     
     public List<Rule> getRules();
@@ -43,6 +45,10 @@ public interface RuleSet {
     public String getRuleType();
 
     public void setRuleType(String ruleType);
+    
+    public String getRuleHost();
+
+    public void setRuleHost(String ruleType);
     
     public MongoDBHelper getPersist();
     

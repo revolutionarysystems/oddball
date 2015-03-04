@@ -49,7 +49,7 @@ public class JSONUtil {
                         out.append ("[");
                         for (Object item : (List) map.get(key)){
                             if (item instanceof String){
-                                out.append("\""+((String)item).replace("\"", "\\\"")+"\" ");
+                                out.append("\""+((String)item).replace("\\","\\\\").replace("\"", "\\\"")+"\" ");
                             } else {
                                 if (item instanceof Map){
                                     out.append(map2json((Map)item));

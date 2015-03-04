@@ -70,28 +70,42 @@ public class OddUtil {
         int closeBrace = 1+templateString.substring(1).indexOf(">");
         String targetName = templateString.substring(openBrace+1, closeBrace);
         String replacement = "null";
-        if (aCase.get(targetName)!=null){
-            replacement = aCase.get(targetName).toString();
+        Object replacementObj= new OddUtil().getDeepProperty(aCase, targetName);
+        if (replacementObj!=null){
+            replacement = replacementObj.toString();
         } 
         return templateString.substring(0, openBrace)+replacement+templateString.substring(closeBrace+1);
     }
     
     public String replacePlaceholders(String templateString, Map<String, Object> aCase){
+//        LOGGER.debug(aCase.toString());
+//        LOGGER.debug(templateString);
         while (templateString.substring(1).indexOf("<")>=0){
             templateString=replacePlaceholder(templateString, aCase);
         }
+//        LOGGER.debug(templateString);
         return templateString;
     }
 
     public Object getDeepProperty (Map aMap, String propertyPath){
         Map subMap = aMap;
+//        LOGGER.debug(subMap.toString());
+//        LOGGER.debug(propertyPath);
         Object propertyValue=null;
         while (propertyPath.contains(".")&& subMap!=null){
             String key = propertyPath.substring(0, propertyPath.indexOf("."));
             subMap = (Map) subMap.get(key);
             propertyPath = propertyPath.substring(propertyPath.indexOf(".")+1);
+//            if (subMap!=null){
+//                LOGGER.debug(subMap.toString());
+//                LOGGER.debug(propertyPath);
+//            }
         }
-        if (subMap!=null){
+//        if (subMap!=null){
+//            LOGGER.debug(subMap.toString());
+//            LOGGER.debug(propertyPath);
+//        }
+    if (subMap!=null){
             propertyValue = subMap.get(propertyPath);
         }
         return propertyValue;
