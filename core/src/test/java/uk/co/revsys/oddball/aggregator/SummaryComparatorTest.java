@@ -322,7 +322,7 @@ public class SummaryComparatorTest{
         assertEquals("1.04741", ((Map)comparison.get("response")).get("ratioLogToAveLog").toString().substring(0, 7));
         assertEquals((float)1.7444445, ((Map)comparison.get("response")).get("ratioToMin"));
         assertEquals((float)0.87222224, ((Map)comparison.get("response")).get("ratioToMax"));
-        assertEquals((double)0.8042439843719135, ((Map)comparison.get("response")).get("standardisedDeviationLog"));
+        assertEquals("0.8042", ((Map)comparison.get("response")).get("standardisedDeviationLog").toString().substring(0, 6));
         assertEquals(0, ((Map)comparison.get("response")).get("deviationBand"));
     }
         
