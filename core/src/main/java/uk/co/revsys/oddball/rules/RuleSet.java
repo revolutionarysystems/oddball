@@ -38,9 +38,9 @@ public interface RuleSet {
         
     public List<Rule> getAllRules();
         
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery, String ensureIndexes, String forEachIn) throws InvalidCaseException, IOException;
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery) throws InvalidCaseException, IOException;
 
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery, String ensureIndexes) throws InvalidCaseException, IOException;
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery, String forEachIn) throws InvalidCaseException, IOException;
     
     public String getRuleType();
 

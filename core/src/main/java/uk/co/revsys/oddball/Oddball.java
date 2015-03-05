@@ -86,7 +86,7 @@ public class Oddball {
             LOGGER.debug("Applying transformation:" + inboundTransformer);
             aCase.setContent(this.transformCase(aCase.getContent(), inboundTransformer));
         }
-        return ruleSet.assessCase(aCase, null, ruleSetName, persistOption, duplicateQuery, avoidQuery, ensureIndexes);
+        return ruleSet.assessCase(aCase, null, ruleSetName, persistOption, duplicateQuery, avoidQuery);
     }
 
     public Opinion assessCase(String ruleSetName, String inboundTransformer, Case aCase) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, IOException {

@@ -103,12 +103,12 @@ public class RuleSetImpl implements RuleSet {
     }
 
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery, String ensureIndexes) throws InvalidCaseException, IOException {
-        return assessCase(aCase, key, ruleSetStr, persistOption, duplicateQuery, avoidQuery, ensureIndexes, this.forEachIn);
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery) throws InvalidCaseException, IOException {
+        return assessCase(aCase, key, ruleSetStr, persistOption, duplicateQuery, avoidQuery, this.forEachIn);
     }
 
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery, String ensureIndexes, String forEachIn) throws InvalidCaseException, IOException {
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery, String forEachIn) throws InvalidCaseException, IOException {
 
         Opinion op = new OpinionImpl();
         MapCase aMapCase;
@@ -133,7 +133,7 @@ public class RuleSetImpl implements RuleSet {
                     if (avoidQuery != null) {
                         caseAvoidQuery = new OddUtil().replacePlaceholders(avoidQuery, (Map<String, Object>) subCase.getContentObject());
                     }
-                    Opinion subOp = assessCase(subCase, null, ruleSetStr, persistOption, caseDuplicateQuery, caseAvoidQuery, ensureIndexes, null);
+                    Opinion subOp = assessCase(subCase, null, ruleSetStr, persistOption, caseDuplicateQuery, caseAvoidQuery, null);
                     op.getTags().addAll(subOp.getTags());
                 }
             }
@@ -207,9 +207,6 @@ public class RuleSetImpl implements RuleSet {
                                 getPersist().removeCase(id);
                                 id = getPersist().checkAlreadyExists(caseDuplicateQuery);
                             }
-                        }
-                        if (ensureIndexes != null) {
-                            getPersist().ensureIndexes(ensureIndexes);
                         }
                         getPersist().insertCase(persistCase);
                     }

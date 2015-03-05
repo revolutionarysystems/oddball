@@ -401,9 +401,9 @@ public class MongoDBHelper {
             cutoff = Long.parseLong(since);
         } catch (java.lang.NumberFormatException e) {
         }
-        BasicDBObject subQuery = new BasicDBObject("$gte", Long.toString(cutoff));
+        BasicDBObject subQuery = new BasicDBObject("$gte", cutoff);
         if (query.containsField("case.time")) {
-            ((BasicDBObject) query.get("case.time")).append("$gte", Long.toString(cutoff));
+            ((BasicDBObject) query.get("case.time")).append("$gte", cutoff);
         } else {
             query.append("case.time", subQuery);
         }
@@ -416,8 +416,8 @@ public class MongoDBHelper {
         } catch (java.lang.NumberFormatException e) {
         }
         BasicDBObject subQuery = new BasicDBObject("$lt", Long.toString(cutoff));
-        if (query.containsField("time")) {
-            ((BasicDBObject) query.get("time")).append("$lt", Long.toString(cutoff));
+        if (query.containsField("timestamp")) {
+            ((BasicDBObject) query.get("timestamp")).append("$lt", Long.toString(cutoff));
         } else {
             query.append("time", subQuery);
         }
@@ -429,9 +429,9 @@ public class MongoDBHelper {
             cutoff = Long.parseLong(before);
         } catch (java.lang.NumberFormatException e) {
         }
-        BasicDBObject subQuery = new BasicDBObject("$lt", Long.toString(cutoff));
+        BasicDBObject subQuery = new BasicDBObject("$lt", cutoff);
         if (query.containsField("case.time")) {
-            ((BasicDBObject) query.get("case.time")).append("$lt", Long.toString(cutoff));
+            ((BasicDBObject) query.get("case.time")).append("$lt", cutoff);
         } else {
             query.append("case.time", subQuery);
         }
