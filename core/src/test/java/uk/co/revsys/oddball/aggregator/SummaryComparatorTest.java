@@ -35,43 +35,43 @@ public class SummaryComparatorTest{
     public void testCompareSignals() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException {
         HashSet<String> signals = new HashSet<String>();
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000000\","
-                + "\"response\": \"100\","
-                + "\"city\": \"london\","
-                + "\"state\": \"login\","
-                + "\"agent-name\": \"chrome\"}");
-        signals.add("{\"accountId\": \"revsys-master-account\","
                 + "\"timestamp\": \"1000001\","
                 + "\"response\": \"100\","
                 + "\"city\": \"london\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"chrome\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000001\","
+                + "\"timestamp\": \"1000002\","
+                + "\"response\": \"100\","
+                + "\"city\": \"london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"chrome\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000002\","
                 + "\"response\": \"150\","
                 + "\"city\": \"london\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"ie\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000001\","
+                + "\"timestamp\": \"1000002\","
                 + "\"response\": \"90\","
                 + "\"city\": \"london\","
                 + "\"state\": \"faq\","
                 + "\"agent-name\": \"firefox\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001000\","
+                + "\"timestamp\": \"1001001\","
                 + "\"response\": \"125\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"opera\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001001\","
+                + "\"timestamp\": \"1001002\","
                 + "\"response\": \"180\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"buy\","
                 + "\"agent-name\": \"chrome\"}");
         String signalOfInterest = "{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001001\","
+                + "\"timestamp\": \"1001002\","
                 + "\"response\": \"157\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"buy\","
@@ -152,37 +152,37 @@ public class SummaryComparatorTest{
     public void testCompareSignalsWStats() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException {
         HashSet<String> signals = new HashSet<String>();
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000000\","
+                + "\"timestamp\": \"1000001\","
                 + "\"response\": \"100\","
                 + "\"city\": \"london\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"chrome\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000001\","
+                + "\"timestamp\": \"1000002\","
                 + "\"response\": \"150\","
                 + "\"city\": \"london\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"ie\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000001\","
+                + "\"timestamp\": \"1000002\","
                 + "\"response\": \"90\","
                 + "\"city\": \"london\","
                 + "\"state\": \"faq\","
                 + "\"agent-name\": \"firefox\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001000\","
+                + "\"timestamp\": \"1001001\","
                 + "\"response\": \"125\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"opera\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001001\","
+                + "\"timestamp\": \"1001002\","
                 + "\"response\": \"180\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"buy\","
                 + "\"agent-name\": \"chrome\"}");
         String signalOfInterest = "{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001001\","
+                + "\"timestamp\": \"1001002\","
                 + "\"response\": \"157\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"buy\","
@@ -210,37 +210,37 @@ public class SummaryComparatorTest{
     public void testCompareSignalsWStats2() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException {
         HashSet<String> signals = new HashSet<String>();
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000000\","
+                + "\"timestamp\": \"1000001\","
                 + "\"response\": \"100\","
                 + "\"city\": \"london\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"chrome\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000001\","
+                + "\"timestamp\": \"1000002\","
                 + "\"response\": \"150\","
                 + "\"city\": \"london\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"ie\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000001\","
+                + "\"timestamp\": \"1000002\","
                 + "\"response\": \"90\","
                 + "\"city\": \"london\","
                 + "\"state\": \"faq\","
                 + "\"agent-name\": \"firefox\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001000\","
+                + "\"timestamp\": \"1001001\","
                 + "\"response\": \"125\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"opera\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001001\","
+                + "\"timestamp\": \"1001002\","
                 + "\"response\": \"180\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"buy\","
                 + "\"agent-name\": \"chrome\"}");
         String signalOfInterest = "{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001001\","
+                + "\"timestamp\": \"1001002\","
                 + "\"response\": \"157\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"buy\","
@@ -270,37 +270,37 @@ public class SummaryComparatorTest{
     public void testCompareSignalsWStats3() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException {
         HashSet<String> signals = new HashSet<String>();
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000000\","
+                + "\"timestamp\": \"1000001\","
                 + "\"response\": \"100\","
                 + "\"city\": \"london\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"chrome\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000001\","
+                + "\"timestamp\": \"1000002\","
                 + "\"response\": \"150\","
                 + "\"city\": \"london\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"ie\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000001\","
+                + "\"timestamp\": \"1000002\","
                 + "\"response\": \"90\","
                 + "\"city\": \"london\","
                 + "\"state\": \"faq\","
                 + "\"agent-name\": \"firefox\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001000\","
+                + "\"timestamp\": \"1001001\","
                 + "\"response\": \"125\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"opera\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001001\","
+                + "\"timestamp\": \"1001002\","
                 + "\"response\": \"180\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"buy\","
                 + "\"agent-name\": \"chrome\"}");
         String signalOfInterest = "{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001001\","
+                + "\"timestamp\": \"1001002\","
                 + "\"response\": \"157\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"buy\","
@@ -319,10 +319,10 @@ public class SummaryComparatorTest{
         assertEquals(2, ((Map)comparison.get("agent-name")).get("count"));
         assertEquals((float)0.4, ((Map)comparison.get("agent-name")).get("proportion"));
         assertEquals("157", ((Map)comparison.get("response")).get("value"));
-        assertEquals((double)1.0474106796697942, ((Map)comparison.get("response")).get("ratioLogToAveLog"));
+        assertEquals("1.04741", ((Map)comparison.get("response")).get("ratioLogToAveLog").toString().substring(0, 7));
         assertEquals((float)1.7444445, ((Map)comparison.get("response")).get("ratioToMin"));
         assertEquals((float)0.87222224, ((Map)comparison.get("response")).get("ratioToMax"));
-        assertEquals((double)0.804256538032434, ((Map)comparison.get("response")).get("standardisedDeviationLog"));
+        assertEquals((double)0.8042439843719135, ((Map)comparison.get("response")).get("standardisedDeviationLog"));
         assertEquals(0, ((Map)comparison.get("response")).get("deviationBand"));
     }
         

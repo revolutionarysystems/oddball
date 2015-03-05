@@ -130,7 +130,7 @@ public class SummaryAggregator implements Aggregator{
                 long caseTime = Long.parseLong(time.toString());
                 for (Summary summary: summaries){
                 // if case belongs in Summary, incorporate it
-                    if (caseTime >= summary.getStartTime() && caseTime < summary.getEndTime()){
+                    if (caseTime > summary.getStartTime() && caseTime <= summary.getEndTime()){
                         summary.incorporate(caseMap, caseTime);
                         break;
                     }
