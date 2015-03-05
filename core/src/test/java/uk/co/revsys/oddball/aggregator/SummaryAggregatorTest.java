@@ -100,31 +100,31 @@ public class SummaryAggregatorTest{
     public void testAggregateSignalsWithStats() throws EventNotCreatedException, AggregationException, IOException, InvalidTimePeriodException {
         HashSet<String> signals = new HashSet<String>();
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000000\","
+                + "\"timestamp\": \"1000001\","
                 + "\"response\": \"100\","
                 + "\"city\": \"london\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"chrome\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000001\","
+                + "\"timestamp\": \"1000002\","
                 + "\"response\": \"150\","
                 + "\"city\": \"london\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"ie\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000001\","
+                + "\"timestamp\": \"1000002\","
                 + "\"response\": \"90\","
                 + "\"city\": \"london\","
                 + "\"state\": \"faq\","
                 + "\"agent-name\": \"firefox\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001000\","
+                + "\"timestamp\": \"1001001\","
                 + "\"response\": \"125\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"opera\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001001\","
+                + "\"timestamp\": \"1001002\","
                 + "\"response\": \"180\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"buy\","
@@ -152,31 +152,31 @@ public class SummaryAggregatorTest{
     public void testAggregateSignalsWithStats2() throws EventNotCreatedException, AggregationException, IOException, InvalidTimePeriodException {
         HashSet<String> signals = new HashSet<String>();
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000000\","
+                + "\"timestamp\": \"1000001\","
                 + "\"response\": \"100\","
                 + "\"city\": \"london\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"chrome\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000001\","
+                + "\"timestamp\": \"1000002\","
                 + "\"response\": \"150\","
                 + "\"city\": \"london\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"ie\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1000001\","
+                + "\"timestamp\": \"1000002\","
                 + "\"response\": \"90\","
                 + "\"city\": \"london\","
                 + "\"state\": \"faq\","
                 + "\"agent-name\": \"firefox\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001000\","
+                + "\"timestamp\": \"1001001\","
                 + "\"response\": \"125\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"login\","
                 + "\"agent-name\": \"opera\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
-                + "\"timestamp\": \"1001001\","
+                + "\"timestamp\": \"1001002\","
                 + "\"response\": \"180\","
                 + "\"city\": \"bristol\","
                 + "\"state\": \"buy\","
@@ -215,6 +215,12 @@ public class SummaryAggregatorTest{
                 + "\"agent-name\": \"chrome\"}");
         signals.add("{\"accountId\": \"revsys-master-account\","
                 + "\"timestamp\": \"1000001\","
+                + "\"response\": 100,"
+                + "\"city\": \"london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"chrome\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000001\","
                 + "\"response\": 150,"
                 + "\"city\": \"london\","
                 + "\"state\": \"login\","
@@ -241,12 +247,13 @@ public class SummaryAggregatorTest{
         Map<String, String> options = new HashMap<String, String>();
         options.put("summaryDefinition", "testSummaryDef5.json");
         options.put("periodStart", "1000000");
-        options.put("periodEnd", "1002000");
+        options.put("periodEnd",  "1002000");
         options.put("division", "2000");
         options.put("owner", "test-account");
         List<Map> summaries = sa.aggregateCases(signals, options, resourceRepository);
         System.out.println("summaries");
         System.out.println(summaries);
+        System.out.println(summaries.size());
         assertTrue(summaries.size()==1);
         Map summaryMap = summaries.get(0);
         assertEquals("test-account", (String)summaryMap.get("owner"));
