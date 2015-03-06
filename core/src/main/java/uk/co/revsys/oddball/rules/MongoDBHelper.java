@@ -75,11 +75,11 @@ public class MongoDBHelper {
 
     }
 
-    public void ensureIndexes(String indexList) {
-        String[] indexes = indexList.split(",");
-        for (String index : indexes) {
-            cases.ensureIndex(index);
-        }
+
+    public void ensureIndex(Map indexMap) {
+        cases.getDBCollection().createIndex(new BasicDBObject(indexMap));
+        LOGGER.debug(cases.getDBCollection().getIndexInfo().toString());
+        //System.out.println(cases.getDBCollection().getIndexInfo());
     }
 
     public String checkAlreadyExists(String duplicateQuery) {
@@ -98,7 +98,7 @@ public class MongoDBHelper {
     }
 
     public boolean testCase(String query, String caseId) {
-        if (query.length() < 1){
+        if (query.length() < 1) {
             query = "{ }";
         }
         String queryMod = "{ \"_id\" : \"" + caseId + "\", " + query.substring(1);

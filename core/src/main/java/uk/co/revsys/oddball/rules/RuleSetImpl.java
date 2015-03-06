@@ -203,6 +203,9 @@ public class RuleSetImpl implements RuleSet {
                                 caseDuplicateQuery = new OddUtil().replacePlaceholders(duplicateQuery, (Map<String, Object>) aCase.getContentObject());
                             }
                             String id = getPersist().checkAlreadyExists(caseDuplicateQuery);
+                            if (!persistCase.contains("_id")) {
+                                persistCase = persistCase.substring(0, persistCase.lastIndexOf("}")) + ", \"_id\":\"" + id + "\" }";
+                            }
                             while (id != null) {
                                 getPersist().removeCase(id);
                                 id = getPersist().checkAlreadyExists(caseDuplicateQuery);
@@ -506,15 +509,30 @@ public class RuleSetImpl implements RuleSet {
             }
             inMemory = ruleHost.equals("inMemory");
             if (ruleSetMap.get("forEachIn")!=null){
-                ruleHost = (String) ruleSetMap.get("forEachIn");
+                forEachIn = (String) ruleSetMap.get("forEachIn");
             }
+            
             Class<? extends RuleSetImpl> ruleSetClass = new RuleSetMap().get(ruleType);
             RuleSet ruleSet = (RuleSet) ruleSetClass.newInstance();
+//            System.out.println("persistence");
+//            System.out.println(ruleHost);
+//            System.out.println(ruleSetName.replace("/", "-") + "-persist");
             ruleSet.setPersist(new MongoDBHelper(ruleSetName.replace("/", "-") + "-persist", inMemory));
+            ArrayList<Map<String, Object>> ensureIndexes = new ArrayList<Map<String, Object>>();
+            LOGGER.debug("Indexes:"+ruleSetMap.get("ensureIndexes"));
+            if (ruleSetMap.get("ensureIndexes")!=null){
+                ensureIndexes = (ArrayList<Map<String, Object>>) ruleSetMap.get("ensureIndexes");
+            }
+            for (Map<String, Object> indexMap : ensureIndexes){
+                System.out.println("Creating Index:"+indexMap.toString());
+                LOGGER.debug("Creating Index:"+indexMap.toString());
+                ruleSet.getPersist().ensureIndex(indexMap);
+            }
             ruleSet.setRuleType(ruleType);
             Class ruleClass = new RuleTypeMap().get(ruleType);
             ruleSet.setName(ruleSetName);
             ruleSet.setRuleClass(ruleClass);
+            ruleSet.setRuleHost(ruleHost);
             ruleSet.setForEachIn(forEachIn);
             ruleSet.loadJSONRules(ruleSetMap, resourceRepository);
             return ruleSet;

@@ -330,7 +330,26 @@ public class OddballTest {
     }
 
     @Test
-    public void testAssessCaseOddballMongoTagTwiceRulesFile() throws Exception {
+    public void testAssessCaseOddballMongoRulesFileWithIndex() throws Exception {
+        System.out.println("assessCase");
+        String ruleSetName = "TestMongo3.rules";
+
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+
+        Case aCase = new MapCase("{\"browser\":\"chromium\", \"platform\":\"windows\"}");
+        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("ruleC"));
+        assertTrue(result.getLabel().contains("ruleB"));
+
+        aCase = new MapCase("{\"browser\":\"google\", \"platform\":\"windows\"}");
+        result = instance.assessCase(ruleSetName, null, aCase);
+        assertTrue(result.getLabel().contains("ruleC"));
+        assertTrue(result.getLabel().contains("ruleB"));
+    }
+
+    @Test
+    public void testAssessCaseOddballMongoRulesFile() throws Exception {
         System.out.println("assessCase");
         String ruleSetName = "TestMongo2.rules";
 
