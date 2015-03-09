@@ -4,6 +4,7 @@ package uk.co.revsys.oddball.rules;
 import com.github.fakemongo.Fongo;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
+import java.util.List;
 
 
 /**
@@ -28,6 +29,10 @@ public class MongoDBFactory {
             }
             return mongoClient.getDB(dbName);
         }
+    }
+    
+    public static List<String> getDBNames(){
+        return mongoClient.getDatabaseNames();
     }
     
 }
