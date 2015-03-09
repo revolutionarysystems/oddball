@@ -379,20 +379,26 @@ public class RuleSetImpl implements RuleSet {
             List<Map<String, Object>> rules = (List<Map<String, Object>>)tagType.get("rules");
             for (Map<String, Object> rule : rules){
                 String source = "config";
-                String label = (String) rule.get("label");
-                if (rule.get("source")!=null){
-                    source = (String)rule.get("source");
+                boolean active = true;
+                if (rule.get("active")!=null &&((String) rule.get("active")).equals("false")){
+                    active= false;
                 }
-                String description = "";
-                if (rule.get("description")!=null){
-                    description = (String)rule.get("description");
-                }
-                String ruleStr = (String)rule.get("ruleString");
-                Rule ruleInstance = createRule(prefix, label, ruleStr, description, source, resourceRepository);
-                if (source.equals("config")) {
-                    this.addRule(ruleInstance);
-                } else {
-                    this.addExtraRule(ruleInstance);
+                if (active) {
+                    String label = (String) rule.get("label");
+                    if (rule.get("source")!=null){
+                        source = (String)rule.get("source");
+                    }
+                    String description = "";
+                    if (rule.get("description")!=null){
+                        description = (String)rule.get("description");
+                    }
+                    String ruleStr = (String)rule.get("ruleString");
+                    Rule ruleInstance = createRule(prefix, label, ruleStr, description, source, resourceRepository);
+                    if (source.equals("config")) {
+                        this.addRule(ruleInstance);
+                    } else {
+                        this.addExtraRule(ruleInstance);
+                    }
                 }
             }
         }

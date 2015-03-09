@@ -8,6 +8,7 @@ package uk.co.revsys.oddball.rules;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
+import com.mongodb.Mongo;
 import com.mongodb.WriteResult;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -488,6 +489,12 @@ public class MongoDBHelper {
         return caseList;
     }
 
+    public String getDbStats(){
+        return db.getStats().toString();
+    }
+    
+    
+    
 //    public Collection<String> findLatestQueryToRemove(String owner, String queryString, String field, String recent, String since) throws DaoException, IOException {
 //        BasicDBObject query = new BasicDBObject(JSONUtil.json2map(queryString));
 //        if (!owner.equals(Oddball.ALL)) {

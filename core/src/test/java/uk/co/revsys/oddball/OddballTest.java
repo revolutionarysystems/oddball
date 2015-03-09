@@ -367,6 +367,25 @@ public class OddballTest {
         assertTrue(result.getLabel().contains("ruleB"));
     }
 
+    @Test
+    public void testAssessCaseOddballMongoRulesFileInactiveRule() throws Exception {
+        System.out.println("assessCase");
+        String ruleSetName = "TestMongo4.rules";
+
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+
+        Case aCase = new MapCase("{\"browser\":\"chromium\", \"platform\":\"windows\"}");
+        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        System.out.println(result.getLabel());
+        assertFalse(result.getLabel().contains("ruleC"));
+        assertTrue(result.getLabel().contains("ruleB"));
+
+        aCase = new MapCase("{\"browser\":\"google\", \"platform\":\"windows\"}");
+        result = instance.assessCase(ruleSetName, null, aCase);
+        assertFalse(result.getLabel().contains("ruleC"));
+        assertTrue(result.getLabel().contains("ruleB"));
+    }
+
 
     
     /**

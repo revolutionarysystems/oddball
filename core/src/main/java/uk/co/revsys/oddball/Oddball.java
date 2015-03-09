@@ -132,6 +132,11 @@ public class Oddball {
         return ruleSet;
     }
 
+    public String getDbStats(String ruleSetName) throws RuleSetNotLoadedException{
+        RuleSet ruleSet = ensureRuleSet(ruleSetName);
+        return ruleSet.getPersist().getDbStats();
+    }
+    
     public RuleSet addExtraRule(String ruleSetName, String prefix, String label, String ruleString, String source) throws RuleSetNotLoadedException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         Rule duplicate = ruleSet.findExtraRule(prefix, ruleString);
@@ -853,6 +858,30 @@ public class Oddball {
             throw new ResourceNotLoadedException(filter, ex);
         }
     }
+
+//    public List<String> showDatabaseList(String filter) throws ResourceNotLoadedException {
+//        String path = ".";
+//        if (filter.contains("/")) {
+//            path = path + "/" + filter.substring(0, filter.lastIndexOf("/"));
+//            filter = filter.substring(filter.lastIndexOf("/") + 1);
+//        }
+//        try {
+//            List<String> databases = MongoDBHelper.??;
+//            List<String> matchedResources = new ArrayList<String>();
+//            boolean rulesetFound = false;
+//            filter = filter.replace(".", "\\.").replace("*", ".*");
+//            Pattern p = Pattern.compile(filter);
+//            for (Resource resource : resources) {
+//                if (p.matcher(resource.getName()).matches()) {
+//                    String quoted = "\"" + resource.getName().replace("\"", "\\\"") + "\"";
+//                    matchedResources.add(quoted);
+//                }
+//            }
+//            return matchedResources;
+//        } catch (IOException ex) {
+//            throw new ResourceNotLoadedException(filter, ex);
+//        }
+//    }
 
     public static final String ALL = "_all";
     public static final String NONE = "";
