@@ -16,6 +16,7 @@
         <property name="realm" ref="realm"/>
         <property name="sessionManager" ref="sessionManager"/>
         <property name="subjectDAO" ref="subjectDAO" />
+        <property name="cacheManager" ref="cacheManager" />
     </bean>
     
     <bean id="sessionManager"
@@ -43,6 +44,8 @@
     <bean id="sessionStorageEvaluator" class="org.apache.shiro.web.mgt.DefaultWebSessionStorageEvaluator">
         <property name="sessionStorageEnabled" value="false"/>
     </bean>
+    
+    <bean id="cacheManager" class="org.apache.shiro.cache.MemoryConstrainedCacheManager"/>
     
     <bean id="realm" class="uk.co.revsys.user.manager.shiro.realm.DaoRealm">
         <constructor-arg index="0" ref="accountService"/>
