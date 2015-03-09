@@ -1111,12 +1111,10 @@ public class OddballRestService extends AbstractRestService {
 
     
     
-    /**
-     * ********************
-     */
-    // Cache Management
-    /**
-     * ********************
+    /*
+     **********************
+     * Cache Management
+     **********************
      */
     @GET
     @Path("/transformer/clear")
@@ -1144,4 +1142,68 @@ public class OddballRestService extends AbstractRestService {
     static final Logger RESULTSLOGGER = LoggerFactory.getLogger("oddball-results");
     static final Logger LOGGER = LoggerFactory.getLogger("oddball");
 
+    /*
+     **********************
+     * DB Stats
+     **********************
+     */
+    @GET
+    @Path("/{ruleSet}/dbStats")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response showRuleSetStats(@PathParam("ruleSet") String ruleSet) {
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        String stats = "";
+        try {
+            stats = oddball.getDbStats(ruleSet);
+        } catch (RuleSetNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        }
+        return Response.ok(stats).build();
+    }
+
+    @GET
+    @Path("/{owner}/{ruleSet}/dbStats")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response showOwnerRuleSetStats(@PathParam("ruleSet") String ruleSet, @PathParam("owner") String owner) {
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        String stats = "";
+        try {
+            stats = oddball.getDbStats(owner+"/"+ruleSet);
+        } catch (RuleSetNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        }
+        return Response.ok(stats).build();
+    }
+
+//    @GET
+//    @Path("/dataSources/{resourceName}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response showDataBaseList(@PathParam("resourceName") String resourceName ){
+//        if (!authorisationHandler.isAdministrator()) {
+//            return Response.status(Response.Status.FORBIDDEN).build();
+//        }
+//        HashMap<String, String> options = new HashMap<String, String>();
+//        List<String> resources = new ArrayList<String>();
+//        resources = oddball.showDatabaseList(resourceName+"-persist");
+//        return Response.ok(resources.toString()).build();
+//    }
+//    
+//    @GET
+//    @Path("/{owner}/dataSources/{resourceName}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response showOwnerDataBaseList(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName ){
+//        if (!authorisationHandler.isAdministrator()) {
+//            return Response.status(Response.Status.FORBIDDEN).build();
+//        }
+//        HashMap<String, String> options = new HashMap<String, String>();
+//        List<String> resources = new ArrayList<String>();
+//        resources = oddball.showDatabaseList(owner+"/"+resourceName+"-persist");
+//        return Response.ok(resources.toString()).build();
+//    }
+//    
+    
 }
