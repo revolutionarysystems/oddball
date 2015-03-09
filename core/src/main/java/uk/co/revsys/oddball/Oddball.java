@@ -39,6 +39,7 @@ import uk.co.revsys.oddball.identifier.CaseIdentifier;
 import uk.co.revsys.oddball.identifier.IdentificationSchemeNotLoadedException;
 import uk.co.revsys.oddball.identifier.IdentifierMap;
 import uk.co.revsys.oddball.rules.DaoException;
+import uk.co.revsys.oddball.rules.MongoDBFactory;
 import uk.co.revsys.oddball.rules.MongoDBHelper;
 import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.rules.Rule;
@@ -859,29 +860,51 @@ public class Oddball {
         }
     }
 
-//    public List<String> showDatabaseList(String filter) throws ResourceNotLoadedException {
-//        String path = ".";
-//        if (filter.contains("/")) {
-//            path = path + "/" + filter.substring(0, filter.lastIndexOf("/"));
-//            filter = filter.substring(filter.lastIndexOf("/") + 1);
-//        }
-//        try {
-//            List<String> databases = MongoDBHelper.??;
-//            List<String> matchedResources = new ArrayList<String>();
-//            boolean rulesetFound = false;
-//            filter = filter.replace(".", "\\.").replace("*", ".*");
-//            Pattern p = Pattern.compile(filter);
-//            for (Resource resource : resources) {
-//                if (p.matcher(resource.getName()).matches()) {
-//                    String quoted = "\"" + resource.getName().replace("\"", "\\\"") + "\"";
-//                    matchedResources.add(quoted);
-//                }
-//            }
-//            return matchedResources;
-//        } catch (IOException ex) {
-//            throw new ResourceNotLoadedException(filter, ex);
-//        }
-//    }
+    public List<String> showDatabaseList(String filter) {
+        String path = ".";
+        if (filter.contains("/")) {
+            path = path + "/" + filter.substring(0, filter.lastIndexOf("/"));
+            filter = filter.substring(filter.lastIndexOf("/") + 1);
+        }
+        List<String> dbNames = MongoDBFactory.getDBNames();
+        List<String> matchedNames = new ArrayList<String>();
+        boolean dbFound = false;
+        filter = filter.replace(".", "\\.").replace("*", ".*");
+        Pattern p = Pattern.compile(filter);
+        for (String dbName : dbNames) {
+            if (p.matcher(dbName).matches()) {
+//                String quoted = "\"" + dbName.replace("\"", "\\\"") + "\"";
+//                matchedNames.add(quoted);
+                matchedNames.add(dbName);
+            }
+        }
+        List<String> dataSources = new ArrayList<String>();
+        for (String name: matchedNames){
+            String ruleSetName="";
+            String[] fragments = name.split("-");
+            int fragmentCount=fragments.length;
+            int ownerFragments = 0;
+            String owner = "";
+            if (name.contains("-rules-")){
+                ruleSetName=fragments[fragmentCount-3]+".rules";
+                ownerFragments = fragmentCount-3;
+            } else {
+                ruleSetName=fragments[fragmentCount-2];
+                ownerFragments = fragmentCount-2;
+            }
+            for (int i=0; i<ownerFragments;i++){
+                owner = owner+fragments[i]+"-";
+            }
+            if (ownerFragments>0){
+                owner = owner.substring(0, owner.length()-1);
+            }
+            Map<String, Object> dataSourceMap = new HashMap<String, Object>();
+            dataSourceMap.put("databaseName", name);
+            dataSourceMap.put("ruleSet", owner+"/"+ruleSetName);
+            dataSources.add(JSONUtil.map2json(dataSourceMap));
+        }
+        return dataSources;
+    }
 
     public static final String ALL = "_all";
     public static final String NONE = "";

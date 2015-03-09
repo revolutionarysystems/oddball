@@ -1179,31 +1179,31 @@ public class OddballRestService extends AbstractRestService {
         return Response.ok(stats).build();
     }
 
-//    @GET
-//    @Path("/dataSources/{resourceName}")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response showDataBaseList(@PathParam("resourceName") String resourceName ){
-//        if (!authorisationHandler.isAdministrator()) {
-//            return Response.status(Response.Status.FORBIDDEN).build();
-//        }
-//        HashMap<String, String> options = new HashMap<String, String>();
-//        List<String> resources = new ArrayList<String>();
-//        resources = oddball.showDatabaseList(resourceName+"-persist");
-//        return Response.ok(resources.toString()).build();
-//    }
-//    
-//    @GET
-//    @Path("/{owner}/dataSources/{resourceName}")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response showOwnerDataBaseList(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName ){
-//        if (!authorisationHandler.isAdministrator()) {
-//            return Response.status(Response.Status.FORBIDDEN).build();
-//        }
-//        HashMap<String, String> options = new HashMap<String, String>();
-//        List<String> resources = new ArrayList<String>();
-//        resources = oddball.showDatabaseList(owner+"/"+resourceName+"-persist");
-//        return Response.ok(resources.toString()).build();
-//    }
-//    
+    @GET
+    @Path("/dataSources/{resourceName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response showDataBaseList(@PathParam("resourceName") String resourceName ){
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        HashMap<String, String> options = new HashMap<String, String>();
+        List<String> resources = new ArrayList<String>();
+        resources = oddball.showDatabaseList(resourceName+"-persist");
+        return Response.ok(resources.toString()).build();
+    }
+    
+    @GET
+    @Path("/{owner}/dataSources/{resourceName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response showOwnerDataBaseList(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName ){
+        if (!authorisationHandler.isAdministrator()) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        HashMap<String, String> options = new HashMap<String, String>();
+        List<String> resources = new ArrayList<String>();
+        resources = oddball.showDatabaseList(owner+"-"+resourceName+"-persist");
+        return Response.ok(resources.toString()).build();
+    }
+    
     
 }
