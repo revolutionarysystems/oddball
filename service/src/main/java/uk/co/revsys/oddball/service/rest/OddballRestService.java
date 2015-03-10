@@ -3,10 +3,8 @@ package uk.co.revsys.oddball.service.rest;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -19,6 +17,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,6 +106,15 @@ public class OddballRestService extends AbstractRestService {
     @Produces(MediaType.TEXT_PLAIN)
     public Response announce() {
         return Response.ok("Welcome to odDball").build();
+    }
+    
+    @POST
+    @Path("/login")
+    public Response login() {
+        if(SecurityUtils.getSubject().isAuthenticated()){
+            SecurityUtils.getSubject().getSession(true);
+        }
+        return Response.ok().build();
     }
 
     @GET

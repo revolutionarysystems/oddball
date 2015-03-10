@@ -139,5 +139,7 @@
     </bean>
     
     <bean id="formAuthenticationFilter" class="uk.co.revsys.user.manager.filter.FormAuthenticationFilter"/>
+    
+    <bean id="sessionCreation" class="uk.co.revsys.user.manager.filter.SessionCreationFilter"/>
 
 </beans>
