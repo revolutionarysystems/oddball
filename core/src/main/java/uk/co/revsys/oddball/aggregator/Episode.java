@@ -23,6 +23,7 @@ public class Episode {
         this.startTime = startTime;
         this.firstTagTime = firstTagTime;
         this.states = new ArrayList<String>();
+        this.signals = new ArrayList<Map<String, Object>>();
         this.status = Episode.OPEN;
         this.stateCodes = new StringBuilder("");
         watches = new HashMap<String, ArrayList<String>>();
@@ -39,9 +40,15 @@ public class Episode {
     public void recordState(String state, String code, long thisTime, long thisTagTime, Map<String, Object> caseMap) {
 //    public void recordState(String state, String code, long thisTime, long thisTagTime) {
         this.states.add(state);
+        Map<String, Object> signal = new HashMap<String, Object>();
+        signal.put("state", state);
+        signal.put("id", caseMap.get("_id"));
+        signal.put("time", thisTime);
+        signals.add(signal);
         this.stateCodes.append(code);
         this.endTime = thisTime;
         this.lastTagTime = thisTagTime;
+        this.duration = this.endTime - this.startTime;
         for (String watchProperty : watches.keySet()){
             Object propertyValue = new OddUtil().getDeepProperty(caseMap, watchProperty.replace("~",".")); 
             if (propertyValue!=null){
@@ -74,6 +81,8 @@ public class Episode {
         lastTagTime = thisTagTime;
         this.states.add(intervalString + "s");
         this.stateCodes.append(intervalCode);
+//        Map<String, Object> signal = signals.get(signals.size()-1);
+//        signal.put("wait", thisTime - prevTime);
     }
 
     public void close(long timedOutTime, long lastTagTime) {
@@ -99,6 +108,7 @@ public class Episode {
     private long lastTagTime;
     private long duration;
     private ArrayList<String> states;
+    private ArrayList<Map<String, Object>> signals;
     private int status;
     private StringBuilder stateCodes;
     private Map<String, ArrayList<String>> watches;
@@ -232,6 +242,13 @@ public class Episode {
     }
 
     /**
+     * @return the signals
+     */
+    public ArrayList<Map<String, Object>> getSignals() {
+        return signals;
+    }
+
+    /**
      * @return the status
      */
     public int getStatus() {
@@ -295,6 +312,12 @@ public class Episode {
         episodeMap.put("lastTagTime", lastTagTime);
         episodeMap.put("duration", duration);
         episodeMap.put("states", states);
+        episodeMap.put("signals", signals);
+        episodeMap.put("length", signals.size());
+        if (signals.size()>1){
+            episodeMap.put("avgWait", duration/(signals.size()-1));
+        }
+        episodeMap.put("length", signals.size());
         if (isOpen()) {
             episodeMap.put("status", "open");
         } else {

@@ -33,7 +33,7 @@ public class SimpleCollationAccumulator implements PropertyAccumulator, Comparat
     @Override
     public void accumulateProperty(Object property){
         if (property!=null){
-            property=((String)property).replace("\"","");
+            property=(property.toString()).replace("\"","");
         }
         if (collation.containsKey(property)){
             collation.put(property, ((Integer)collation.get(property))+1);

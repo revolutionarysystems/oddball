@@ -154,7 +154,11 @@ public class MongoDBHelper {
         }
         BasicDBObject query = new BasicDBObject(JSONUtil.json2map(queryString));
         if (!owner.equals(Oddball.ALL)) {
-            query.append("case." + OWNERPROPERTY, owner);
+            String ownerProperty = OWNERPROPERTY;
+            if (options.containsKey("ownerProperty")){
+                ownerProperty = options.get("ownerProperty");
+            }
+            query.append("case." + ownerProperty, owner);
         }
         if (options.get("recent") != null) {
             addRecentQuery(query, options.get("recent"));

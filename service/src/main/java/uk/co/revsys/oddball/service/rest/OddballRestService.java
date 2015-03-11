@@ -266,15 +266,19 @@ public class OddballRestService extends AbstractRestService {
         for (String key : options.keySet()) {
             options.put(key, options.get(key).replace("{owner}",owner+"/").replace("{account}",owner+"/"));
         }
+        options.put("owner", owner);
         return findCasesService(ruleSet, options, owner+"/");
     }
 
     public Response findCasesService(String ruleSets, HashMap<String, String> options, String ruleOwnerPrefix){
-        String owner = getOwner(options.get("account"));
+        String owner =options.get("account");
+        owner = getOwner(owner);
         if (owner == null) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
-        options.put("owner", owner);
+        if (options.get("owner")==null){
+            options.put("owner", owner);
+        }
         String query = options.get("query");
         ArrayList<String> cases = new ArrayList<String>();
         String output = "";
@@ -1167,7 +1171,8 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{owner}/{ruleSet}/dbStats")
     @Produces(MediaType.APPLICATION_JSON)
     public Response showOwnerRuleSetStats(@PathParam("ruleSet") String ruleSet, @PathParam("owner") String owner) {
-        if (!authorisationHandler.isAdministrator()) {
+        owner = getOwner(owner);
+        if (owner == null && !authorisationHandler.isAdministrator()) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         String stats = "";
@@ -1196,7 +1201,8 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{owner}/dataSources/{resourceName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response showOwnerDataBaseList(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName ){
-        if (!authorisationHandler.isAdministrator()) {
+        owner = getOwner(owner);
+        if (owner == null && !authorisationHandler.isAdministrator()) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         HashMap<String, String> options = new HashMap<String, String>();

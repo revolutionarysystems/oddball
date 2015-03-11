@@ -40,7 +40,7 @@ public class EpisodeAggregatorTest{
                 + "\"state\": \"Home\"}");
         events.add("{\"accountId\": \"revsys-master-account\","
                 + "\"code\": \"B\","
-                + "\"_id\": \"540478ff6d9f1cf545423e6c\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6d\","
                 + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
                 + "\"userId\": \"user1\","
                 + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
@@ -49,7 +49,7 @@ public class EpisodeAggregatorTest{
                 + "\"state\": \"Info\"}");
         events.add("{\"accountId\": \"revsys-master-account\","
                 + "\"code\": \"C\","
-                + "\"_id\": \"540478ff6d9f1cf545423e6c\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6e\","
                 + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
                 + "\"userId\": \"user1\","
                 + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
@@ -68,7 +68,7 @@ public class EpisodeAggregatorTest{
         assertEquals("user1", ep.getAgent());
         assertEquals("e47877b6-4f17-4d2d-a6f3-3d35aa919be6", ep.getSeries());
         assertTrue(1409579263300L==ep.getEndTime());
-        assertTrue(0L==ep.getDuration());
+        assertTrue(300L==ep.getDuration());
         assertTrue(ep.isOpen());
         System.out.println(ep.asMap());
         List<Episode> episodes2 = ea.aggregateEvents(events, 30000, 1409589263988L, "");
@@ -135,7 +135,7 @@ public class EpisodeAggregatorTest{
         assertEquals("user1", ep.getAgent());
         assertEquals("e47877b6-4f17-4d2d-a6f3-3d35aa919be6", ep.getSeries());
         assertTrue(1409579263300L==ep.getEndTime());
-        assertTrue(0L==ep.getDuration());
+        assertTrue(300L==ep.getDuration());
         assertTrue(ep.isOpen());
         System.out.println(ep.asMap());
         List<Episode> episodes2 = ea.aggregateEvents(events, 30000, 1409589263988L,"place");
