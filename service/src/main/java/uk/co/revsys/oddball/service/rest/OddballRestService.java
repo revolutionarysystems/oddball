@@ -66,7 +66,16 @@ public class OddballRestService extends AbstractRestService {
         return null;
     }
 
-    private String getOwner(String ownerParam) {
+    private String getOwner(String ownerParam, HashMap<String, String> options) {
+        if (ownerParam==null){
+            if (options.get("owner")!=null){
+                ownerParam= options.get("owner");
+            } else {
+                if (options.get("account")!=null){
+                    ownerParam= options.get("account");
+                }
+            }
+        }
         if (authorisationHandler.isAdministrator()) {
             if (ownerParam == null) {
                 String owner = getAccount();
@@ -93,6 +102,17 @@ public class OddballRestService extends AbstractRestService {
     /**
      * ********************
      */
+
+    private HashMap<String, String> decodeOptions(UriInfo ui) throws UnsupportedEncodingException{
+        MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
+        HashMap<String, String> options = new HashMap<String, String>();
+        for (String key : queryParams.keySet()) {
+            options.put(key, java.net.URLDecoder.decode(queryParams.getFirst(key), "UTF-8"));
+        }
+        return options;
+    }
+
+    
     public OddballRestService(Oddball oddball, AuthorisationHandler authorisationHandler) {
         LOGGER.debug("Initialising");
         this.oddball = oddball;
@@ -195,11 +215,11 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/id/{id}/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findCase(@PathParam("ruleSet") String ruleSets, @PathParam("id") String id, @QueryParam("account") String owner, @QueryParam("transformer") String transformer, @QueryParam("action") String action) {
-        owner = getOwner(owner);
+        HashMap<String, String> options = new HashMap<String, String>();
+        owner = getOwner(owner, options);
         if (owner == null) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
-        HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", owner);
         options.put("transformer", transformer);
         ArrayList<String> cases = new ArrayList<String>();
@@ -237,12 +257,7 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/case/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findCases(@PathParam("ruleSet") String ruleSet, @Context UriInfo ui) throws UnsupportedEncodingException {
-        MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-        HashMap<String, String> options = new HashMap<String, String>();
-        for (String key : queryParams.keySet()) {
-            options.put(key, java.net.URLDecoder.decode(queryParams.getFirst(key), "UTF-8"));
-//            options.put(key, queryParams.getFirst(key).replaceAll("\\+", " "));
-        }
+        HashMap<String, String> options = decodeOptions(ui);
         if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = options.get("ruleSet");
         }
@@ -254,14 +269,15 @@ public class OddballRestService extends AbstractRestService {
             for (String key : options.keySet()) {
                 options.put(key, options.get(key).replace("{owner}",ownerPrefix).replace("{account}",ownerPrefix));
             }
+            options.put("ownerDir", ownerPrefix.substring(0, ownerPrefix.length()-1));
         }
         return findCasesService(ruleSet, options, ownerPrefix);
     }
 
     @GET
-    @Path("/{owner}/{ruleSet}/case/")
+    @Path("/{ownerDir}/{ruleSet}/case/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCases2(@PathParam("ruleSet") String ruleSet,@PathParam("owner") String owner, @Context UriInfo ui) throws UnsupportedEncodingException {
+    public Response findCases2(@PathParam("ruleSet") String ruleSet,@PathParam("ownerDir") String ownerDir, @Context UriInfo ui) throws UnsupportedEncodingException {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
@@ -272,21 +288,18 @@ public class OddballRestService extends AbstractRestService {
             ruleSet = options.get("ruleSet");
         }
         for (String key : options.keySet()) {
-            options.put(key, options.get(key).replace("{owner}",owner+"/").replace("{account}",owner+"/"));
+            options.put(key, options.get(key).replace("{owner}",ownerDir+"/").replace("{account}",ownerDir+"/"));
         }
-        options.put("owner", owner);
-        return findCasesService(ruleSet, options, owner+"/");
+        options.put("ownerDir", ownerDir);
+        return findCasesService(ruleSet, options, ownerDir+"/");
     }
 
     public Response findCasesService(String ruleSets, HashMap<String, String> options, String ruleOwnerPrefix){
-        String owner =options.get("account");
-        owner = getOwner(owner);
+        String owner = getOwner(null,options);
         if (owner == null) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
-        if (options.get("owner")==null){
-            options.put("owner", owner);
-        }
+        options.put("owner", owner);
         String query = options.get("query");
         ArrayList<String> cases = new ArrayList<String>();
         String output = "";
@@ -626,7 +639,8 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/bin/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findDistinctBins(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner) {
-        owner = getOwner(owner);
+//        HashMap<String, String> options = decodeOptions(ui);
+        owner = getOwner(owner, new HashMap<String, String>());
         if (owner == null) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
@@ -1179,7 +1193,8 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{owner}/{ruleSet}/dbStats")
     @Produces(MediaType.APPLICATION_JSON)
     public Response showOwnerRuleSetStats(@PathParam("ruleSet") String ruleSet, @PathParam("owner") String owner) {
-        owner = getOwner(owner);
+//        HashMap<String, String> options = decodeOptions(ui);
+        owner = getOwner(owner, new HashMap<String, String>());
         if (owner == null && !authorisationHandler.isAdministrator()) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
@@ -1209,7 +1224,8 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{owner}/dataSources/{resourceName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response showOwnerDataBaseList(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName ){
-        owner = getOwner(owner);
+//        HashMap<String, String> options = decodeOptions(ui);
+        owner = getOwner(owner, new HashMap<String, String>());
         if (owner == null && !authorisationHandler.isAdministrator()) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }

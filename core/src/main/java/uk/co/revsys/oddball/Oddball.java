@@ -527,6 +527,11 @@ public class Oddball {
         ArrayList<String> processedResults = new ArrayList<String>();
         ArrayList<String> interimResults = new ArrayList<String>();
         String processorChain = options.get("processorChain");
+        String ownerDir="";
+        if (options.containsKey("ownerDir")){
+            ownerDir = (String)options.get("ownerDir");
+        }
+            
         try {
             Map chain = JSONUtil.json2map("{\"chain\":" + processorChain + "}");
             ArrayList<Object> chainSteps = (ArrayList<Object>) chain.get("chain");
@@ -534,7 +539,7 @@ public class Oddball {
                 interimResults = new ArrayList<String>();
                 Map<String, String> stepMap = (Map<String, String>) step;
                 for (String key : stepMap.keySet()) {
-                    stepMap.put(key, stepMap.get(key).replace("{owner}", owner + "/").replace("{account}", owner + "/"));
+                    stepMap.put(key, stepMap.get(key).replace("{owner}", ownerDir + "/").replace("{account}", ownerDir + "/"));
                 }
 
                 if (stepMap.get("retriever") != null) {
@@ -617,8 +622,12 @@ public class Oddball {
             if (transformerStr.contains("{ruleSet}")) {
                 return transformerStr.replace("{ruleSet}", ruleSetName);
             }
+            String ownerDir="";
+            if (options.containsKey("ownerDir")){
+                ownerDir = (String)options.get("ownerDir");
+            }
             if (transformerStr.indexOf("{owner}") == 0) {
-                return transformerStr.replace("{owner}", options.get("owner") + "/");
+                return transformerStr.replace("{owner}", ownerDir + "/").replace("{account}", ownerDir + "/");
             }
             return transformerStr;
         } else {
