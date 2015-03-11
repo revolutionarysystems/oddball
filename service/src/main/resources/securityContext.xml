@@ -57,6 +57,7 @@
                 <property name="hashIterations" value="500000"/>
             </bean>
         </property>
+        <property name="authenticationCachingEnabled" value="true"/>
     </bean>
     
     <bean id="accountService" class="uk.co.revsys.user.manager.service.AccountService">
@@ -138,5 +139,7 @@
     </bean>
     
     <bean id="formAuthenticationFilter" class="uk.co.revsys.user.manager.filter.FormAuthenticationFilter"/>
+    
+    <bean id="sessionCreation" class="uk.co.revsys.user.manager.filter.SessionCreationFilter"/>
 
 </beans>
