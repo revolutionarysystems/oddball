@@ -525,13 +525,13 @@ public class RuleSetImpl implements RuleSet {
 //            System.out.println(ruleSetName.replace("/", "-") + "-persist");
             ruleSet.setPersist(new MongoDBHelper(ruleSetName.replace("/", "-") + "-persist", inMemory));
             ArrayList<Map<String, Object>> ensureIndexes = new ArrayList<Map<String, Object>>();
-            LOGGER.debug("Indexes:"+ruleSetMap.get("ensureIndexes"));
+//            LOGGER.debug("Indexes:"+ruleSetMap.get("ensureIndexes"));
             if (ruleSetMap.get("ensureIndexes")!=null){
                 ensureIndexes = (ArrayList<Map<String, Object>>) ruleSetMap.get("ensureIndexes");
             }
             for (Map<String, Object> indexMap : ensureIndexes){
-                System.out.println("Creating Index:"+indexMap.toString());
-                LOGGER.debug("Creating Index:"+indexMap.toString());
+//                System.out.println("Creating Index:"+indexMap.toString());
+//                LOGGER.debug("Creating Index:"+indexMap.toString());
                 ruleSet.getPersist().ensureIndex(indexMap);
             }
             ruleSet.setRuleType(ruleType);
