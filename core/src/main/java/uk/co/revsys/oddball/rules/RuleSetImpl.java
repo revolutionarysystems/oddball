@@ -483,7 +483,7 @@ public class RuleSetImpl implements RuleSet {
         }
     }
 
-    public static RuleSet loadJSONRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException {
+    private static Map<String, Object> loadJSONRuleFile(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException{
         String ruleString = "";
         try {
             Resource resource = new Resource("", ruleSetName);
@@ -498,11 +498,20 @@ public class RuleSetImpl implements RuleSet {
             System.out.println(ruleString);
             try {
                 ruleSetMap = (Map<String, Object>) JSONUtil.json2map(ruleString).get("ruleSet");
+                return ruleSetMap;
             } 
             catch (Exception e){
                 System.out.println(e.toString());
                 throw new RuleSetNotLoadedException("Not valid json");
             }
+        } catch (IOException ex) {
+            throw new RuleSetNotLoadedException(ruleSetName, ex);
+        }
+    }
+    
+    public static RuleSet loadJSONRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException {
+        try {
+            Map<String, Object> ruleSetMap = loadJSONRuleFile(ruleSetName, resourceRepository);
             String forEachIn = null;
             String ruleType = "default";
             String ruleHost = "inMemory";
@@ -520,18 +529,12 @@ public class RuleSetImpl implements RuleSet {
             
             Class<? extends RuleSetImpl> ruleSetClass = new RuleSetMap().get(ruleType);
             RuleSet ruleSet = (RuleSet) ruleSetClass.newInstance();
-//            System.out.println("persistence");
-//            System.out.println(ruleHost);
-//            System.out.println(ruleSetName.replace("/", "-") + "-persist");
             ruleSet.setPersist(new MongoDBHelper(ruleSetName.replace("/", "-") + "-persist", inMemory));
             ArrayList<Map<String, Object>> ensureIndexes = new ArrayList<Map<String, Object>>();
-//            LOGGER.debug("Indexes:"+ruleSetMap.get("ensureIndexes"));
             if (ruleSetMap.get("ensureIndexes")!=null){
                 ensureIndexes = (ArrayList<Map<String, Object>>) ruleSetMap.get("ensureIndexes");
             }
             for (Map<String, Object> indexMap : ensureIndexes){
-//                System.out.println("Creating Index:"+indexMap.toString());
-//                LOGGER.debug("Creating Index:"+indexMap.toString());
                 ruleSet.getPersist().ensureIndex(indexMap);
             }
             ruleSet.setRuleType(ruleType);
@@ -543,8 +546,6 @@ public class RuleSetImpl implements RuleSet {
             ruleSet.loadJSONRules(ruleSetMap, resourceRepository);
             return ruleSet;
 
-        } catch (IOException ex) {
-            throw new RuleSetNotLoadedException(ruleSetName, ex);
         } catch (InstantiationException ex) {
             throw new RuleSetNotLoadedException(ruleSetName, ex);
         } catch (IllegalAccessException ex) {
@@ -557,12 +558,25 @@ public class RuleSetImpl implements RuleSet {
     
     @Override
     public void reloadRules(ResourceRepository resourceRepository) throws RuleSetNotLoadedException {
-        List<String> ruleList = getRuleSet(getName(), resourceRepository);
-        if (ruleList.get(0).contains("$ruleType")) {
-            String rule = ruleList.get(0);
-            ruleList.remove(rule);
+        if (this.getName().contains(".rules")){  // JSON rules
+            try {
+                Map<String, Object> ruleSetMap = loadJSONRuleFile(this.getName(), resourceRepository);
+                loadJSONRules(ruleSetMap, resourceRepository);
+            } 
+            catch (Exception e){
+                System.out.println(e.toString());
+                throw new RuleSetNotLoadedException("Not valid json");
+            }
+            
+        } 
+        else {
+            List<String> ruleList = getRuleSet(getName(), resourceRepository);
+            if (ruleList.get(0).contains("$ruleType")) {
+                String rule = ruleList.get(0);
+                ruleList.remove(rule);
+            }
+            loadRules(ruleList, resourceRepository);
         }
-        loadRules(ruleList, resourceRepository);
     }
 
     /**
