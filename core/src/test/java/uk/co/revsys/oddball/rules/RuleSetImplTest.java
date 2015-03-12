@@ -111,6 +111,16 @@ public class RuleSetImplTest {
         assertFalse(result.getLabel().contains("allas"));
     }
     
+    @Test
+    public void testAssessCaseFromJSONFile() throws Exception {
+        System.out.println("assessCase");
+        Case aCase = new StringCase("abc123");
+        RuleSet instance = RuleSetImpl.loadJSONRuleSet("TestJ.rules", resourceRepository);
+        Opinion result = instance.assessCase(aCase, null, "TestJ.rules", RuleSet.NEVERPERSIST, null, null);
+        System.out.println(result.getEnrichedCase("TestJ.rules", aCase, false));
+        assertTrue(result.getLabel().contains("string"));
+    }
+    
     
     
     @Test

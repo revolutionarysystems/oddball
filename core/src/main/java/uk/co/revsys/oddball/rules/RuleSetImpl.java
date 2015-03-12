@@ -380,7 +380,7 @@ public class RuleSetImpl implements RuleSet {
             for (Map<String, Object> rule : rules){
                 String source = "config";
                 boolean active = true;
-                if (rule.get("active")!=null && ((rule.get("active") instanceof Boolean && rule.get("active").equals(false)) || ((String) rule.get("active")).equals("false"))){
+                if (rule.get("active")!=null && ((rule.get("active") instanceof Boolean && rule.get("active").equals(false)) || (rule.get("active") instanceof String && ((String) rule.get("active")).equals("false")))){
                     active= false;
                 }
                 if (active) {
