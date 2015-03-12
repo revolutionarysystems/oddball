@@ -184,6 +184,9 @@ public class MongoDBHelper {
         if (options.get("caseBefore") != null) {
             addCaseBeforeQuery(query, options.get("caseBefore"));
         }
+        if (options.get("caseInPeriod") != null) {
+            addCaseInPeriodQuery(query, options.get("caseInPeriod"));
+        }
         if (options.get("forEach") != null) {
             addForEachQuery(query, options.get("forEach"), options.get("forEachValue"));
         }
@@ -443,6 +446,30 @@ public class MongoDBHelper {
         } else {
             query.append("case.time", subQuery);
         }
+    }
+
+    private void addCaseInPeriodQuery(BasicDBObject query, String inPeriod) {
+        long startCutoff = 0;
+        long endCutoff = 0;
+        try {
+            String[]limits = inPeriod.split("-");
+            startCutoff = Long.parseLong(limits[0]);
+            endCutoff = Long.parseLong(limits[1]);
+        } catch (java.lang.NumberFormatException e) {
+        }
+        BasicDBObject subQuery = new BasicDBObject("$lt", endCutoff);
+        if (query.containsField("case.startTime")) {
+            ((BasicDBObject) query.get("case.startTime")).append("$lt", endCutoff);
+        } else {
+            query.append("case.startTime", subQuery);
+        }
+        BasicDBObject subQuery2 = new BasicDBObject("$gte", startCutoff);
+        if (query.containsField("case.endTime")) {
+            ((BasicDBObject) query.get("case.endTime")).append("$gte", startCutoff);
+        } else {
+            query.append("case.endTime", subQuery2);
+        }
+        LOGGER.debug(query.toString());
     }
 
     private void addForEachQuery(BasicDBObject query, String forEach, String forEachValue) {

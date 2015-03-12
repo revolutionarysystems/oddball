@@ -657,17 +657,29 @@ public class Oddball {
         distinctOptions.remove("tagger");
         distinctOptions.remove("filter");
         distinctOptions.remove("forEach");
+        distinctOptions.remove("count");
         distinctOptions.remove("processor");
         distinctOptions.remove("processorChain");
         ArrayList<String> allDistinct = new ArrayList<String>();
         allDistinct.addAll(findQueryCases(ruleSetName, query, distinctOptions));
         for (String distinctValue : allDistinct) {
             options.put("forEachValue", distinctValue.replace("\"", ""));
-            cases.addAll(findQueryCases(ruleSetName, query, options));
+            cases.addAll(wrapSimpleValues(distinctValue, findQueryCases(ruleSetName, query, options)));
         }
         return cases;
     }
 
+    private ArrayList<String> wrapSimpleValues(String forValue, Collection<String> results){
+        ArrayList<String> wrapped = new ArrayList<String>();
+        for (String result : results){
+            if (!result.contains("{")){
+                result = "{\"for\":"+forValue+",\"value\":"+result+"}";
+            }
+            wrapped.add(result);
+        }
+        return wrapped;
+    }
+    
     private Collection<String> initialQuery(String owner, String ruleSetNames, String query, Map<String, String> options) throws RuleSetNotLoadedException, UnknownBinException, IOException, DaoException, InvalidTimePeriodException, TransformerNotLoadedException {
         Collection<String> result = new ArrayList<String>();
         if (options.get("retriever").equals("caseRetriever")) {
