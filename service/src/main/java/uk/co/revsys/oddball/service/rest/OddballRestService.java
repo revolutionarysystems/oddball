@@ -254,6 +254,49 @@ public class OddballRestService extends AbstractRestService {
     }
 
     @GET
+    @Path("/{ownerDir}/{ruleSet}/id/{id}/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findOwnerCase(@PathParam("ownerDir") String ownerDir, @PathParam("ruleSet") String ruleSets, @PathParam("id") String id, @QueryParam("account") String owner, @QueryParam("transformer") String transformer, @QueryParam("action") String action) {
+        HashMap<String, String> options = new HashMap<String, String>();
+        owner = getOwner(owner, options);
+        if (owner == null) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        options.put("owner", owner);
+        options.put("transformer", transformer);
+        options.put("ownerDir", ownerDir);
+        ArrayList<String> cases = new ArrayList<String>();
+        try {
+            String[] ruleSetNames = ruleSets.split(",");
+            if (action != null && action.equals("delete")) {
+                for (String ruleSet : ruleSetNames) {
+                    oddball.deleteCaseById(ownerDir+"/"+ruleSet, id, options);
+                }
+            } else {
+                for (String ruleSet : ruleSetNames) {
+                    cases.addAll(oddball.findCaseById(ownerDir+"/"+ruleSet, id, options));
+                }
+            }
+        } catch (RuleSetNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (TransformerNotLoadedException ex) {
+            return buildErrorResponse(ex);
+        } catch (DaoException ex) {
+            return buildErrorResponse(ex);
+        }
+        StringBuilder out = new StringBuilder("[ ");
+        for (String aCase : cases) {
+            out.append(aCase);
+            out.append(", ");
+        }
+        if (out.length() > 2) {
+            out.delete(out.length() - 2, out.length());
+        }
+        out.append("]");
+        return Response.ok(out.toString()).build();
+    }
+
+    @GET
     @Path("/{ruleSet}/case/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findCases(@PathParam("ruleSet") String ruleSet, @Context UriInfo ui) throws UnsupportedEncodingException {

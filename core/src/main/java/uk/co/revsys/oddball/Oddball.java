@@ -759,6 +759,7 @@ public class Oddball {
     }
 
     public Collection<String> findCaseById(String ruleSetName, String id, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, TransformerNotLoadedException {
+        LOGGER.debug("findCaseById:"+ruleSetName);
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.ALL;
         Collection<String> result = ruleSet.getPersist().findCaseById(owner, id);

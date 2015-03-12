@@ -206,7 +206,10 @@ public class MongoDBHelper {
     public Collection<String> findCasesForOwner(String owner, String queryString, Map<String, String> options) throws IOException, DaoException, InvalidTimePeriodException {
         BasicDBObject query = buildQuery(owner, queryString, options);
         ArrayList<String> caseList = new ArrayList<String>();
-        if (options.get("distinct") != null) {
+        if (options.get("count") != null && ((String)options.get("count")).equals("true")) {
+            long foundCount = cases.getDBCollection().count(query);
+            caseList.add(Long.toString(foundCount));
+        } else if (options.get("distinct") != null) {
             long time = new Date().getTime();
             List foundCases = cases.getDBCollection().distinct(options.get("distinct"), query);
             for (Object foundCase : foundCases) {

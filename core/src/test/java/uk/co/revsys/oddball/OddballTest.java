@@ -710,6 +710,33 @@ public class OddballTest {
     }
 
     @Test
+    public void testFindCountQuery() throws Exception {
+        System.out.println("findDistinct");
+        String ruleSetName = "TestMongo.txt";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\"}");
+
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCase(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCase(ruleSetName, null, otherCase);
+        instance.assessCase(ruleSetName, null, theCase);
+        Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", new HashMap<String, String>());
+        for (String aCase : cases0) {
+            System.out.println(aCase);
+        }
+//        Iterable<String> cases = instance.findDistinct(ruleSetName, "case.sessionId", new HashMap<String, String>());
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("count", "true");
+        options.put("owner", "_all");
+        Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
+        for (String aCase : cases) {
+            System.out.println(aCase);
+        }
+        assertTrue(cases.iterator().hasNext());
+        assertEquals("3",cases.iterator().next());
+    }
+
+    @Test
     public void testFindLatestQuery() throws Exception {
         System.out.println("findLatest");
         String ruleSetName = "TestMongo.txt";
