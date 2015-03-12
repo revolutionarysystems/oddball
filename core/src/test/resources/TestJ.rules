@@ -1,0 +1,17 @@
+{
+    "ruleSet": {
+        "tagTypes": [{
+            "rules": [{
+                    "description": "any string",
+                    "ruleString": ".*",
+                    "label": "string",
+                    "active": true
+             },{
+                    "description": "disabled rule",
+                    "ruleString": ".*",
+                    "label": "disabled",
+                    "active": false
+             }]
+        }]
+    }
+}
