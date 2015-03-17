@@ -496,8 +496,8 @@ public class Oddball {
         for (String result : results) {
             MapCase aCase = new MapCase(result);
             int persistOption = RuleSet.NEVERPERSIST;
-            String duplicateQuery = "";
-            String avoidQuery = "";
+            String duplicateQuery = null;
+            String avoidQuery = null;
             if (options.get("persist") != null && options.get("persist").equals("true")) {
                 persistOption = RuleSet.UPDATEPERSIST;
                 if ((options.get("duplicateQuery") != null) && (!options.get("duplicateQuery").equals(""))) {
