@@ -121,7 +121,7 @@ public class OddballTest {
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
-        System.out.println(result.getEnrichedCase(ruleSetName, aCase, false));
+        System.out.println(result.getEnrichedCase(ruleSetName, aCase, false, null));
         assertTrue(result.getLabel().contains("*odDball*"));
         assertFalse(result.getLabel().contains("string"));
         assertFalse(result.getLabel().contains("null"));
@@ -189,7 +189,7 @@ public class OddballTest {
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
-        System.out.println(result.getEnrichedCase(ruleSetName, aCase, false));
+        System.out.println(result.getEnrichedCase(ruleSetName, aCase, false, null));
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("stringType.aString"));
         assertTrue(result.getLabel().contains("anotherType.abc-ish"));
@@ -207,7 +207,7 @@ public class OddballTest {
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
-        System.out.println(result.getEnrichedCase(ruleSetName, aCase, false));
+        System.out.println(result.getEnrichedCase(ruleSetName, aCase, false, null));
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("stringType.aString"));
         assertTrue(result.getLabel().contains("anotherType.whoops!"));
@@ -225,14 +225,14 @@ public class OddballTest {
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
-        System.out.println(result.getEnrichedCase(ruleSetName, aCase, false));
+        System.out.println(result.getEnrichedCase(ruleSetName, aCase, false, null));
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("stringType.aString"));
         assertTrue(result.getLabel().contains("anotherType.abc-ish"));
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("anotherType.alpha"));
         assertFalse(result.getLabel().contains("null"));
-        assertTrue(result.getEnrichedCase(ruleSetName, aCase, false).contains("\"anotherType\" : \"abc-ish,alpha\""));
+        assertTrue(result.getEnrichedCase(ruleSetName, aCase, false, null).contains("\"anotherType\" : \"abc-ish,alpha\""));
     }
 
     @Test
@@ -243,13 +243,13 @@ public class OddballTest {
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
-        System.out.println(result.getEnrichedCase(ruleSetName, aCase, false));
+        System.out.println(result.getEnrichedCase(ruleSetName, aCase, false, null));
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("stringType.aString"));
         assertTrue(result.getLabel().contains("anotherType.abcd-ish"));
         System.out.println(result.getLabel());
         assertFalse(result.getLabel().contains("null"));
-        assertTrue(result.getEnrichedCase(ruleSetName, aCase, false).contains("\"anotherType\" : \"abcd-ish\""));
+        assertTrue(result.getEnrichedCase(ruleSetName, aCase, false, null).contains("\"anotherType\" : \"abcd-ish\""));
     }
 
     /**
@@ -400,8 +400,8 @@ public class OddballTest {
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, null, aCase);
-        System.out.println(result.getEnrichedCase(ruleSetName, aCase, false));
-        Map<String, Object> compare = JSONUtil.json2map(result.getEnrichedCase(ruleSetName, aCase, false));
+        System.out.println(result.getEnrichedCase(ruleSetName, aCase, false, null));
+        Map<String, Object> compare = JSONUtil.json2map(result.getEnrichedCase(ruleSetName, aCase, false, null));
         assertTrue(compare.containsKey("case"));
         assertTrue(compare.containsKey("caseTime"));
         assertTrue(compare.containsKey("tags"));
@@ -508,8 +508,6 @@ public class OddballTest {
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCase(ruleSetName, null, theCase); // should be added
-        instance.assessCase(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"123789\"}", null, null);
-        instance.assessCase(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"237890\"}", null, null);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
@@ -518,7 +516,14 @@ public class OddballTest {
             System.out.println(aCase);
             count++;
         }
-
+        instance.assessCase(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"123789\"}", null, null);
+        instance.assessCase(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"237890\"}", null, null);
+        cases = instance.findQueryCases(ruleSetName, "{ }", options);
+        count = 0;
+        for (String aCase : cases) {
+            System.out.println(aCase);
+            count++;
+        }
         assertTrue(cases.iterator().hasNext());
         assertTrue(count == 2);
     }

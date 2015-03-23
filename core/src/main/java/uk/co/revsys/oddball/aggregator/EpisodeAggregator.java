@@ -26,6 +26,7 @@ public class EpisodeAggregator implements Aggregator {
         ArrayList<Map> response = new ArrayList<Map>();
         long timeOutPeriod = 600000L;
         long timeOutReference = new Date().getTime(); // default is now
+        String descriptionProperty = null;
         String watchList = "";
         if (options.containsKey("watchList")) {
             watchList = options.get("watchList");
@@ -44,11 +45,12 @@ public class EpisodeAggregator implements Aggregator {
                 System.out.println("Invalid time period");
                 System.out.println(options.get("timeOutReference"));
             }
-            System.out.println("timeOutReference");    
-            System.out.println(timeOutReference);    
+        }
+        if (options.containsKey("descriptionProperty")) {
+            descriptionProperty = options.get("descriptionProperty");
         }
         try {
-            for (Episode ep : aggregateEvents(caseStrings, timeOutPeriod, timeOutReference, watchList)) {
+            for (Episode ep : aggregateEvents(caseStrings, timeOutPeriod, timeOutReference, watchList, descriptionProperty)) {
                 response.add(ep.asMap());
             }
         } catch (EventNotCreatedException e) {
@@ -57,7 +59,7 @@ public class EpisodeAggregator implements Aggregator {
         return response;
     }
 
-    public ArrayList<Episode> aggregateEvents(Iterable<String> eventStrings, long timeOutPeriod, long timeOutReference, String watchList) throws EventNotCreatedException {
+    public ArrayList<Episode> aggregateEvents(Iterable<String> eventStrings, long timeOutPeriod, long timeOutReference, String watchList, String descriptionProperty) throws EventNotCreatedException {
         ArrayList<Event> eventList = new ArrayList<Event>();
         for (String eventString : eventStrings) {
             try {
@@ -87,7 +89,7 @@ public class EpisodeAggregator implements Aggregator {
                     currentEpisode.recordInterval(previousEventTime, event.getEventTime(), event.getTagTime());
                 }
             }
-            currentEpisode.recordState(event.getState(), event.getCode(), event.getEventTime(), event.getTagTime(), event.getCaseMap());
+            currentEpisode.recordState(event.getState(), event.getCode(), event.getEventTime(), event.getTagTime(), event.getCaseMap(), descriptionProperty);
             previousEventTime = event.getEventTime();
             previousTagTime = event.getTagTime();
         }

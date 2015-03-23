@@ -61,4 +61,6 @@ public class MapCase implements Case{
     public String toString(){
         return "Case-"+content;
     }
+
+
 }

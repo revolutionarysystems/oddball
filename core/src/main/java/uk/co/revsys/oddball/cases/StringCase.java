@@ -42,4 +42,6 @@ public class StringCase implements Case{
     public String toString(){
         return "Case-"+content;
     }
+
+
 }

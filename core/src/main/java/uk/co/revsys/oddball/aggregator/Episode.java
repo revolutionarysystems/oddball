@@ -37,10 +37,13 @@ public class Episode {
         }
     }
 
-    public void recordState(String state, String code, long thisTime, long thisTagTime, Map<String, Object> caseMap) {
+    public void recordState(String state, String code, long thisTime, long thisTagTime, Map<String, Object> caseMap, String descriptionProperty) {
 //    public void recordState(String state, String code, long thisTime, long thisTagTime) {
         this.states.add(state);
         Map<String, Object> signal = new HashMap<String, Object>();
+        if (descriptionProperty!=null){
+            signal.put("description", new OddUtil().getDeepProperty(caseMap, descriptionProperty));
+        }
         signal.put("state", state);
         signal.put("id", caseMap.get("_id"));
         signal.put("time", thisTime);

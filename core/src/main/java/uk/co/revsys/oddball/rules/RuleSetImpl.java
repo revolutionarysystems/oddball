@@ -141,6 +141,9 @@ public class RuleSetImpl implements RuleSet {
 
         } else { // single case
             for (Rule rule : rules) {
+//                LOGGER.debug(rule.getRuleString());
+//                LOGGER.debug(rule.getLabel());
+//                LOGGER.debug(rule.asJSON());
                 Assessment as = rule.apply(aCase, this, key);
 //                try{
 //                    LOGGER.debug("assessing:"+rule.asJSON().toString());
@@ -191,7 +194,7 @@ public class RuleSetImpl implements RuleSet {
                 op.getTags().clear();
             } else {
                 if (persistOption != NEVERPERSIST) {
-                    String persistCase = op.getEnrichedCase(ruleSetStr, aCase, true);
+                    String persistCase = op.getEnrichedCase(ruleSetStr, aCase, true, null);
                     String caseAvoidQuery = null;
                     if (avoidQuery != null) {
                         caseAvoidQuery = new OddUtil().replacePlaceholders(avoidQuery, (Map<String, Object>) aCase.getContentObject());
@@ -203,8 +206,8 @@ public class RuleSetImpl implements RuleSet {
                                 caseDuplicateQuery = new OddUtil().replacePlaceholders(duplicateQuery, (Map<String, Object>) aCase.getContentObject());
                             }
                             String id = getPersist().checkAlreadyExists(caseDuplicateQuery);
-                            if (!persistCase.contains("_id")) {
-                                persistCase = persistCase.substring(0, persistCase.lastIndexOf("}")) + ", \"_id\":\"" + id + "\" }";
+                            if (id!=null){
+                                persistCase=op.getEnrichedCase(ruleSetStr, aCase, false, id);
                             }
                             while (id != null) {
                                 getPersist().removeCase(id);
@@ -416,7 +419,7 @@ public class RuleSetImpl implements RuleSet {
             List<String> rules = new ArrayList<String>();
             boolean rulesetFound = false;
             for (Resource resource : resources) {
-                if ((resource.getName().equals(ruleSetName)) || (resource.getName().indexOf(ruleSetName + ".") == 0) && (!resource.getName().contains(".json"))) {
+                if ((resource.getName().equals(ruleSetName)) || (resource.getName().indexOf(ruleSetName + ".") == 0) && (!resource.getName().contains(".json"))&& (!resource.getName().contains(".xform"))&& (!resource.getName().contains(".rules"))) {
 //                if ((resource.getName().indexOf(ruleSetName)==0) &&(resource.getName().indexOf(".json")==-1)){
                     rulesetFound = true;
 //                    Resource resource = new Resource("", ruleSetName);

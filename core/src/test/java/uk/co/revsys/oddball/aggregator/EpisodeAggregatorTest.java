@@ -8,10 +8,14 @@ package uk.co.revsys.oddball.aggregator;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
@@ -57,7 +61,7 @@ public class EpisodeAggregatorTest{
                 + "\"tagTime\": \"1409579263300\","
                 + "\"state\": \"Quit\"}");
         EpisodeAggregator ea = new EpisodeAggregator();
-        List<Episode> episodes = ea.aggregateEvents(events, 30000, 1409579264000L, "");
+        List<Episode> episodes = ea.aggregateEvents(events, 30000, 1409579264000L, "", null);
         assertTrue(episodes.size()==1);
         Episode ep = episodes.get(0);
         assertEquals("A0B0C", ep.getStateCodes());
@@ -71,7 +75,7 @@ public class EpisodeAggregatorTest{
         assertTrue(300L==ep.getDuration());
         assertTrue(ep.isOpen());
         System.out.println(ep.asMap());
-        List<Episode> episodes2 = ea.aggregateEvents(events, 30000, 1409589263988L, "");
+        List<Episode> episodes2 = ea.aggregateEvents(events, 30000, 1409589263988L, "", null);
         assertTrue(episodes2.size()==1);
         Episode ep2 = episodes2.get(0);
         assertEquals("A0B0CX", ep2.getStateCodes());
@@ -79,7 +83,7 @@ public class EpisodeAggregatorTest{
         assertTrue(300L==ep2.getDuration());
         assertFalse(ep2.isOpen());
         System.out.println(ep2.asMap());
-        List<Episode> episodes3 = ea.aggregateEvents(events, 150, 1409589263988L, "");
+        List<Episode> episodes3 = ea.aggregateEvents(events, 150, 1409589263988L, "", null);
         assertTrue(episodes3.size()==2);
         Episode ep3a = episodes3.get(0);
         assertEquals("A0BX", ep3a.getStateCodes());
@@ -124,7 +128,7 @@ public class EpisodeAggregatorTest{
                 + "\"tagTime\": \"1409579263300\","
                 + "\"state\": \"Quit\"}");
         EpisodeAggregator ea = new EpisodeAggregator();
-        List<Episode> episodes = ea.aggregateEvents(events, 30000, 1409579264000L, "place");
+        List<Episode> episodes = ea.aggregateEvents(events, 30000, 1409579264000L, "place", null);
         assertTrue(episodes.size()==1);
         Episode ep = episodes.get(0);
         assertEquals("A0B0C", ep.getStateCodes());
@@ -138,7 +142,7 @@ public class EpisodeAggregatorTest{
         assertTrue(300L==ep.getDuration());
         assertTrue(ep.isOpen());
         System.out.println(ep.asMap());
-        List<Episode> episodes2 = ea.aggregateEvents(events, 30000, 1409589263988L,"place");
+        List<Episode> episodes2 = ea.aggregateEvents(events, 30000, 1409589263988L,"place", "href");
         assertTrue(episodes2.size()==1);
         Episode ep2 = episodes2.get(0);
         assertEquals("A0B0CX", ep2.getStateCodes());
@@ -146,10 +150,11 @@ public class EpisodeAggregatorTest{
         assertTrue(300L==ep2.getDuration());
         assertFalse(ep2.isOpen());
         System.out.println(ep2.asMap());
+        assertEquals("http://www.revolutionarysystems.co.uk/", ((Map)((List)ep2.asMap().get("signals")).get(0)).get("description"));
         assertEquals("[paris, lyon, lyon]",(new OddUtil().getDeepProperty(ep2.asMap(), "watches.place")).toString());
         assertEquals("paris",(new OddUtil().getDeepProperty(ep2.asMap(), "watchValues.place")).toString());
         assertEquals("{valueChanged-place={1=paris,lyon}}",(new OddUtil().getDeepProperty(ep2.asMap(), "alerts")).toString());
-        List<Episode> episodes3 = ea.aggregateEvents(events, 150, 1409589263988L, "place");
+        List<Episode> episodes3 = ea.aggregateEvents(events, 150, 1409589263988L, "place", null);
         assertTrue(episodes3.size()==2);
         Episode ep3a = episodes3.get(0);
         assertEquals("A0BX", ep3a.getStateCodes());

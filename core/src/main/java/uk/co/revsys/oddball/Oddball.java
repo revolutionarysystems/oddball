@@ -510,7 +510,7 @@ public class Oddball {
 //    public Opinion assessCase(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException {
             Opinion caseOp = this.assessCase(ruleSetName, incomingXform, aCase, persistOption, duplicateQuery, avoidQuery, null);
 //            Opinion caseOp = ruleSet.assessCase(aCase, incomingXform, ruleSetName, persistOption, duplicateQuery);
-            taggedResults.add(caseOp.getEnrichedCase(ruleSetName, aCase, true));
+            taggedResults.add(caseOp.getEnrichedCase(ruleSetName, aCase, true, null));
         }
         return taggedResults;
     }

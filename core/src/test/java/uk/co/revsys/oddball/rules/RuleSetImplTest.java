@@ -75,8 +75,8 @@ public class RuleSetImplTest {
         Opinion result = instance.assessCase(aCase, null, "Test", RuleSet.ALWAYSPERSIST, null, null);
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("aString"));
-        System.out.println(result.getEnrichedCase("Test", aCase, false));
-        assertTrue(result.getEnrichedCase("Test", aCase, false).contains("Test"));
+        System.out.println(result.getEnrichedCase("Test", aCase, false, null));
+        assertTrue(result.getEnrichedCase("Test", aCase, false, null).contains("Test"));
     }
 
     /**
@@ -105,7 +105,7 @@ public class RuleSetImplTest {
         Case aCase = new StringCase("abc123");
         RuleSet instance = RuleSetImpl.loadRuleSet("Test1", resourceRepository);
         Opinion result = instance.assessCase(aCase, null, "Test1", RuleSet.NEVERPERSIST, null, null);
-        System.out.println(result.getEnrichedCase("Test1", aCase, false));
+        System.out.println(result.getEnrichedCase("Test1", aCase, false, null));
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("aString"));
         assertFalse(result.getLabel().contains("allas"));
@@ -117,7 +117,7 @@ public class RuleSetImplTest {
         Case aCase = new StringCase("abc123");
         RuleSet instance = RuleSetImpl.loadJSONRuleSet("TestJ.rules", resourceRepository);
         Opinion result = instance.assessCase(aCase, null, "TestJ.rules", RuleSet.NEVERPERSIST, null, null);
-        System.out.println(result.getEnrichedCase("TestJ.rules", aCase, false));
+        System.out.println(result.getEnrichedCase("TestJ.rules", aCase, false, null));
         assertTrue(result.getLabel().contains("string"));
     }
     
@@ -130,7 +130,7 @@ public class RuleSetImplTest {
         //RuleSetImpl instance = new RuleSetImpl("Test1burst", true, "", 0);
         RuleSet instance = RuleSetImpl.loadRuleSet("Test1burst", resourceRepository);
         Opinion result = instance.assessCase(aCase, null, "Test", RuleSet.NEVERPERSIST, null, null);
-        System.out.println(result.getEnrichedCase("Test", aCase, false));
+        System.out.println(result.getEnrichedCase("Test", aCase, false, null));
         assertTrue(result.getLabel().contains("Libraries"));
         assertTrue(result.getLabel().contains("Wonderbar"));
     }

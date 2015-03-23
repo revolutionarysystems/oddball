@@ -115,7 +115,7 @@ public class OpinionImpl implements Opinion{
     }
 
     @Override
-    public String getEnrichedCase(String ruleSet, Case aCase, boolean generateUid) {
+    public String getEnrichedCase(String ruleSet, Case aCase, boolean generateUid, String forcedUid) {
         String tags = getLabel();
         String caseStr = aCase.getJSONisedContent();
         if (assessTime==0){
@@ -156,6 +156,10 @@ public class OpinionImpl implements Opinion{
         if (generateUid){
             String uid = UUID.randomUUID().toString();
             enrichedCase.append("\"_id\" : \"" + uid + "\", ");
+        } else {
+            if (forcedUid!=null){
+                enrichedCase.append("\"_id\" : \"" + forcedUid + "\", ");
+            }
         }
         String propStr = derivedProperties();
         enrichedCase.append(propStr.substring(1, propStr.length() - 1));
