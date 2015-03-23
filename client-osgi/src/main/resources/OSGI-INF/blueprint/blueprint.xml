@@ -10,7 +10,7 @@
 
     <cm:property-placeholder id="blueprint.placeholder" persistent-id="service_oddball" />
     
-    <camelContext xmlns="http://camel.apache.org/schema/blueprint">
+    <camelContext id="oddballService" xmlns="http://camel.apache.org/schema/blueprint">
 
         <route>
             <from uri="direct-vm://esb.service.oddball.proxy"/>
@@ -30,5 +30,18 @@
         </route>
         
     </camelContext>
+    
+    <bean id="http" class="org.apache.camel.component.http.HttpComponent">
+        <property name="camelContext" ref="oddballService"/>
+        <property name="httpConnectionManager" ref="myHttpConnectionManager"/>
+    </bean>
+
+    <bean id="myHttpConnectionManager" class="org.apache.commons.httpclient.MultiThreadedHttpConnectionManager">
+        <property name="params" ref="myHttpConnectionManagerParams"/>
+    </bean>
+
+    <bean id="myHttpConnectionManagerParams" class="org.apache.commons.httpclient.params.HttpConnectionManagerParams">
+        <property name="defaultMaxConnectionsPerHost" value="${service.maxConnections}"/>
+    </bean>
 
 </blueprint>
