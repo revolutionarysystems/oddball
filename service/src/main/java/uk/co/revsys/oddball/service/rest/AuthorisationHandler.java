@@ -4,4 +4,6 @@ public interface AuthorisationHandler {
 
     public boolean isAdministrator();
     
+    public boolean isAccountOwner(String accountId);
+    
 }

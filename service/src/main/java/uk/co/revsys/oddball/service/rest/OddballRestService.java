@@ -795,7 +795,7 @@ public class OddballRestService extends AbstractRestService {
         if (owner!=null){
             ruleSet=owner+"/"+ruleSet;
         }
-        if (!authorisationHandler.isAdministrator()) {
+        if (!authorisationHandler.isAdministrator() && !authorisationHandler.isAccountOwner(owner)) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         try {
@@ -1125,7 +1125,7 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{owner}/resource/{resourceName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response showConfig(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName ){
-        if (!authorisationHandler.isAdministrator()) {
+        if (!authorisationHandler.isAdministrator() && !authorisationHandler.isAccountOwner(owner)) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         HashMap<String, String> options = new HashMap<String, String>();
@@ -1145,7 +1145,7 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{owner}/resources/{resourceName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response showConfigList(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName ){
-        if (!authorisationHandler.isAdministrator()) {
+        if (!authorisationHandler.isAdministrator() && !authorisationHandler.isAccountOwner(owner)) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         HashMap<String, String> options = new HashMap<String, String>();
@@ -1164,7 +1164,7 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{owner}/resource/{resourceName}/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response uploadOwnerConfig(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName, @QueryParam("resource") String resourceString ){
-        if (!authorisationHandler.isAdministrator()) {
+        if (!authorisationHandler.isAdministrator() && !authorisationHandler.isAccountOwner(owner)) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         HashMap<String, String> options = new HashMap<String, String>();

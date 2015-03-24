@@ -45,6 +45,7 @@
     
     <bean id="defaultAuthorisationHandler" class="uk.co.revsys.oddball.service.rest.AuthorisationHandlerImpl">
         <constructor-arg index="0" value="${security.administrator.role}"/>
+        <constructor-arg index="1" value="${security.account.owner.role}"/>
     </bean>
 
 </beans>

@@ -7,4 +7,9 @@ public class AllowAllAuthorisationHandler implements AuthorisationHandler{
         return true;
     }
 
+    @Override
+    public boolean isAccountOwner(String accountId) {
+        return true;
+    }
+
 }
