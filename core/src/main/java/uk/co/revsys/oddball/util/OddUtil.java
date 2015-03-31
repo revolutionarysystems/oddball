@@ -78,12 +78,9 @@ public class OddUtil {
     }
     
     public String replacePlaceholders(String templateString, Map<String, Object> aCase){
-//        LOGGER.debug(aCase.toString());
-//        LOGGER.debug(templateString);
         while (templateString.substring(1).indexOf("<")>=0){
             templateString=replacePlaceholder(templateString, aCase);
         }
-//        LOGGER.debug(templateString);
         return templateString;
     }
 

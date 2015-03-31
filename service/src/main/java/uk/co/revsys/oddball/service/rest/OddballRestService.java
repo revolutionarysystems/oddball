@@ -3,8 +3,11 @@ package uk.co.revsys.oddball.service.rest;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -40,6 +43,7 @@ import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.rules.RuleSetNotLoadedException;
 import uk.co.revsys.oddball.util.InvalidTimePeriodException;
 import uk.co.revsys.oddball.util.JSONUtil;
+import uk.co.revsys.oddball.util.OddUtil;
 import uk.co.revsys.user.manager.model.User;
 
 @Path("/")
@@ -112,7 +116,19 @@ public class OddballRestService extends AbstractRestService {
         return options;
     }
 
-    
+    private String assembleFromList(Collection<String> cases){
+        StringBuilder out = new StringBuilder("[ ");
+        for (String aCase : cases) {
+            out.append(aCase);
+            out.append(", ");
+        }
+        if (out.length() > 2) {
+            out.delete(out.length() - 2, out.length());
+        }
+        out.append("]");
+        return out.toString();
+    }
+
     public OddballRestService(Oddball oddball, AuthorisationHandler authorisationHandler) {
         LOGGER.debug("Initialising");
         this.oddball = oddball;
@@ -140,7 +156,8 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ruleSet}")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response applyRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("ruleSet") String altRuleSet, @QueryParam("case") String caseStr, @QueryParam("inboundTransformer") String inboundTransformer, @QueryParam("persist") String persist, @QueryParam("duplicateRule") String duplicateRule, @QueryParam("avoidRule") String avoidRule, @QueryParam("ensureIndexes") String ensureIndexes) throws IOException {
+    public Response applyRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("ruleSet") String altRuleSet, @QueryParam("case") String caseStr, @QueryParam("inboundTransformer") String inboundTransformer, @QueryParam("persist") String persist, @QueryParam("duplicateRule") String duplicateRule, @QueryParam("avoidRule") String avoidRule, @QueryParam("ensureIndexes") String ensureIndexes, @Context UriInfo ui) throws IOException {
+        HashMap<String, String> options = decodeOptions(ui);
         if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = altRuleSet;
         }
@@ -157,27 +174,50 @@ public class OddballRestService extends AbstractRestService {
         if (caseStr == null) {
             return Response.ok(ruleSet).build();
         } else {
-            Opinion op;
+            Collection<String> assessment;
             try {
-                op = oddball.assessCase(ruleSet, inboundTransformer, new StringCase(caseStr), persistOption, duplicateRule, null, null);
+                assessment = oddball.assessCase(ruleSet, inboundTransformer, new StringCase(caseStr), persistOption, duplicateRule, null, options);
             } catch (RuleSetNotLoadedException ex) {
                 return buildErrorResponse(ex);
             } catch (TransformerNotLoadedException ex) {
                 return buildErrorResponse(ex);
             } catch (InvalidCaseException ex) {
                 return buildErrorResponse(ex);
+            } catch (ComparisonException ex) {
+                return buildErrorResponse(ex);
+            } catch (InvalidTimePeriodException ex) {
+                return buildErrorResponse(ex);
+            } catch (UnknownBinException ex) {
+                return buildErrorResponse(ex);
+            } catch (DaoException ex) {
+                return buildErrorResponse(ex);
+            } catch (AggregationException ex) {
+                return buildErrorResponse(ex);
+            } catch (ProcessorNotLoadedException ex) {
+                return buildErrorResponse(ex);
+            } catch (FilterException ex) {
+                return buildErrorResponse(ex);
+            } catch (IdentificationSchemeNotLoadedException ex) {
+                return buildErrorResponse(ex);
             }
-            String enrichedCase = op.getEnrichedCase(ruleSet, caseStr);
-            enrichedCase = enrichedCase.replace("\\\"", "\"");
-            RESULTSLOGGER.info(enrichedCase);
-            return buildResponse(enrichedCase);
+            if (assessment.size()==1&&!options.containsKey("processor")){
+                RESULTSLOGGER.info(assessment.iterator().next());
+                return buildResponse(assessment.iterator().next());
+            } else {
+                return Response.ok(assembleFromList(assessment)).build();
+            }
         }
     }
 
     @GET
-    @Path("/{owner}/{ruleSet}")
+    @Path("/{ownerDir}/{ruleSet}")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response applyOwnerRuleSet(@PathParam("owner") String owner, @PathParam("ruleSet") String ruleSet, @QueryParam("ruleSet") String altRuleSet, @QueryParam("case") String caseStr, @QueryParam("inboundTransformer") String inboundTransformer, @QueryParam("persist") String persist, @QueryParam("duplicateRule") String duplicateRule, @QueryParam("avoidRule") String avoidRule, @QueryParam("ensureIndexes") String ensureIndexes) throws IOException {
+    public Response applyOwnerRuleSet(@PathParam("ownerDir") String ownerDir, @PathParam("ruleSet") String ruleSet, @QueryParam("ruleSet") String altRuleSet, @QueryParam("case") String caseStr, @QueryParam("inboundTransformer") String inboundTransformer, @QueryParam("persist") String persist, @QueryParam("duplicateRule") String duplicateRule, @QueryParam("avoidRule") String avoidRule, @QueryParam("ensureIndexes") String ensureIndexes, @Context UriInfo ui) throws IOException {
+        HashMap<String, String> options = decodeOptions(ui);
+        for (String key : options.keySet()) {
+            options.put(key, options.get(key).replace("{owner}",ownerDir+"/").replace("{account}",ownerDir+"/"));
+        }
+        options.put("ownerDir", ownerDir);
         if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = altRuleSet;
         }
@@ -194,20 +234,38 @@ public class OddballRestService extends AbstractRestService {
         if (caseStr == null) {
             return Response.ok(ruleSet).build();
         } else {
-            Opinion op;
+            Collection<String> assessment;
             try {
-                op = oddball.assessCase(owner+"/"+ruleSet, inboundTransformer, new StringCase(caseStr), persistOption, duplicateRule, null, null);
+                assessment = oddball.assessCase(ownerDir+"/"+ruleSet, inboundTransformer, new StringCase(caseStr), persistOption, duplicateRule, null, options);
             } catch (RuleSetNotLoadedException ex) {
                 return buildErrorResponse(ex);
             } catch (TransformerNotLoadedException ex) {
                 return buildErrorResponse(ex);
             } catch (InvalidCaseException ex) {
                 return buildErrorResponse(ex);
+            } catch (ComparisonException ex) {
+                return buildErrorResponse(ex);
+            } catch (InvalidTimePeriodException ex) {
+                return buildErrorResponse(ex);
+            } catch (UnknownBinException ex) {
+                return buildErrorResponse(ex);
+            } catch (DaoException ex) {
+                return buildErrorResponse(ex);
+            } catch (AggregationException ex) {
+                return buildErrorResponse(ex);
+            } catch (ProcessorNotLoadedException ex) {
+                return buildErrorResponse(ex);
+            } catch (FilterException ex) {
+                return buildErrorResponse(ex);
+            } catch (IdentificationSchemeNotLoadedException ex) {
+                return buildErrorResponse(ex);
             }
-            String enrichedCase = op.getEnrichedCase(ruleSet, caseStr);
-            enrichedCase = enrichedCase.replace("\\\"", "\"");
-            RESULTSLOGGER.info(enrichedCase);
-            return buildResponse(enrichedCase);
+            if (assessment.size()==1&&!options.containsKey("processor")){
+                RESULTSLOGGER.info(assessment.iterator().next());
+                return buildResponse(assessment.iterator().next());
+            } else {
+                return Response.ok(assembleFromList(assessment)).build();
+            }
         }
     }
 
@@ -241,16 +299,16 @@ public class OddballRestService extends AbstractRestService {
         } catch (DaoException ex) {
             return buildErrorResponse(ex);
         }
-        StringBuilder out = new StringBuilder("[ ");
-        for (String aCase : cases) {
-            out.append(aCase);
-            out.append(", ");
-        }
-        if (out.length() > 2) {
-            out.delete(out.length() - 2, out.length());
-        }
-        out.append("]");
-        return Response.ok(out.toString()).build();
+//        StringBuilder out = new StringBuilder("[ ");
+//        for (String aCase : cases) {
+//            out.append(aCase);
+//            out.append(", ");
+//        }
+//        if (out.length() > 2) {
+//            out.delete(out.length() - 2, out.length());
+//        }
+//        out.append("]");
+        return Response.ok(assembleFromList(cases)).build();
     }
 
     @GET

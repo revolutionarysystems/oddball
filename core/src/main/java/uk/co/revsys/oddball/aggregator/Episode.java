@@ -303,6 +303,14 @@ public class Episode {
         }
     }
     
+    private String finalValue(ArrayList<String> input){
+        if (input.size()>0){
+            return input.get(input.size()-1);
+        } else {
+            return null;
+        }
+    }
+    
     public Map<String, Object> asMap() {
         Map<String, Object> episodeMap = new HashMap<String, Object>();
         episodeMap.put("owner", owner);
@@ -331,7 +339,7 @@ public class Episode {
             watches.put(watchProperty, condense(watches.get(watchProperty)));
         }
         for (String watchProperty: watches.keySet()){
-            watchValues.put(watchProperty, initial(watches.get(watchProperty)));
+            watchValues.put(watchProperty, finalValue(watches.get(watchProperty)));
         }
         episodeMap.put("watches", watches);
         episodeMap.put("watchValues", watchValues);

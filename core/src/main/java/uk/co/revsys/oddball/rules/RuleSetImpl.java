@@ -419,7 +419,7 @@ public class RuleSetImpl implements RuleSet {
             List<String> rules = new ArrayList<String>();
             boolean rulesetFound = false;
             for (Resource resource : resources) {
-                if ((resource.getName().equals(ruleSetName)) || (resource.getName().indexOf(ruleSetName + ".") == 0) && (!resource.getName().contains(".json"))&& (!resource.getName().contains(".xform"))&& (!resource.getName().contains(".rules"))) {
+                if ((resource.getName().equals(ruleSetName)) || ((resource.getName().indexOf(ruleSetName + ".") == 0) && (!resource.getName().contains(".json"))&& (!resource.getName().contains(".xform")))) {
 //                if ((resource.getName().indexOf(ruleSetName)==0) &&(resource.getName().indexOf(".json")==-1)){
                     rulesetFound = true;
 //                    Resource resource = new Resource("", ruleSetName);
@@ -428,11 +428,11 @@ public class RuleSetImpl implements RuleSet {
                 }
             }
             if (!rulesetFound) {
-                throw new RuleSetNotLoadedException(ruleSetName);
+                throw new RuleSetNotLoadedException(path+"/"+ruleSetName);
             }
             return rules;
         } catch (IOException ex) {
-            throw new RuleSetNotLoadedException(ruleSetName, ex);
+            throw new RuleSetNotLoadedException(path+"/"+ruleSetName, ex);
         }
     }
 

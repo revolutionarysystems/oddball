@@ -59,7 +59,7 @@ public class MapCase implements Case{
     
     @Override
     public String toString(){
-        return "Case-"+content;
+        return content;
     }
 
 

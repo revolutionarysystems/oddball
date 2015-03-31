@@ -4,6 +4,7 @@
 			"userId": "{{$.case.userId}}",
 			"sessionId": "{{$.case.sessionId}}",
 			"accountId": "{{$.case.accountId}}",
+                        "browser": "{{$.case.browser}}",
 			"time": "{{$.timestamp}}",
 			"tagTime": "{{$.timestamp}}",
 			"type": "Test",

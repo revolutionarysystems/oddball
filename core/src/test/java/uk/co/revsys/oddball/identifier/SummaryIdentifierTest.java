@@ -118,7 +118,7 @@ public class SummaryIdentifierTest{
         String ruleSetName="TestIdentifier.txt";
         for (String signal:signals){
             Case aCase = new MapCase(signal);
-            Opinion result = instance.assessCase(ruleSetName, null, aCase);
+            Collection<String> result = instance.assessCase(ruleSetName, null, aCase);
             System.out.println("Added");
             System.out.println(result);
             
@@ -216,7 +216,7 @@ public class SummaryIdentifierTest{
         String ruleSetName="TestIdentifier.txt";
         for (String signal:signals){
             Case aCase = new MapCase(signal);
-            Opinion result = instance.assessCase(ruleSetName, null, aCase);
+            Collection<String> result = instance.assessCase(ruleSetName, null, aCase);
             System.out.println("Added");
             System.out.println(result);
             

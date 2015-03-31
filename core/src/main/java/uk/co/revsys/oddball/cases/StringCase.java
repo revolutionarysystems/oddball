@@ -40,7 +40,7 @@ public class StringCase implements Case{
     
     @Override
     public String toString(){
-        return "Case-"+content;
+        return content;
     }
 
 

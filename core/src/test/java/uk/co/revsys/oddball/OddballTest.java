@@ -74,7 +74,7 @@ public class OddballTest {
         String ruleSetName = "Test1.txt";
         Case aCase = new StringCase("abc123");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("aString"));
         assertTrue(result.getLabel().contains("abc-ish"));
@@ -87,7 +87,7 @@ public class OddballTest {
         String ruleSetName = "testCo/Test1.txt";
         Case aCase = new StringCase("abc123");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("aString"));
         assertTrue(result.getLabel().contains("abc-ish"));
@@ -103,7 +103,7 @@ public class OddballTest {
 //        String ruleSetName = "Test1persist";
 //        Case aCase = new StringCase("abc123");
 //        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-//        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+//        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
 //        assertTrue(result.getLabel().contains("string"));
 //        assertTrue(result.getLabel().contains("aString"));
 //        assertTrue(result.getLabel().contains("abc-ish"));
@@ -119,7 +119,7 @@ public class OddballTest {
         String ruleSetName = "Test2.txt";
         Case aCase = new StringCase("b-side");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         System.out.println(result.getEnrichedCase(ruleSetName, aCase, false, null));
         assertTrue(result.getLabel().contains("*odDball*"));
@@ -136,7 +136,7 @@ public class OddballTest {
         String ruleSetName = "Test2.txt";
         Case aCase = new StringCase("b-side");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println("#rules");
         System.out.println(instance.ruleSets.get(ruleSetName).getAllRules().size());
         System.out.println(result.getLabel());
@@ -146,7 +146,7 @@ public class OddballTest {
         instance.addExtraRule(ruleSetName, "", "b-rule", "b-.*", "added");
         System.out.println("#rules");
         System.out.println(instance.ruleSets.get(ruleSetName).getAllRules().size());
-        result = instance.assessCase(ruleSetName, null, aCase);
+        result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         assertFalse(result.getLabel().contains("*odDball*"));
         assertTrue(result.getLabel().contains("b-rule"));
@@ -161,7 +161,7 @@ public class OddballTest {
         String ruleSetName = "Test2.txt";
         Case aCase = new StringCase("b-side");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println("#rules");
         System.out.println(instance.ruleSets.get(ruleSetName).getAllRules().size());
         System.out.println(result.getLabel());
@@ -171,7 +171,7 @@ public class OddballTest {
         instance.addExtraRule(ruleSetName, "", "*ignore*", "b-.*", "added");
         System.out.println("#rules");
         System.out.println(instance.ruleSets.get(ruleSetName).getAllRules().size());
-        result = instance.assessCase(ruleSetName, null, aCase);
+        result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         assertFalse(result.getLabel().contains("*odDball*"));
         assertFalse(result.getLabel().contains("*ignore*"));
@@ -187,7 +187,7 @@ public class OddballTest {
         String ruleSetName = "Test3.txt";
         Case aCase = new StringCase("abc123");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         System.out.println(result.getEnrichedCase(ruleSetName, aCase, false, null));
         assertTrue(result.getLabel().contains("string"));
@@ -205,7 +205,7 @@ public class OddballTest {
         String ruleSetName = "Test3b.txt";
         Case aCase = new StringCase("abx123");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         System.out.println(result.getEnrichedCase(ruleSetName, aCase, false, null));
         assertTrue(result.getLabel().contains("string"));
@@ -223,7 +223,7 @@ public class OddballTest {
         String ruleSetName = "Test3a.txt";
         Case aCase = new StringCase("abc123");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         System.out.println(result.getEnrichedCase(ruleSetName, aCase, false, null));
         assertTrue(result.getLabel().contains("string"));
@@ -241,7 +241,7 @@ public class OddballTest {
         String ruleSetName = "Test3c.txt";
         Case aCase = new StringCase("abcd123");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         System.out.println(result.getEnrichedCase(ruleSetName, aCase, false, null));
         assertTrue(result.getLabel().contains("string"));
@@ -261,7 +261,7 @@ public class OddballTest {
         String ruleSetName = "Test3.txt";
         Case aCase = new StringCase("b-side");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("string"));
         assertFalse(result.getLabel().contains("other.string"));
@@ -278,14 +278,14 @@ public class OddballTest {
         String ruleSetName = "Test3.txt";
         Case aCase = new StringCase("b-side");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("string"));
         assertFalse(result.getLabel().contains("other.string"));
         assertTrue(result.getLabel().contains("anotherType.odDball"));
         assertFalse(result.getLabel().contains("null"));
         instance.addExtraRule(ruleSetName, "anotherType.", "b-rule", "b-.*", "added");
-        result = instance.assessCase(ruleSetName, null, aCase);
+        result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("string"));
         assertFalse(result.getLabel().contains("other.string"));
@@ -304,7 +304,7 @@ public class OddballTest {
         Case aCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"windows\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         assertTrue(result.getLabel().contains("ruleC"));
         assertTrue(result.getLabel().contains("ruleB"));
         assertTrue(result.getLabel().contains("ruleA"));
@@ -318,13 +318,13 @@ public class OddballTest {
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
 
         Case aCase = new MapCase("{\"browser\":\"chromium\", \"platform\":\"windows\"}");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("ruleC"));
         assertTrue(result.getLabel().contains("ruleB"));
 
         aCase = new MapCase("{\"browser\":\"google\", \"platform\":\"windows\"}");
-        result = instance.assessCase(ruleSetName, null, aCase);
+        result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         assertTrue(result.getLabel().contains("ruleC"));
         assertTrue(result.getLabel().contains("ruleB"));
     }
@@ -337,13 +337,13 @@ public class OddballTest {
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
 
         Case aCase = new MapCase("{\"browser\":\"chromium\", \"platform\":\"windows\"}");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("ruleC"));
         assertTrue(result.getLabel().contains("ruleB"));
 
         aCase = new MapCase("{\"browser\":\"google\", \"platform\":\"windows\"}");
-        result = instance.assessCase(ruleSetName, null, aCase);
+        result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         assertTrue(result.getLabel().contains("ruleC"));
         assertTrue(result.getLabel().contains("ruleB"));
     }
@@ -356,13 +356,13 @@ public class OddballTest {
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
 
         Case aCase = new MapCase("{\"browser\":\"chromium\", \"platform\":\"windows\"}");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("ruleC"));
         assertTrue(result.getLabel().contains("ruleB"));
 
         aCase = new MapCase("{\"browser\":\"google\", \"platform\":\"windows\"}");
-        result = instance.assessCase(ruleSetName, null, aCase);
+        result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         assertTrue(result.getLabel().contains("ruleC"));
         assertTrue(result.getLabel().contains("ruleB"));
     }
@@ -375,13 +375,13 @@ public class OddballTest {
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
 
         Case aCase = new MapCase("{\"browser\":\"chromium\", \"platform\":\"windows\"}");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         assertFalse(result.getLabel().contains("ruleC"));
         assertTrue(result.getLabel().contains("ruleB"));
 
         aCase = new MapCase("{\"browser\":\"google\", \"platform\":\"windows\"}");
-        result = instance.assessCase(ruleSetName, null, aCase);
+        result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         assertFalse(result.getLabel().contains("ruleC"));
         assertTrue(result.getLabel().contains("ruleB"));
     }
@@ -399,7 +399,7 @@ public class OddballTest {
         Case aCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"windows\", \"time\":\"1415958560342\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getEnrichedCase(ruleSetName, aCase, false, null));
         Map<String, Object> compare = JSONUtil.json2map(result.getEnrichedCase(ruleSetName, aCase, false, null));
         assertTrue(compare.containsKey("case"));
@@ -420,7 +420,7 @@ public class OddballTest {
         Case aCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("*odDball*"));
     }
@@ -435,9 +435,9 @@ public class OddballTest {
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
         System.out.println("result=" + result.toString());
-        instance.assessCase(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
@@ -458,8 +458,8 @@ public class OddballTest {
         Case theCase = new MapCase("{\"series\":\"123789\", \"browser\":\"firefox\", \"platform\":\"android\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
@@ -483,8 +483,8 @@ public class OddballTest {
         Case theCase = new MapCase("{\"series\":\"123789\", \"browser\":\"firefox\", \"platform\":\"android\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, theCase, RuleSet.NEVERPERSIST, null, null, null);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase, RuleSet.NEVERPERSIST, null, null, null);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
@@ -507,7 +507,7 @@ public class OddballTest {
         Case theDifferentCase = new MapCase("{\"series\":\"237890\", \"browser\":\"firefox\", \"platform\":\"android\", \"orientation\":\"landscape\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase); // should be added
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase); // should be added
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
@@ -516,8 +516,8 @@ public class OddballTest {
             System.out.println(aCase);
             count++;
         }
-        instance.assessCase(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"123789\"}", null, null);
-        instance.assessCase(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"237890\"}", null, null);
+        instance.assessCaseOpinion(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"123789\"}", null, null);
+        instance.assessCaseOpinion(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"237890\"}", null, null);
         cases = instance.findQueryCases(ruleSetName, "{ }", options);
         count = 0;
         for (String aCase : cases) {
@@ -537,9 +537,9 @@ public class OddballTest {
         Case theDifferentCase = new MapCase("{\"series\":\"237890\", \"browser\":\"firefox\", \"platform\":\"android\", \"orientation\":\"landscape\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase); // should be added
-        instance.assessCase(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"<series>\"}", null, null);
-        instance.assessCase(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"<series>\"}", null, null);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase); // should be added
+        instance.assessCaseOpinion(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"<series>\"}", null, null);
+        instance.assessCaseOpinion(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"<series>\"}", null, null);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
@@ -568,8 +568,8 @@ public class OddballTest {
         assertFalse(cases.iterator().hasNext());
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\"}, \"hashTag\":\"#luckybreak\"}");
 
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         Iterable<String> cases2 = instance.findQueryCases(ruleSetName, "{ }", options);
@@ -590,8 +590,8 @@ public class OddballTest {
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", new HashMap<String, String>());
         for (String aCase : cases0) {
             System.out.println(aCase);
@@ -617,8 +617,8 @@ public class OddballTest {
         Case theCase = new MapCase("{\"browser\":\"firefox type \\\"A\\\"\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", new HashMap<String, String>());
         for (String aCase : cases0) {
             System.out.println(aCase);
@@ -646,8 +646,8 @@ public class OddballTest {
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("transformer", "testjsont.json");
         options.put("owner", "_all");
@@ -670,8 +670,8 @@ public class OddballTest {
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("transformer", "testCo/testjsont.json");
         options.put("owner", "_all");
@@ -695,9 +695,9 @@ public class OddballTest {
         Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        Opinion result2 = instance.assessCase(ruleSetName, null, otherCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", new HashMap<String, String>());
         for (String aCase : cases0) {
             System.out.println(aCase);
@@ -722,9 +722,9 @@ public class OddballTest {
         Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        Opinion result2 = instance.assessCase(ruleSetName, null, otherCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", new HashMap<String, String>());
         for (String aCase : cases0) {
             System.out.println(aCase);
@@ -749,11 +749,11 @@ public class OddballTest {
         Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        Opinion result2 = instance.assessCase(ruleSetName, null, otherCase);
-        instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, otherCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, otherCase);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
@@ -775,11 +775,11 @@ public class OddballTest {
         Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        Opinion result2 = instance.assessCase(ruleSetName, null, otherCase);
-        instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, otherCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, otherCase);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
@@ -805,9 +805,9 @@ public class OddballTest {
         Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        Opinion result2 = instance.assessCase(ruleSetName, null, otherCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", new HashMap<String, String>());
         for (String aCase : cases0) {
             System.out.println(aCase);
@@ -832,9 +832,9 @@ public class OddballTest {
         Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        Opinion result2 = instance.assessCase(ruleSetName, null, otherCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         String multiName = "TestMongo.txt+TestMongo.txt";
         Iterable<String> cases0 = instance.findQueryCases(multiName, "{}", new HashMap<String, String>());
         for (String aCase : cases0) {
@@ -860,9 +860,9 @@ public class OddballTest {
         Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        Opinion result2 = instance.assessCase(ruleSetName, null, otherCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", new HashMap<String, String>());
         for (String aCase : cases0) {
             System.out.println(aCase);
@@ -888,9 +888,9 @@ public class OddballTest {
         Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        Opinion result2 = instance.assessCase(ruleSetName, null, otherCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", new HashMap<String, String>());
         for (String aCase : cases0) {
             System.out.println(aCase);
@@ -916,9 +916,9 @@ public class OddballTest {
         Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        Opinion result2 = instance.assessCase(ruleSetName, null, otherCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", new HashMap<String, String>());
         for (String aCase : cases0) {
             System.out.println(aCase);
@@ -945,9 +945,9 @@ public class OddballTest {
         Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\", \"accountId\":\"Trial\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        Opinion result2 = instance.assessCase(ruleSetName, null, otherCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", new HashMap<String, String>());
         for (String aCase : cases0) {
             System.out.println(aCase);
@@ -981,9 +981,9 @@ public class OddballTest {
         Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\", \"accountId\":\"Trial\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        Opinion result2 = instance.assessCase(ruleSetName, null, otherCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", new HashMap<String, String>());
         for (String aCase : cases0) {
             System.out.println(aCase);
@@ -1019,9 +1019,9 @@ public class OddballTest {
         Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA12\", \"accountId\":\"Trial\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        Opinion result2 = instance.assessCase(ruleSetName, null, otherCase);
-        instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", new HashMap<String, String>());
         for (String aCase : cases0) {
             System.out.println(aCase);
@@ -1072,12 +1072,12 @@ public class OddballTest {
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
 
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("ruleC"));
         assertTrue(result.getLabel().contains("ruleB"));
         assertTrue(result.getLabel().contains("ruleA"));
-        result = instance.assessCase(ruleSetName, null, anotherCase);
+        result = instance.assessCaseOpinion(ruleSetName, null, anotherCase);
 
         BinSet binSet = instance.binSet;
         assertTrue(binSet != null);
@@ -1123,12 +1123,12 @@ public class OddballTest {
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
 
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("ruleC"));
         assertTrue(result.getLabel().contains("ruleB"));
         assertTrue(result.getLabel().contains("ruleA"));
-        result = instance.assessCase(ruleSetName, null, anotherCase);
+        result = instance.assessCaseOpinion(ruleSetName, null, anotherCase);
 
         BinSet binSet = instance.binSet;
 
@@ -1171,11 +1171,11 @@ public class OddballTest {
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
 
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         System.out.println(result.getLabel());
         assertTrue(result.getLabel().contains("ruleB"));
-        instance.assessCase(ruleSetName, null, anotherCase);
-        instance.assessCase(ruleSetName, null, yetAnotherCase);
+        instance.assessCaseOpinion(ruleSetName, null, anotherCase);
+        instance.assessCaseOpinion(ruleSetName, null, yetAnotherCase);
 
         BinSet binSet = instance.binSet;
 
@@ -1213,7 +1213,7 @@ public class OddballTest {
         String ruleSetName = "Test2.txt";
         Case aCase = new StringCase("b-side");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         List<Rule> rules = instance.ruleSets.get(ruleSetName).getAllRules();
         int n = rules.size();
         System.out.println("Rules before");
@@ -1237,7 +1237,7 @@ public class OddballTest {
         String ruleSetName = "Test2.txt";
         Case aCase = new StringCase("b-side");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         List<Rule> rules = instance.ruleSets.get(ruleSetName).getAllRules();
         int n = rules.size();
         System.out.println("Rules before");
@@ -1305,7 +1305,7 @@ public class OddballTest {
         String ruleSetName = "Test4.txt";
         Case aCase = new StringCase("b-side");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, aCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         List<Rule> rules = instance.ruleSets.get(ruleSetName).getAllRules();
         int n = rules.size();
         System.out.println("Rules before");
@@ -1340,7 +1340,7 @@ public class OddballTest {
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"" + randomSessionId + "\"}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", new HashMap<String, String>());
         for (String aCase : cases0) {
             System.out.println(aCase);
@@ -1375,8 +1375,8 @@ public class OddballTest {
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
         Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, anotherCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, anotherCase);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         options.put("transformer", "event.json");
@@ -1406,8 +1406,8 @@ public class OddballTest {
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
         Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, anotherCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, anotherCase);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         long future = new Date().getTime() + 1000000;
@@ -1428,8 +1428,8 @@ public class OddballTest {
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
         Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, anotherCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, anotherCase);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         long future = new Date().getTime() + 1000000;
@@ -1444,14 +1444,39 @@ public class OddballTest {
     }
 
     @Test
+    public void testFindCasesQueryWithProcessorChain3() throws Exception {
+        System.out.println("findCases");
+        String ruleSetName = "TestMongoEvent";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case yetAnotherCase = new MapCase("{\"browser\":\"opera\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, anotherCase);
+        instance.assessCaseOpinion(ruleSetName, null, yetAnotherCase);
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        long future = new Date().getTime() + 1000000;
+        options.put("processorChain", "[{\"transformer\":\"event.json\"},{\"filter\":\"{'browser':'opera'}\"},{\"aggregator\":\"episode\", \"timeOutReference\":\"" + Long.toString(future) + "\"}, {\"tagger\":\"TestMongoEpisode\"}]");
+        Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        System.out.println(cases0);
+        assertTrue(cases0.size() == 1);
+        for (String aCase : cases0) {
+            System.out.println(aCase);
+            Map episodeMap = JSONUtil.json2map(aCase);
+            assertEquals("?X", ((Map<String, Object>) episodeMap.get("case")).get("stateCodes"));
+        }
+    }
+
+    @Test
     public void testFindCasesQueryWithRetrieverProcessorChain() throws Exception {
         System.out.println("findCases");
         String ruleSetName = "TestMongoEvent";
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
         Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, anotherCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, anotherCase);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         options.put("retriever", "none");
@@ -1474,8 +1499,8 @@ public class OddballTest {
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
         Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, anotherCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, anotherCase);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         options.put("retriever", "none");
@@ -1497,8 +1522,8 @@ public class OddballTest {
         Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
         Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
-        instance.assessCase(ruleSetName, null, anotherCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, anotherCase);
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         long future = new Date().getTime() + 1000000;
@@ -1519,7 +1544,7 @@ public class OddballTest {
         Case theCase = new MapCase("{\"id\": \"123\", \"scripts\": [\"{async=false, defer=false, src=http://dev.echo-central.com/libraries.js, type=text/javascript}\",\"{async=true, defer=true, src=http://script.echo-central.com/wonderbar.js, type=text/javascript}\"]}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
-        Opinion result = instance.assessCase(ruleSetName, null, theCase);
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
         System.out.println(result.getLabel());
         HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");

@@ -56,15 +56,21 @@ public class MongoDBHelper {
     public String insertCase(String content) throws IOException {
         // jongo interprets # as parameter.
         content = content.replace("#", "(hash)");
-        if (!content.contains("_id")) {
+        Map<String, Object> mapCase = JSONUtil.json2map(content);
+        if (!mapCase.containsKey("_id")) {
             String id = UUID.randomUUID().toString();
-            content = content.substring(0, content.lastIndexOf("}")) + ", \"_id\":\"" + id + "\" }";
+            mapCase.put("_id",id);
+            content = JSONUtil.map2json(mapCase);
         }
+//        if (!content.contains("_id")) {
+//            String id = UUID.randomUUID().toString();
+//            content = content.substring(0, content.lastIndexOf("}")) + ", \"_id\":\"" + id + "\" }";
+//        }
         WriteResult wr = cases.insert(content);
-        if (content.contains("{}") || content.contains(":  }")) {
-            LOGGER.debug("Writing empty or bad json object");
-            LOGGER.debug(content);
-        }
+//        if (content.contains("{}") || content.contains(":  }")) {
+//            LOGGER.debug("Writing empty or bad json object");
+//            LOGGER.debug(content);
+//        }
         //cases.getDBCollection().insert(new BasicDBObject(JSONUtil.json2map(content)));
         // When supported by fongo
         //System.out.println(wr.getUpsertedId());
@@ -79,7 +85,6 @@ public class MongoDBHelper {
 
     public void ensureIndex(Map indexMap) {
         cases.getDBCollection().createIndex(new BasicDBObject(indexMap));
-        LOGGER.debug(cases.getDBCollection().getIndexInfo().toString());
         //System.out.println(cases.getDBCollection().getIndexInfo());
     }
 
@@ -145,7 +150,7 @@ public class MongoDBHelper {
         }
     }
 
-    private BasicDBObject buildQuery(String owner, String queryString, Map<String, String> options) throws IOException, InvalidTimePeriodException {
+    private BasicDBObject buildQuery(String owner, String queryString, Map<String, String> options) throws InvalidTimePeriodException, IOException {
         if (queryString == null) {
             queryString = "{ }";
         }
@@ -206,7 +211,7 @@ public class MongoDBHelper {
         return query;
     }
 
-    public Collection<String> findCasesForOwner(String owner, String queryString, Map<String, String> options) throws IOException, DaoException, InvalidTimePeriodException {
+    public Collection<String> findCasesForOwner(String owner, String queryString, Map<String, String> options) throws DaoException, InvalidTimePeriodException, IOException {
         BasicDBObject query = buildQuery(owner, queryString, options);
         ArrayList<String> caseList = new ArrayList<String>();
         if (options.get("count") != null && ((String)options.get("count")).equals("true")) {
