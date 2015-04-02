@@ -71,8 +71,6 @@ public class Oddball {
     }
 
     public RuleSet ensureRuleSet(String ruleSetName) throws RuleSetNotLoadedException {
-        System.out.println("Loading");
-        System.out.println(ruleSetName);
         RuleSet ruleSet = ruleSets.get(ruleSetName);
         if (ruleSet == null) {
             ruleSet = loadRuleSet(ruleSetName, resourceRepository);
@@ -89,13 +87,12 @@ public class Oddball {
             aCase.setContent(this.transformCase(aCase.getContent(), inboundTransformer));
         }
         Opinion op = ruleSet.assessCase(aCase, null, ruleSetName, persistOption, duplicateQuery, avoidQuery);
-        String enrichedCase = op.getEnrichedCase(ruleSetName, aCase.toString());
+        String enrichedCase = op.getEnrichedCase(ruleSetName, aCase, false, null);
         enrichedCase = enrichedCase.replace("\\\"", "\"");
         results.add(enrichedCase);
         
         if (options.containsKey("processor")){
             results = applyProcessor(results, options, ruleSet, "{}", options.get("ownerDir"), JSONUtil.json2map(aCase.toString()));
-//    private Collection<String> applyProcessor(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, IOException, DaoException, TransformerNotLoadedException, AggregationException, RuleSetNotLoadedException, InvalidCaseException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException {
         }
         
         return results;
@@ -279,8 +276,6 @@ public class Oddball {
         }
 
         resourceRepository.write(resource, is);
-        System.out.println("");
-
         for (Rule rule : rules) {
             if (prefix.equals("ALL") || rule.getLabel().indexOf(prefix) == 0) {
                 if (source.equals("ALL") || rule.getSource().indexOf(source) == 0) {
@@ -539,7 +534,7 @@ public class Oddball {
                 }
             }
 //    public Opinion assessCase(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException {
-            Collection<String> assessment = this.assessCase(ruleSetName, incomingXform, aCase, persistOption, duplicateQuery, avoidQuery, new HashMap<String, String>());
+            Collection<String> assessment = this.assessCase(ruleSetName, incomingXform, aCase, persistOption, duplicateQuery, avoidQuery, new HashMap<String, String>());        
 //            Opinion caseOp = ruleSet.assessCase(aCase, incomingXform, ruleSetName, persistOption, duplicateQuery);
             taggedResults.add(assessment.iterator().next());
         }

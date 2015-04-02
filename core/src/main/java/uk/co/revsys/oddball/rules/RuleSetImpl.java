@@ -193,8 +193,8 @@ public class RuleSetImpl implements RuleSet {
             if (op.getLabel().contains("*ignore*")) {
                 op.getTags().clear();
             } else {
+                String persistCase = op.getEnrichedCase(ruleSetStr, aCase, true, null);
                 if (persistOption != NEVERPERSIST) {
-                    String persistCase = op.getEnrichedCase(ruleSetStr, aCase, true, null);
                     String caseAvoidQuery = null;
                     if (avoidQuery != null) {
                         caseAvoidQuery = new OddUtil().replacePlaceholders(avoidQuery, (Map<String, Object>) aCase.getContentObject());
@@ -218,6 +218,8 @@ public class RuleSetImpl implements RuleSet {
                     }
                     //LOGGER.debug("inserting:"+duplicateQuery);
                 }
+//                System.out.println("persistCase");
+//                System.out.println(persistCase);
             }
             return op;
         }

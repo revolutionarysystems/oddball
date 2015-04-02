@@ -33,6 +33,7 @@ public class OpinionImpl implements Opinion{
     HashSet<Object> evidence = new HashSet();
     
     private long assessTime=0;
+    String id = null;
 
     public List<String> getTags() {
         return tags;
@@ -153,12 +154,17 @@ public class OpinionImpl implements Opinion{
         enrichedCase.append("\"ruleSet\" : \"" + ruleSet + "\", ");
         enrichedCase.append("\"case\" : " + caseStr + ", ");
         enrichedCase.append(tags.substring(1, tags.length() - 1)+ ", ");
-        if (generateUid){
-            String uid = UUID.randomUUID().toString();
-            enrichedCase.append("\"_id\" : \"" + uid + "\", ");
+        if (id!=null){
+            enrichedCase.append("\"_id\" : \"" + id + "\", ");
         } else {
-            if (forcedUid!=null){
-                enrichedCase.append("\"_id\" : \"" + forcedUid + "\", ");
+            if (generateUid){
+                id = UUID.randomUUID().toString();
+                enrichedCase.append("\"_id\" : \"" + id + "\", ");
+            } else {
+                if (forcedUid!=null){
+                    id = forcedUid;
+                    enrichedCase.append("\"_id\" : \"" + forcedUid + "\", ");
+                }
             }
         }
         String propStr = derivedProperties();
@@ -210,6 +216,11 @@ public class OpinionImpl implements Opinion{
     public void setAssessTime(long assessTime) {
         this.assessTime = assessTime;
     }
+    
+    public void setId(String id){
+        this.id = id; 
+    }
+
     
     static final Logger LOGGER = LoggerFactory.getLogger("oddball");
 }
