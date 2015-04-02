@@ -158,7 +158,7 @@ public class MongoDBHelper {
             queryString = addBinQuery(queryString, options.get("binQuery"));
         }
         BasicDBObject query = new BasicDBObject(JSONUtil.json2map(queryString));
-        if (!owner.equals(Oddball.ALL)) {
+        if (owner!=null && !owner.equals(Oddball.ALL)) {
             String ownerProperty = OWNERPROPERTY;
             if (options.containsKey("ownerProperty")){
                 ownerProperty = options.get("ownerProperty");

@@ -101,8 +101,12 @@ public class Oddball {
         return results;
     }
 
-    public Collection<String> assessCase(String ruleSetName, String inboundTransformer, Case aCase) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, IOException, ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException {
-        return this.assessCase(ruleSetName, inboundTransformer, aCase, RuleSet.ALWAYSPERSIST, null, null, new HashMap<String, String>());
+    public Collection<String> assessCase(String ruleSetName, String inboundTransformer, String processor, Case aCase) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, IOException, ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException {
+        HashMap<String, String> options = new HashMap<String, String>();
+        if (processor!=null){
+            options.put("processor", processor);
+        }
+        return this.assessCase(ruleSetName, inboundTransformer, aCase, RuleSet.ALWAYSPERSIST, null, null, options);
     }
 
     public Opinion assessCaseOpinion(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery, String avoidQuery, Map<String, String> options) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, IOException {
@@ -638,7 +642,14 @@ public class Oddball {
                 if (stepMap.get("filter") != null) {
                     interimResults.addAll(filterResults(results, (Map<String, String>) stepMap));
                 }
-                results = interimResults;
+                if (stepMap.get("processor") != null) {
+                    interimResults.addAll(applyProcessor(results, (Map<String, String>) stepMap, ruleSet, query, owner, caseMap));
+                }
+                if (stepMap.get("results")==null || stepMap.get("results").equals("retain")){
+                    results = interimResults;                   
+                } else { //revert
+                    interimResults=(ArrayList<String>) results;
+                }
             }
         } catch (IOException ex) {
             throw new InvalidCaseException("{\"chain\":" + processorChain + "}");

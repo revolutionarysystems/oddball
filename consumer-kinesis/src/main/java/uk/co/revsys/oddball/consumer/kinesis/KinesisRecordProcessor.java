@@ -95,6 +95,9 @@ public class KinesisRecordProcessor implements IRecordProcessor {
         if (separated.length > 1) {
             result.put("inboundTransformer", separated[1]);
         }
+        if (separated.length > 2) {
+            result.put("processor", separated[2]);
+        }
         return result;
     }
 
@@ -120,6 +123,7 @@ public class KinesisRecordProcessor implements IRecordProcessor {
                                 Map<String, String> splitRuleSetName= this.splitRuleSetName(ruleSetName);
                                 String ruleSet = splitRuleSetName.get("ruleSet");
                                 String inboundTransformer = splitRuleSetName.get("inboundTransformer");
+                                String processor = splitRuleSetName.get("processor");
 
                                 if (ruleSet.indexOf("{") >= 0) {
                                     String placeholder = extractPropertyName(ruleSet);
@@ -134,7 +138,7 @@ public class KinesisRecordProcessor implements IRecordProcessor {
                                 }
                                 LOG.debug("Assessing " + ruleSet);
                                 try {
-                                    oddball.assessCase(ruleSet, inboundTransformer, new StringCase(data));
+                                    oddball.assessCase(ruleSet, inboundTransformer, processor, new StringCase(data));
                                 } catch (Throwable t) {
                                     LOG.warn("Caught throwable attempting ruleSet: " + ruleSet);
                                     LOG.debug("throwable", t);
