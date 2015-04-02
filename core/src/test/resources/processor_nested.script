@@ -1,0 +1,4 @@
+[
+    {"processor":"processor.script"},
+    {"processor":"processor_1.script","results":"revert"}
+]

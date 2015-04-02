@@ -1,0 +1,4 @@
+[
+    {"retriever":"caseRetriever", "ruleSet":"TestMongoEvent"},
+    {"transformer":"event.json"}
+]
