@@ -136,6 +136,11 @@ public class KinesisRecordProcessor implements IRecordProcessor {
                                     String replacement = extractProperty(placeholder, data);
                                     inboundTransformer = inboundTransformer.replace("{" + placeholder + "}", replacement);
                                 }
+                                if (processor!=null && processor.indexOf("{") >= 0) {
+                                    String placeholder = extractPropertyName(processor);
+                                    String replacement = extractProperty(placeholder, data);
+                                    processor = processor.replace("{" + placeholder + "}", replacement);
+                                }
                                 LOG.debug("Assessing " + ruleSet);
                                 try {
                                     oddball.assessCase(ruleSet, inboundTransformer, processor, new StringCase(data));
