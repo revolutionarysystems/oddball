@@ -17,6 +17,7 @@
             <module>service</module>        
             <module>client-osgi</module>  
             <module>camel</module>  
+            <module>enricher</module>  
 	</modules>
 
 	<properties>
