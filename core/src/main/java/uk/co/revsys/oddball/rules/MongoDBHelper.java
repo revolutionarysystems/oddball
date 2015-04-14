@@ -474,7 +474,6 @@ public class MongoDBHelper {
         } else {
             query.append("case.endTime", subQuery2);
         }
-        LOGGER.debug(query.toString());
     }
 
     private void addForEachQuery(BasicDBObject query, String forEach, String forEachValue) {

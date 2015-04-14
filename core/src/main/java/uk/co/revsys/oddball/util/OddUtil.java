@@ -86,8 +86,6 @@ public class OddUtil {
 
     public Object getDeepProperty (Map aMap, String propertyPath){
         Map subMap = aMap;
-//        LOGGER.debug(subMap.toString());
-//        LOGGER.debug(propertyPath);
         Object propertyValue=null;
         while (propertyPath.contains(".")&& subMap!=null){
             String key = propertyPath.substring(0, propertyPath.indexOf("."));

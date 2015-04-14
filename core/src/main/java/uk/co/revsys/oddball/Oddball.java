@@ -103,6 +103,13 @@ public class Oddball {
         if (processor!=null){
             options.put("processor", processor);
         }
+        if (ruleSetName.contains("/")){
+            String ownerPrefix=ruleSetName.substring(0, ruleSetName.indexOf("/")+1);
+            for (String key : options.keySet()) {
+                options.put(key, options.get(key).replace("{owner}",ownerPrefix).replace("{account}",ownerPrefix));
+            }
+            options.put("ownerDir", ownerPrefix.substring(0, ownerPrefix.length()-1));
+        }
         return this.assessCase(ruleSetName, inboundTransformer, aCase, RuleSet.ALWAYSPERSIST, null, null, options);
     }
 
@@ -541,6 +548,31 @@ public class Oddball {
         return taggedResults;
     }
 
+    private Collection<String> retrieveResults(Iterable<String> results, Map<String, String> options, String owner, Map<String, Object> caseMap) throws RuleSetNotLoadedException, InvalidCaseException, TransformerNotLoadedException, IOException, ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException {
+        ArrayList<String> retrievedResults = new ArrayList<String>();
+        ArrayList<String> inputs = new ArrayList<String>();
+        for (String result : results) {
+            inputs.add(result);
+        }
+        if (!results.iterator().hasNext()){
+            inputs.add("{}");
+        }
+        String query = "{ }";
+        for (String input : inputs){
+            if (options.containsKey("query")){
+                query = options.get("query").replace("'", "\"");
+                OddUtil ou = new OddUtil();
+                if (caseMap==null){
+                    caseMap = (Map<String, Object>)JSONUtil.json2map(input).get("case");
+                }
+                query = ou.replacePlaceholders(query, caseMap);
+            }
+            retrievedResults.addAll(initialQuery(owner, options.get("ruleSet"), query, options));
+        }
+        return retrievedResults;
+    }
+        
+        
     private Collection<String> applyProcessor(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner, Map<String, Object> caseMap) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, IOException, DaoException, TransformerNotLoadedException, AggregationException, RuleSetNotLoadedException, InvalidCaseException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException {
         String processor = options.get("processor");
 //        String processorChain = loadProcessor(processor, resourceRepository);
@@ -557,7 +589,6 @@ public class Oddball {
         if (options.containsKey("ownerDir")) {
             ownerDir = (String) options.get("ownerDir");
         }
-
         try {
             Map chain = JSONUtil.json2map("{\"chain\":" + processorChain + "}");
             ArrayList<Object> chainSteps = (ArrayList<Object>) chain.get("chain");
@@ -570,15 +601,18 @@ public class Oddball {
                 if (stepMap.get("retriever") != null) {
                     Map<String, String> subOptions = (Map<String, String>) options;
                     subOptions.putAll(stepMap);
-                    if (subOptions.containsKey("query")){
-                        query = subOptions.get("query").replace("'", "\"");
-                        OddUtil ou = new OddUtil();
-            //Map<String, Object> caseMap = JSONUtil.json2map(aCase.getContent());
-                        if (caseMap!=null){
-                            query = ou.replacePlaceholders(query, caseMap);
-                        }
-                    }
-                    interimResults.addAll(initialQuery(owner, options.get("ruleSet"), query, subOptions));
+                    interimResults.addAll(retrieveResults(results, subOptions, owner, caseMap));
+//                    if (subOptions.containsKey("query")){
+//                        query = subOptions.get("query").replace("'", "\"");
+//                        OddUtil ou = new OddUtil();
+//                        //Map<String, Object> caseMap = JSONUtil.json2map(aCase.getContent());
+//                        if (caseMap!=null){
+//                            query = ou.replacePlaceholders(query, caseMap);
+//                        } 
+//                        LOGGER.debug("query="+query);
+//                        //LOGGER.debug("case="+caseMap.toString());
+//                    }
+//                    interimResults.addAll(initialQuery(owner, options.get("ruleSet"), query, subOptions));
                 }
                 if (stepMap.get("transformer") != null) {
                     interimResults.addAll(transformResults(results, (String) stepMap.get("transformer")));
@@ -638,7 +672,12 @@ public class Oddball {
                     interimResults.addAll(filterResults(results, (Map<String, String>) stepMap));
                 }
                 if (stepMap.get("processor") != null) {
-                    interimResults.addAll(applyProcessor(results, (Map<String, String>) stepMap, ruleSet, query, owner, caseMap));
+                    try {
+                        interimResults.addAll(applyProcessor(results, (Map<String, String>) stepMap, ruleSet, query, owner, caseMap));
+                    } 
+                    catch (ProcessorNotLoadedException ex) {  //log but don't fail
+                        LOGGER.warn("Processor not loaded:"+stepMap.get("processor"), ex);
+                    }
                 }
                 if (stepMap.get("results")==null || stepMap.get("results").equals("retain")){
                     results = interimResults;                   

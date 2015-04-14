@@ -161,6 +161,14 @@ public class OddballRestService extends AbstractRestService {
         if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = altRuleSet;
         }
+        if (ruleSet.contains("/")){
+            String ownerPrefix=ruleSet.substring(0, ruleSet.indexOf("/")+1);
+            ruleSet = ruleSet.substring(ruleSet.indexOf("/")+1);
+            for (String key : options.keySet()) {
+                options.put(key, options.get(key).replace("{owner}",ownerPrefix).replace("{account}",ownerPrefix));
+            }
+            options.put("ownerDir", ownerPrefix.substring(0, ownerPrefix.length()-1));
+        }
         int persistOption = RuleSet.ALWAYSPERSIST;
         if (persist != null) {
             if (persist.equals("never")) {
