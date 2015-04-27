@@ -79,7 +79,7 @@
         <property name="location" value="classpath:rule-sets.properties"/>
     </bean>
     
-    <bean id="kinesisClientLibConfiguration" class="uk.co.revsys.oddball.consumer.kinesis.IdGeneratingKinesisClientLibConfiguration">
+    <bean id="kinesisClientLibConfiguration" class="uk.co.revsys.kinesis.IdGeneratingKinesisClientLibConfiguration">
         <constructor-arg index="0" value="${kinesis.application.name}"/>
         <constructor-arg index="1" value="${kinesis.stream}"/>
         <constructor-arg index="2" ref="awsCredentialsProvider"/>
