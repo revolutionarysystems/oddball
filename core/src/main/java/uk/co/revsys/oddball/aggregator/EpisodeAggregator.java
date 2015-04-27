@@ -31,6 +31,10 @@ public class EpisodeAggregator implements Aggregator {
         if (options.containsKey("watchList")) {
             watchList = options.get("watchList");
         }
+        String customDataTag = "case.customData";
+        if (options.containsKey("customDataTag")) {
+            customDataTag = options.get("customDataTag");
+        }
         if (options.containsKey("timeOutPeriod")) {
             try {
                 timeOutPeriod = new OddUtil().parseTimePeriod((String) options.get("timeOutPeriod"), "~");
@@ -42,15 +46,13 @@ public class EpisodeAggregator implements Aggregator {
             try {
                 timeOutReference = new OddUtil().parseTimePeriod((String) options.get("timeOutReference"), "~");
             } catch (InvalidTimePeriodException e) {
-                System.out.println("Invalid time period");
-                System.out.println(options.get("timeOutReference"));
             }
         }
         if (options.containsKey("descriptionProperty")) {
             descriptionProperty = options.get("descriptionProperty");
         }
         try {
-            for (Episode ep : aggregateEvents(caseStrings, timeOutPeriod, timeOutReference, watchList, descriptionProperty)) {
+            for (Episode ep : aggregateEvents(caseStrings, timeOutPeriod, timeOutReference, watchList, descriptionProperty, customDataTag)) {
                 response.add(ep.asMap());
             }
         } catch (EventNotCreatedException e) {
@@ -59,7 +61,7 @@ public class EpisodeAggregator implements Aggregator {
         return response;
     }
 
-    public ArrayList<Episode> aggregateEvents(Iterable<String> eventStrings, long timeOutPeriod, long timeOutReference, String watchList, String descriptionProperty) throws EventNotCreatedException {
+    public ArrayList<Episode> aggregateEvents(Iterable<String> eventStrings, long timeOutPeriod, long timeOutReference, String watchList, String descriptionProperty, String customDataTag) throws EventNotCreatedException {
         ArrayList<Event> eventList = new ArrayList<Event>();
         for (String eventString : eventStrings) {
             try {
@@ -79,12 +81,12 @@ public class EpisodeAggregator implements Aggregator {
         Episode currentEpisode = null;
         for (Event event : eventList) {
             if (currentEpisode == null) {
-                currentEpisode = new Episode(event.getOwner(), event.getAgent(), event.getSeries(), event.getEventTime(), event.getTagTime(), watchList);
+                currentEpisode = new Episode(event.getOwner(), event.getAgent(), event.getSeries(), event.getEventTime(), event.getTagTime(), watchList, customDataTag);
             } else {
                 if (event.getEventTime() - previousEventTime > timeOutPeriod) {   //timedout
                     currentEpisode.close(event.getEventTime() - previousEventTime, event.getTagTime());
                     episodes.add(currentEpisode);
-                    currentEpisode = new Episode(event.getOwner(), event.getAgent(), event.getSeries(), event.getEventTime(), event.getTagTime(), watchList);
+                    currentEpisode = new Episode(event.getOwner(), event.getAgent(), event.getSeries(), event.getEventTime(), event.getTagTime(), watchList, customDataTag);
                 } else {  //not Timed out
                     currentEpisode.recordInterval(previousEventTime, event.getEventTime(), event.getTagTime());
                 }

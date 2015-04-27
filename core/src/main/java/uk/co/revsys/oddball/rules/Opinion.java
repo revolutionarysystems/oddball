@@ -20,6 +20,6 @@ public interface Opinion {
     public void setTags(List<String> tags); 
     public String getLabel();
     public void setId(String id);
-    public String getEnrichedCase(String ruleSet, String caseStr);
+//    public String getEnrichedCase(String ruleSet, String caseStr);
     public String getEnrichedCase(String ruleSet, Case aCase, boolean generateUid, String forcedUid);
 }

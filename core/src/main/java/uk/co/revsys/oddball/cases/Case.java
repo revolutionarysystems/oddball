@@ -15,6 +15,8 @@ public interface Case {
     public String getContent();
     public Object getContentObject();
     public void setContent(String content) throws InvalidCaseException;
+    public void ensureOwner(String owner);
+    public String getOwner();
     public String getJSONisedContent();
     
 }

@@ -72,7 +72,6 @@ public class OpinionImpl implements Opinion{
                         if (currentvalue.contains(broadervalue)){
                             alreadyAdded.put(propname, currentvalue.replace(broadervalue, propvalue));
                         }
-                        System.out.println(alreadyAdded.get(propname));
                     } else {
                         if (!alreadyAdded.get(propname).contains(propvalue)){  // if we've not seen this value before
                             alreadyAdded.put(propname, alreadyAdded.get(propname)+","+propvalue);
@@ -96,24 +95,24 @@ public class OpinionImpl implements Opinion{
         return propStr.toString();
     }
     
-    @Override
-    public String getEnrichedCase(String ruleSet, String caseStr) {
-        String tags = getLabel();
-        caseStr = caseStr.replace("\"", "\\\"");
-        if (assessTime==0){
-            assessTime=new Date().getTime();
-        }
-        String timeStr = Long.toString(assessTime);
-        StringBuilder enrichedCase =  new StringBuilder("{");
-        enrichedCase.append("\"timestamp\" : \"" + timeStr + "\", ");
-        enrichedCase.append("\"ruleSet\" : \"" + ruleSet + "\", ");
-        enrichedCase.append("\"case\" : " + caseStr + ", ");
-        enrichedCase.append(tags.substring(1, tags.length() - 1)+ ", ");
-        String propStr = derivedProperties();
-        enrichedCase.append(propStr.substring(1, propStr.length() - 1));
-        enrichedCase.append(" }");
-        return enrichedCase.toString();
-    }
+//    @Override
+//    public String getEnrichedCase(String ruleSet, String caseStr) {
+//        String tags = getLabel();
+//        caseStr = caseStr.replace("\"", "\\\"");
+//        if (assessTime==0){
+//            assessTime=new Date().getTime();
+//        }
+//        String timeStr = Long.toString(assessTime);
+//        StringBuilder enrichedCase =  new StringBuilder("{");
+//        enrichedCase.append("\"timestamp\" : \"" + timeStr + "\", ");
+//        enrichedCase.append("\"ruleSet\" : \"" + ruleSet + "\", ");
+//        enrichedCase.append("\"case\" : " + caseStr + ", ");
+//        enrichedCase.append(tags.substring(1, tags.length() - 1)+ ", ");
+//        String propStr = derivedProperties();
+//        enrichedCase.append(propStr.substring(1, propStr.length() - 1));
+//        enrichedCase.append(" }");
+//        return enrichedCase.toString();
+//    }
 
     @Override
     public String getEnrichedCase(String ruleSet, Case aCase, boolean generateUid, String forcedUid) {
@@ -153,6 +152,7 @@ public class OpinionImpl implements Opinion{
         }
         enrichedCase.append("\"ruleSet\" : \"" + ruleSet + "\", ");
         enrichedCase.append("\"case\" : " + caseStr + ", ");
+        enrichedCase.append("\"owner\" : \"" + aCase.getOwner() + "\", ");
         enrichedCase.append(tags.substring(1, tags.length() - 1)+ ", ");
         if (id!=null){
             enrichedCase.append("\"_id\" : \"" + id + "\", ");

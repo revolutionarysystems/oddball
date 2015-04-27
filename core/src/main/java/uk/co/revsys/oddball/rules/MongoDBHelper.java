@@ -207,7 +207,6 @@ public class MongoDBHelper {
         if (options.get("userId") != null) {
             addUserIdQuery(query, options.get("userId"));
         }
-        System.out.println("Query=" + query.toString());
         return query;
     }
 

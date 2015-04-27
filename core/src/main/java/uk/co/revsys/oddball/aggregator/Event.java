@@ -79,6 +79,14 @@ public class Event implements Comparable<Event> {
             owner=(String)eventSubcaseMap.get("accountId");
         }
         
+        if (owner==null){
+            if (eventMap.get("owner")!=null){    
+                owner=(String)eventMap.get("owner");
+            } else {
+                owner=(String)eventSubcaseMap.get("owner");
+            }
+        }
+        
         if (eventMap.get("userId")!=null){    
             agent=(String)eventMap.get("userId");
         } else {

@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.FilterException;
 import uk.co.revsys.oddball.Oddball;
+import uk.co.revsys.oddball.OwnerMissingException;
 import uk.co.revsys.oddball.ProcessorNotLoadedException;
 import uk.co.revsys.oddball.ResourceNotLoadedException;
 import uk.co.revsys.oddball.ResourceNotUploadedException;
@@ -207,6 +208,8 @@ public class OddballRestService extends AbstractRestService {
                 return buildErrorResponse(ex);
             } catch (IdentificationSchemeNotLoadedException ex) {
                 return buildErrorResponse(ex);
+            } catch (OwnerMissingException ex) {
+                return buildErrorResponse(ex);
             }
             if (assessment.size()==1&&!options.containsKey("processor")){
                 RESULTSLOGGER.info(assessment.iterator().next());
@@ -266,6 +269,8 @@ public class OddballRestService extends AbstractRestService {
             } catch (FilterException ex) {
                 return buildErrorResponse(ex);
             } catch (IdentificationSchemeNotLoadedException ex) {
+                return buildErrorResponse(ex);
+            } catch (OwnerMissingException ex) {
                 return buildErrorResponse(ex);
             }
             if (assessment.size()==1&&!options.containsKey("processor")){
@@ -463,6 +468,8 @@ public class OddballRestService extends AbstractRestService {
         } catch (FilterException ex) {
             return buildErrorResponse(ex);
         } catch (BadFormatException ex) {
+            return buildErrorResponse(ex);
+        } catch (OwnerMissingException ex) {
             return buildErrorResponse(ex);
         }
 

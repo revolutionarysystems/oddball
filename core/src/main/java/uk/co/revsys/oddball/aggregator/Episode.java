@@ -8,6 +8,8 @@ package uk.co.revsys.oddball.aggregator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.util.OddUtil;
 
 /**
@@ -16,18 +18,21 @@ import uk.co.revsys.oddball.util.OddUtil;
  */
 public class Episode {
 
-    public Episode(String owner, String agent, String series, long startTime, long firstTagTime, String watchList) {
+    public Episode(String owner, String agent, String series, long startTime, long firstTagTime, String watchList, String customDataTag) {
         this.owner = owner;
         this.agent = agent;
         this.series = series;
         this.startTime = startTime;
         this.firstTagTime = firstTagTime;
+        this.customDataTag = customDataTag;
         this.states = new ArrayList<String>();
         this.signals = new ArrayList<Map<String, Object>>();
         this.status = Episode.OPEN;
         this.stateCodes = new StringBuilder("");
         watches = new HashMap<String, ArrayList<String>>();
+        customDataWatches = new HashMap<String, ArrayList<String>>();
         watchValues = new HashMap<String, String>();
+        customDataWatchValues = new HashMap<String, String>();
         alerts = new HashMap<String, Object>();
         if (watchList!=null && !watchList.equals("")){
             String[]watchProperties = watchList.split(",");
@@ -72,6 +77,19 @@ public class Episode {
                 watches.get(watchProperty).add(propertyValue.toString());
             }
         }
+        if (caseMap.containsKey(customDataTag)){
+            Map<String, Object> customData = (Map<String, Object>)new OddUtil().getDeepProperty(caseMap, customDataTag); 
+            for (String key : customData.keySet()){
+                if (!customDataWatches.containsKey(key)){
+                    customDataWatches.put(key, new ArrayList());
+                }
+                if ((String)customData.get(key)!=null){
+                    (customDataWatches.get(key)).add((String)customData.get(key));
+                } else {
+                    (customDataWatches.get(key)).add("null");
+                }
+            }
+        }
     }
 
     public void recordInterval(long prevTime, long thisTime, long thisTagTime) {
@@ -105,6 +123,7 @@ public class Episode {
     private String owner;
     private String agent;
     private String series;
+    private String customDataTag="case.customData";
     private long startTime;
     private long endTime;
     private long firstTagTime;
@@ -115,7 +134,9 @@ public class Episode {
     private int status;
     private StringBuilder stateCodes;
     private Map<String, ArrayList<String>> watches;
+    private Map<String, ArrayList<String>> customDataWatches;
     private Map<String, String> watchValues;
+    private Map<String, String> customDataWatchValues;
     private Map<String, Object> alerts;
 
     /**
@@ -281,9 +302,11 @@ public class Episode {
 
     private ArrayList<String> condense(ArrayList<String> input){
         boolean allAlike = true;
-        for (int i=1;i<input.size();i++){
-            if (!input.get(i).equals(input.get(0))){
-                allAlike = false;
+        if (input.size()>1){
+            for (int i=1;i<input.size();i++){
+                if (!input.get(i).equals(input.get(0))){
+                    allAlike = false;
+                }
             }
         }
         if (allAlike && input.size()>0){
@@ -341,13 +364,23 @@ public class Episode {
         for (String watchProperty: watches.keySet()){
             watchValues.put(watchProperty, finalValue(watches.get(watchProperty)));
         }
+        for (String watchProperty: customDataWatches.keySet()){
+            customDataWatches.put(watchProperty, condense(customDataWatches.get(watchProperty)));
+        }
+        for (String watchProperty: customDataWatches.keySet()){
+            customDataWatchValues.put(watchProperty, finalValue(customDataWatches.get(watchProperty)));
+        }
         episodeMap.put("watches", watches);
         episodeMap.put("watchValues", watchValues);
         episodeMap.put("alerts", alerts);
+        episodeMap.put("customDataWatches", customDataWatches);
+        episodeMap.put("customDataWatchValues", customDataWatchValues);
         return episodeMap;
+        
     }
 
     static int OPEN = 1;
     static int CLOSED = 0;
+    static final Logger LOGGER = LoggerFactory.getLogger("oddball");
 
 }

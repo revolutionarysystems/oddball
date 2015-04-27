@@ -62,5 +62,26 @@ public class MapCase implements Case{
         return content;
     }
 
+    @Override
+    public void ensureOwner(String owner){
+        if (owner!=null){
+            mapContent.put("owner", owner);
+            content = JSONUtil.map2json(mapContent);
+        }
+    }
 
+    @Override
+    public String getOwner(){
+        if (mapContent.containsKey("owner")&& mapContent.get("owner")!=null){
+            return mapContent.get("owner").toString();
+        } else {
+            if (mapContent.containsKey("accountId")&& mapContent.get("accountId")!=null){
+                return mapContent.get("accountId").toString();
+            } else {
+                return null;
+            }
+        }
+    }
+    
+    
 }

@@ -174,6 +174,33 @@ public class OddUtil {
         return value;
     }
 
+    public String ipRange(String ip, int length) {
+        int version = 4;
+        if (ip.contains(":")){
+            version = 6;
+        }
+        String separatorRE = "\\.";
+        String separator = ".";
+        int ipLength = 4;
+        if (version==6){
+            separatorRE = ":";
+            separator = ":";
+            ipLength = 8;
+        }
+        System.out.println(ip);
+        String[] ipParts= ip.split(separatorRE);
+        length = Math.min(length, ipLength);
+        System.out.println(length);
+        System.out.println(ipParts.length);
+        StringBuilder s = new StringBuilder("");
+        s.append(ipParts[0]);
+        for (int i=1; i<length; i++){
+            s.append(separator);
+            s.append(ipParts[i]);
+        }
+        return s.toString();
+    }
+
     static final Logger LOGGER = LoggerFactory.getLogger("oddball");
 
     

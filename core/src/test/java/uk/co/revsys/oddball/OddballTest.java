@@ -1425,8 +1425,8 @@ public class OddballTest {
     public void testFindCasesQueryWithProcessorChain2() throws Exception {
         System.out.println("findCases");
         String ruleSetName = "TestMongoEvent";
-        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
-        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"owner\":\"ABC123\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"owner\":\"ABC123\"}");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
         instance.assessCaseOpinion(ruleSetName, null, anotherCase);
@@ -1447,9 +1447,9 @@ public class OddballTest {
     public void testFindCasesQueryWithProcessorChain3() throws Exception {
         System.out.println("findCases");
         String ruleSetName = "TestMongoEvent";
-        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
-        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
-        Case yetAnotherCase = new MapCase("{\"browser\":\"opera\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"owner\":\"ABC123\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"owner\":\"ABC123\"}");
+        Case yetAnotherCase = new MapCase("{\"browser\":\"opera\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"owner\":\"ABC123\"}");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
         instance.assessCaseOpinion(ruleSetName, null, anotherCase);
@@ -1472,9 +1472,9 @@ public class OddballTest {
     public void testFindCasesQueryWithProcessorChain4() throws Exception {
         System.out.println("findCases");
         String ruleSetName = "TestMongoEvent";
-        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
-        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
-        Case yetAnotherCase = new MapCase("{\"browser\":\"opera\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"owner\":\"ABC123\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"owner\":\"ABC123\"}");
+        Case yetAnotherCase = new MapCase("{\"browser\":\"opera\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"owner\":\"ABC123\"}");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
         instance.assessCaseOpinion(ruleSetName, null, anotherCase);
@@ -1497,9 +1497,9 @@ public class OddballTest {
     public void testFindCasesQueryWithProcessorChainRevertResults() throws Exception {
         System.out.println("findCases");
         String ruleSetName = "TestMongoEvent";
-        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
-        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
-        Case yetAnotherCase = new MapCase("{\"browser\":\"opera\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"owner\":\"ABC123\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"owner\":\"ABC123\"}");
+        Case yetAnotherCase = new MapCase("{\"browser\":\"opera\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"owner\":\"ABC123\"}");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
         instance.assessCaseOpinion(ruleSetName, null, anotherCase);
@@ -1508,7 +1508,6 @@ public class OddballTest {
         options.put("owner", "_all");
         long future = new Date().getTime() + 1000000;
         options.put("processorChain", "[{\"transformer\":\"event.json\"},{\"filter\":\"{'browser':'opera'}\"},{\"aggregator\":\"episode\", \"timeOutReference\":\"" + Long.toString(future) + "\"}, {\"tagger\":\"TestMongoEpisode\", \"results\":\"revert\"}]");
-//        options.put("processorChain", "[{\"transformer\":\"event.json\"},{\"filter\":\"{'browser':'opera'}\"},{\"aggregator\":\"episode\", \"timeOutReference\":\"" + Long.toString(future) + "\"}]");
         Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
         System.out.println(cases0);
         assertTrue(cases0.size() == 1);

@@ -43,5 +43,15 @@ public class StringCase implements Case{
         return content;
     }
 
+    @Override
+    public void ensureOwner(String owner){
+        // no way of consistently modifying a string case
+    }
+    
+    @Override
+    public String getOwner(){
+        // no way of obtaining for StringCase
+        return null;
+    }
 
 }

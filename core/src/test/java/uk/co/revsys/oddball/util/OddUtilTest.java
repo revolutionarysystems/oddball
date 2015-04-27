@@ -101,6 +101,22 @@ public class OddUtilTest {
         assertEquals("test.0.subject.tags,test.0.subject.type,test.0.subject.valid,test.0.subject.value,test.1.object.tags,test.1.object.type,test.1.object.valid,test.1.object.value,\n\"[1, 1.5, false, Geronimo]\",\"A\",true,1,\"[1, 1.7, true, Hiawatha]\",B,true,2\n\"[1, 1.5, false, Geronimo]\",C,true,3,\"[1, 1.7, true, Hiawatha]\",B,true,2\n", csv);
     }
                      
+    @Test
+    public void testIpRange(){
+        String ip = "3.34.123.121";
+        String ipRange = new OddUtil().ipRange(ip,2);
+        System.out.println(ipRange);
+        assertEquals("3.34", ipRange);
+    }
+    @Test
+
+    public void testIpv6Range(){
+        String ip = "2001:0db8:85a3:0000:0000:8a2e:0370:7334";
+        String ipRange = new OddUtil().ipRange(ip, 4);
+        System.out.println(ipRange);
+        assertEquals("2001:0db8:85a3:0000", ipRange);
+    }
+                     
 
 
 }

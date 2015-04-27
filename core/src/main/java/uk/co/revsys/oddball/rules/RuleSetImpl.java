@@ -500,13 +500,11 @@ public class RuleSetImpl implements RuleSet {
             }
             ruleString = ruleStringBuilder.toString();
             Map<String, Object> ruleSetMap = null;
-            System.out.println(ruleString);
             try {
                 ruleSetMap = (Map<String, Object>) JSONUtil.json2map(ruleString).get("ruleSet");
                 return ruleSetMap;
             } 
             catch (Exception e){
-                System.out.println(e.toString());
                 throw new RuleSetNotLoadedException("Not valid json");
             }
         } catch (IOException ex) {
@@ -569,7 +567,6 @@ public class RuleSetImpl implements RuleSet {
                 loadJSONRules(ruleSetMap, resourceRepository);
             } 
             catch (Exception e){
-                System.out.println(e.toString());
                 throw new RuleSetNotLoadedException("Not valid json");
             }
             

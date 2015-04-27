@@ -42,9 +42,45 @@ public class SummaryIdentifier implements CaseIdentifier{
             Summary comparison = sa.summariseCases(comparisonCases, options, resourceRepository).get(0); // should be just the 1
             Map<String, Object> caseMap = JSONUtil.json2map(caseString);
             Map<String, Map<String, Object>> assessment = comparison.assess(caseMap);
-            Map<String, Object> outcomes = new HashMap<String, Object>();
-            for (Map<String, Object> indicator : (ArrayList<Map<String, Object>>) ids.getScheme())
-                outcomes.put((String)indicator.get("name"),tryIndicator(ruleSet, sa, caseMap, indicator, identificationPeriod, assessment, options, ob, resourceRepository));
+            Map<String, Map<String, Object>> outcomes = new HashMap<String, Map<String, Object>>();
+            Map<String, Object> primaryOutcome = null;
+            for (Map<String, Object> indicator : (ArrayList<Map<String, Object>>) ids.getScheme()){
+                Map<String, Object> outcome = tryIndicator(ruleSet, sa, caseMap, indicator, identificationPeriod, assessment, options, ob, resourceRepository);
+                if (outcome.get("rank").equals("primary")){
+                    primaryOutcome = outcome;
+                }
+                outcomes.put((String)indicator.get("name"),outcome);
+            }
+            if (primaryOutcome !=null){
+                for (Map<String, Object> outcome : (Collection<Map<String, Object>>) outcomes.values()){
+                    if (!outcome.get("rank").equals("primary")){
+                        String comparePrimary = "";
+                        if ((Integer)outcome.get("count")==1 && (Integer)primaryOutcome.get("count")==1){
+                            comparePrimary = "SingleEQPrimary";
+                        }
+                        if ((Integer)outcome.get("count")==1 && (Integer)primaryOutcome.get("count")>1){
+                            comparePrimary = "SingleLTPrimary";
+                        }
+                        if ((Integer)outcome.get("count")>1 && (Integer)primaryOutcome.get("count")==1){
+                            comparePrimary = "MultipleGTSinglePrimary";
+                        }
+                        if ((Integer)outcome.get("count")>1 && (Integer)primaryOutcome.get("count")>1){
+                            if ((Integer)outcome.get("count") == (Integer)primaryOutcome.get("count")){
+                                comparePrimary = "MultipleEQPrimary";
+                            }
+                            if ((Integer)outcome.get("count")> (Integer)primaryOutcome.get("count")){
+                                comparePrimary = "MultipleGTPrimary";
+                            }
+                            if ((Integer)outcome.get("count")< (Integer)primaryOutcome.get("count")){
+                                comparePrimary = "MultipleLTPrimary";
+                            }
+                        }
+                        outcome.put("compareToPrimary",comparePrimary);
+                    } else {
+                        outcome.put("compareToPrimary","isPrimary");
+                    }
+                }
+            }            
 //            identification.put("identification", outcomes);
             caseMap.put("identification", outcomes);
 //            return identification;
@@ -112,6 +148,9 @@ public class SummaryIdentifier implements CaseIdentifier{
         
         Summary comparison = comparisons.get(0); // should be just the 1
         assessment = comparison.assess(caseMap);
+//        LOGGER.debug("Extended ID");
+//        LOGGER.debug((String)indicator.get("name"));
+//        LOGGER.debug(comparison.asMap().toString());
         
         for (String field : nonUnique){
             prevNonUnique.add(field);
@@ -141,10 +180,12 @@ public class SummaryIdentifier implements CaseIdentifier{
         HashMap<String, Object> outcome = new HashMap<String, Object> ();
         outcome.put("indicator", indicator.get("name"));
         outcome.put("count", maxCount);
+        
         outcome.put("query", query);
         outcome.put("power", 1.0*totalPowers/candidateCount);
         outcome.put("strength", relInfo);
         outcome.put("rank", indicator.get("rank"));
+        outcome.put("support", comparison.asMap());
         return outcome;
     }
     
