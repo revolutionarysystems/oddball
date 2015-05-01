@@ -187,11 +187,8 @@ public class OddUtil {
             separator = ":";
             ipLength = 8;
         }
-        System.out.println(ip);
         String[] ipParts= ip.split(separatorRE);
         length = Math.min(length, ipLength);
-        System.out.println(length);
-        System.out.println(ipParts.length);
         StringBuilder s = new StringBuilder("");
         s.append(ipParts[0]);
         for (int i=1; i<length; i++){

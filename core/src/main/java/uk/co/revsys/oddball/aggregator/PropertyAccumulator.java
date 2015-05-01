@@ -20,4 +20,6 @@ public interface PropertyAccumulator {
     
     public Map readOffResults();
     
+    public void setOptions(Map<String, String> options);
+    
 }

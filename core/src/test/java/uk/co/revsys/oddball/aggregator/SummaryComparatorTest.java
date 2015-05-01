@@ -93,6 +93,189 @@ public class SummaryComparatorTest{
         assertTrue(0.0001> Math.abs(-0.79248 - (Double)((Map)comparison.get("agent-name")).get("relInfo")));
     }
 
+    @Test
+    public void testCompareSignalsNumeric() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException {
+        HashSet<String> signals = new HashSet<String>();
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000001\","
+                + "\"response\": 100,"
+                + "\"city\": \"london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"chrome\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000002\","
+                + "\"response\": 100,"
+                + "\"city\": \"london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"chrome\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000002\","
+                + "\"response\": 150,"
+                + "\"city\": \"london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"ie\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000002\","
+                + "\"response\": 90,"
+                + "\"city\": \"london\","
+                + "\"state\": \"faq\","
+                + "\"agent-name\": \"firefox\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1001001\","
+                + "\"response\": 125,"
+                + "\"city\": \"bristol\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"opera\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1001002\","
+                + "\"response\": 180,"
+                + "\"city\": \"bristol\","
+                + "\"state\": \"buy\","
+                + "\"agent-name\": \"chrome\"}");
+        String signalOfInterest = "{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1001002\","
+                + "\"response\": 157,"
+                + "\"city\": \"bristol\","
+                + "\"state\": \"buy\","
+                + "\"agent-name\": \"chrome\"}";
+        SummaryComparator sc = new SummaryComparator();
+        Map<String, String> options = new HashMap<String, String>();
+        options.put("summaryDefinition", "testSummaryDef1.json");
+        options.put("periodStart", "1000000");
+        options.put("periodEnd", "1002000");
+        options.put("owner", "test-account");
+        Map caseWithComparison = sc.compare(signalOfInterest, signals, options, resourceRepository);
+        Map comparison=(Map)caseWithComparison.get("comparison");
+        System.out.println("comparison");
+        System.out.println(comparison);
+        assertEquals("chrome", ((Map)comparison.get("agent-name")).get("value"));
+        assertEquals(3, ((Map)comparison.get("agent-name")).get("count"));
+        assertEquals((float)0.5, ((Map)comparison.get("agent-name")).get("proportion"));
+        assertTrue(0.0001> Math.abs(1.0 - (Double)((Map)comparison.get("agent-name")).get("info")));
+        assertTrue(0.0001> Math.abs(-0.79248 - (Double)((Map)comparison.get("agent-name")).get("relInfo")));
+    }
+
+    @Test
+    public void testCompareSignalsFieldMissing() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException {
+        HashSet<String> signals = new HashSet<String>();
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000001\","
+                + "\"response\": \"100\","
+                + "\"city\": \"london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"chrome\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000002\","
+                + "\"response\": \"100\","
+                + "\"city\": \"london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"chrome\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000002\","
+                + "\"response\": \"150\","
+                + "\"city\": \"london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"ie\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000002\","
+                + "\"response\": \"90\","
+                + "\"city\": \"london\","
+                + "\"state\": \"faq\","
+                + "\"agent-name\": \"firefox\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1001001\","
+                + "\"response\": \"125\","
+                + "\"city\": \"bristol\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"opera\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1001002\","
+                + "\"response\": \"180\","
+                + "\"state\": \"buy\","
+                + "\"agent-name\": \"chrome\"}");
+        String signalOfInterest = "{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1001002\","
+                + "\"response\": \"157\","
+                + "\"city\": \"bristol\","
+                + "\"state\": \"buy\","
+                + "\"agent-name\": \"chrome\"}";
+        SummaryComparator sc = new SummaryComparator();
+        Map<String, String> options = new HashMap<String, String>();
+        options.put("summaryDefinition", "testSummaryDef.json");
+        options.put("periodStart", "1000000");
+        options.put("periodEnd", "1002000");
+        options.put("owner", "test-account");
+        Map caseWithComparison = sc.compare(signalOfInterest, signals, options, resourceRepository);
+        Map comparison=(Map)caseWithComparison.get("comparison");
+        System.out.println("comparison");
+        System.out.println(comparison);
+        assertEquals("chrome", ((Map)comparison.get("agent-name")).get("value"));
+        assertEquals(3, ((Map)comparison.get("agent-name")).get("count"));
+        assertEquals((float)0.5, ((Map)comparison.get("agent-name")).get("proportion"));
+        assertTrue(0.0001> Math.abs(1.0 - (Double)((Map)comparison.get("agent-name")).get("info")));
+        assertTrue(0.0001> Math.abs(-0.79248 - (Double)((Map)comparison.get("agent-name")).get("relInfo")));
+    }
+
+    @Test
+    public void testCompareSignalsComparisonFieldMissing() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException {
+        HashSet<String> signals = new HashSet<String>();
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000001\","
+                + "\"response\": \"100\","
+                + "\"city\": \"london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"chrome\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000002\","
+                + "\"response\": \"100\","
+                + "\"city\": \"london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"chrome\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000002\","
+                + "\"response\": \"150\","
+                + "\"city\": \"london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"ie\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000002\","
+                + "\"response\": \"90\","
+                + "\"city\": \"london\","
+                + "\"state\": \"faq\","
+                + "\"agent-name\": \"firefox\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1001001\","
+                + "\"response\": \"125\","
+                + "\"city\": \"bristol\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"opera\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1001002\","
+                + "\"response\": \"180\","
+                + "\"state\": \"buy\","
+                + "\"agent-name\": \"chrome\"}");
+        String signalOfInterest = "{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1001002\","
+                + "\"response\": \"157\","
+                + "\"state\": \"buy\","
+                + "\"agent-name\": \"chrome\"}";
+        SummaryComparator sc = new SummaryComparator();
+        Map<String, String> options = new HashMap<String, String>();
+        options.put("summaryDefinition", "testSummaryDef.json");
+        options.put("periodStart", "1000000");
+        options.put("periodEnd", "1002000");
+        options.put("owner", "test-account");
+        Map caseWithComparison = sc.compare(signalOfInterest, signals, options, resourceRepository);
+        Map comparison=(Map)caseWithComparison.get("comparison");
+        System.out.println("comparison");
+        System.out.println(comparison);
+        assertEquals("chrome", ((Map)comparison.get("agent-name")).get("value"));
+        assertEquals(3, ((Map)comparison.get("agent-name")).get("count"));
+        assertEquals((float)0.5, ((Map)comparison.get("agent-name")).get("proportion"));
+        assertTrue(0.0001> Math.abs(1.0 - (Double)((Map)comparison.get("agent-name")).get("info")));
+        assertTrue(0.0001> Math.abs(-0.79248 - (Double)((Map)comparison.get("agent-name")).get("relInfo")));
+    }
+
     
     @Test
     public void testCompareSignals2() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException {
@@ -326,5 +509,82 @@ public class SummaryComparatorTest{
         assertEquals(0, ((Map)comparison.get("response")).get("deviationBand"));
     }
         
+ 
+    @Test
+    public void testCompareSignalsLevelledCollation() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException {
+        HashSet<String> signals = new HashSet<String>();
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000001\","
+                + "\"response\": \"100\","
+                + "\"location\": \"uk.eng.london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"chrome\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000002\","
+                + "\"response\": \"100\","
+                + "\"city\": \"london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"chrome\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000002\","
+                + "\"response\": \"150\","
+                + "\"location\": \"uk.eng.london\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"ie\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1000002\","
+                + "\"response\": \"90\","
+                + "\"location\": \"uk.eng.london\","
+                + "\"state\": \"faq\","
+                + "\"agent-name\": \"firefox\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1001001\","
+                + "\"response\": \"125\","
+                + "\"location\": \"uk.eng.bristol\","
+                + "\"state\": \"login\","
+                + "\"agent-name\": \"opera\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1001002\","
+                + "\"response\": \"180\","
+                + "\"location\": \"uk.eng.bristol\","
+                + "\"state\": \"buy\","
+                + "\"agent-name\": \"chrome\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1001002\","
+                + "\"response\": \"180\","
+                + "\"location\": \"uk.ni.belfast\","
+                + "\"state\": \"buy\","
+                + "\"agent-name\": \"chrome\"}");
+        signals.add("{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1001002\","
+                + "\"response\": \"180\","
+                + "\"location\": \"de.bay.munich\","
+                + "\"state\": \"buy\","
+                + "\"agent-name\": \"chrome\"}");
+        String signalOfInterest = "{\"accountId\": \"revsys-master-account\","
+                + "\"timestamp\": \"1001002\","
+                + "\"response\": \"157\","
+                + "\"location\": \"uk.eng.bristol\","
+                + "\"state\": \"buy\","
+                + "\"agent-name\": \"chrome\"}";
+        SummaryComparator sc = new SummaryComparator();
+        Map<String, String> options = new HashMap<String, String>();
+        options.put("summaryDefinition", "testSummaryDef7.json");
+        options.put("periodStart", "1000000");
+        options.put("periodEnd", "1002000");
+        options.put("owner", "test-account");
+        Map caseWithComparison = sc.compare(signalOfInterest, signals, options, resourceRepository);
+        Map comparison=(Map)caseWithComparison.get("comparison");
+        System.out.println("comparison");
+        System.out.println(comparison);
+        assertEquals("chrome", ((Map)comparison.get("agent-name")).get("value"));
+        assertEquals(5, ((Map)comparison.get("agent-name")).get("count"));
+        assertEquals((float)0.625, ((Map)comparison.get("agent-name")).get("proportion"));
+        System.out.println(((Map)comparison.get("agent-name")).get("info"));
+        assertTrue(0.0001> Math.abs(0.678071 - (Double)((Map)comparison.get("agent-name")).get("info")));
+        assertTrue(0.0001> Math.abs(-0.87072 - (Double)((Map)comparison.get("agent-name")).get("relInfo")));
+    }
+
+    
     
 }

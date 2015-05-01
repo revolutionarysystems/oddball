@@ -30,6 +30,7 @@ public class Summary {
             Class accumulatorClass = new PropertyAccumulatorMap().get(accMap.get("treatment"));
             try {
                 PropertyAccumulator ac = (PropertyAccumulator) accumulatorClass.newInstance();
+                ac.setOptions(accMap);
                 accumulators.put((String)accMap.get("name"), ac);
                 properties.put((String)accMap.get("name"), (String) accMap.get("source"));
             } catch (InstantiationException e) {
@@ -90,7 +91,9 @@ public class Summary {
             if (subMap!=null){
                 propertyValue = subMap.get(propertyPath);
             }
-            comparisonMap.put(accName, accumulators.get(accName).assessProperty(propertyValue));
+            if (propertyValue!=null){
+                comparisonMap.put(accName, accumulators.get(accName).assessProperty(propertyValue));
+            }
         }
         return comparisonMap;
     }

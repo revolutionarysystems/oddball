@@ -115,6 +115,11 @@ public class SimpleCollationAccumulator implements PropertyAccumulator, Comparat
     double totalInfo= 0;
     Map<String, Double> itemInfo = new HashMap<String, Double>();
     
+    private Map<String,String> options;
+    public void setOptions(Map<String, String> options){
+        this.options = options;
+    }
+    
 
     
 }
