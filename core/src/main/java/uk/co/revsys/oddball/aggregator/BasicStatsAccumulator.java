@@ -67,5 +67,10 @@ public class BasicStatsAccumulator implements PropertyAccumulator{
         return results;
     }
 
+    private Map<String,String> options;
+    public void setOptions(Map<String, String> options){
+        this.options = options;
+    }
+    
     
 }

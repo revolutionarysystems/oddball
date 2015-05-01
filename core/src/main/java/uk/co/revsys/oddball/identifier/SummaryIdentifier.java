@@ -46,10 +46,12 @@ public class SummaryIdentifier implements CaseIdentifier{
             Map<String, Object> primaryOutcome = null;
             for (Map<String, Object> indicator : (ArrayList<Map<String, Object>>) ids.getScheme()){
                 Map<String, Object> outcome = tryIndicator(ruleSet, sa, caseMap, indicator, identificationPeriod, assessment, options, ob, resourceRepository);
-                if (outcome.get("rank").equals("primary")){
-                    primaryOutcome = outcome;
+                if (outcome!=null){
+                    if (outcome.get("rank").equals("primary")){
+                        primaryOutcome = outcome;
+                    }
+                    outcomes.put((String)indicator.get("name"),outcome);
                 }
-                outcomes.put((String)indicator.get("name"),outcome);
             }
             if (primaryOutcome !=null){
                 for (Map<String, Object> outcome : (Collection<Map<String, Object>>) outcomes.values()){
@@ -115,78 +117,93 @@ public class SummaryIdentifier implements CaseIdentifier{
 //        System.out.println(assessment);
 
         for (String field : assessment.keySet()){
-            Map<String, Object> fieldAssessment = assessment.get(field);
-//            System.out.println("field:"+field);
-//            System.out.println(fieldAssessment.get("proportion"));
-            if ((Float)fieldAssessment.get("proportion")<1.0){
-                nonUnique.add(field);
-            } else {
-                totalPowers++;
+            try {
+                Map<String, Object> fieldAssessment = assessment.get(field);
+                if ((Float)fieldAssessment.get("proportion")<1.0){
+                    nonUnique.add(field);
+                } else {
+                    totalPowers++;
+                }
+                if ((includeFields.contains(field)) && ((Double)fieldAssessment.get("info")>0.0)){
+                    relInfo = (Double)fieldAssessment.get("relInfo");
+                    applicableField = field;
+                    queryField = queryFields.get(0);
+                }
             }
-            if ((includeFields.contains(field)) && ((Double)fieldAssessment.get("info")>0.0)){
-                relInfo = (Double)fieldAssessment.get("relInfo");
-                applicableField = field;
-                queryField = queryFields.get(0);
+            catch (NullPointerException e){
+                LOGGER.warn("Identity indicator failed:"+indicator.get("name"), e);
             }
+                    
+                    
         }
-        String query = "{\""+queryField+"\":\""+assessment.get(applicableField).get("value")+"\"}";
+        if (!applicableField.equals("")){
+            String query = "{\""+queryField+"\":\""+assessment.get(applicableField).get("value")+"\"}";
 
-        //options
-        Map<String, String> subOptions = new HashMap<String, String>();
-        for (String key : options.keySet()){
-            subOptions.put(key, options.get(key));
-        }
-        subOptions.put("query", query);
-        subOptions.put("caseRecent", identificationPeriod);
-        if (subOptions.get("identityTransformer")!=null){
-            subOptions.put("transformer", (String) subOptions.get("identityTransformer"));
-        }
-        
-        Collection<String> comparisonCases = ob.comparisonResults(ruleSet, query, subOptions);
-        ArrayList<Summary> comparisons=sa.summariseCases(comparisonCases, subOptions, resourceRepository);
-        
-        
-        Summary comparison = comparisons.get(0); // should be just the 1
-        assessment = comparison.assess(caseMap);
-//        LOGGER.debug("Extended ID");
-//        LOGGER.debug((String)indicator.get("name"));
-//        LOGGER.debug(comparison.asMap().toString());
-        
-        for (String field : nonUnique){
-            prevNonUnique.add(field);
-        }
-        
-        nonUnique.clear();
-        int maxCount=0;
-        
-        for (String field : assessment.keySet()){
-            Map<String, Object> fieldAssessment = assessment.get(field);
-            if ((Float)fieldAssessment.get("proportion")<1.0){
-                nonUnique.add(field);
+            //options
+            Map<String, String> subOptions = new HashMap<String, String>();
+            for (String key : options.keySet()){
+                subOptions.put(key, options.get(key));
             }
-            if ((includeFields.contains(field)) && ((Integer)fieldAssessment.get("count")>maxCount)){
-                maxCount = (Integer)fieldAssessment.get("count");
+            subOptions.put("query", query);
+            subOptions.put("caseRecent", identificationPeriod);
+            if (subOptions.get("identityTransformer")!=null){
+                subOptions.put("transformer", (String) subOptions.get("identityTransformer"));
             }
-        }
-            
-        for (String field2 : nonUnique){
-            prevNonUnique.remove(field2);
-        }
-//        System.out.println(prevNonUnique);
-        totalPowers+=prevNonUnique.size();
-//        System.out.println("Total Powers");
-//        System.out.println(totalPowers);
 
-        HashMap<String, Object> outcome = new HashMap<String, Object> ();
-        outcome.put("indicator", indicator.get("name"));
-        outcome.put("count", maxCount);
-        
-        outcome.put("query", query);
-        outcome.put("power", 1.0*totalPowers/candidateCount);
-        outcome.put("strength", relInfo);
-        outcome.put("rank", indicator.get("rank"));
-        outcome.put("support", comparison.asMap());
-        return outcome;
+            Collection<String> comparisonCases = ob.comparisonResults(ruleSet, query, subOptions);
+            ArrayList<Summary> comparisons=sa.summariseCases(comparisonCases, subOptions, resourceRepository);
+
+
+            Summary comparison = comparisons.get(0); // should be just the 1
+            assessment = comparison.assess(caseMap);
+    //        LOGGER.debug("Extended ID");
+    //        LOGGER.debug((String)indicator.get("name"));
+    //        LOGGER.debug(comparison.asMap().toString());
+
+            for (String field : nonUnique){
+                prevNonUnique.add(field);
+            }
+
+            nonUnique.clear();
+            int maxCount=0;
+
+            for (String field : assessment.keySet()){
+                try {
+                    Map<String, Object> fieldAssessment = assessment.get(field);
+                    if ((Float)fieldAssessment.get("proportion")<1.0){
+                        nonUnique.add(field);
+                    }
+                    if ((includeFields.contains(field)) && ((Integer)fieldAssessment.get("count")>maxCount)){
+                        maxCount = (Integer)fieldAssessment.get("count");
+                    }
+                }
+                catch (NullPointerException e){
+                    LOGGER.warn("Identity indicator failed:"+field, e);
+                }
+            }
+
+            for (String field2 : nonUnique){
+                prevNonUnique.remove(field2);
+            }
+    //        System.out.println(prevNonUnique);
+            totalPowers+=prevNonUnique.size();
+    //        System.out.println("Total Powers");
+    //        System.out.println(totalPowers);
+
+            HashMap<String, Object> outcome = new HashMap<String, Object> ();
+            outcome.put("indicator", indicator.get("name"));
+            outcome.put("count", maxCount);
+
+            outcome.put("query", query);
+            outcome.put("power", 1.0*totalPowers/candidateCount);
+            outcome.put("strength", relInfo);
+            outcome.put("rank", indicator.get("rank"));
+            outcome.put("support", comparison.asMap());
+            return outcome;
+        } else {
+                LOGGER.warn("Identity indicator failed:"+indicator.get("name"));
+                return null;
+        }
     }
     
     private SummaryDefinition summaryDefinition;     

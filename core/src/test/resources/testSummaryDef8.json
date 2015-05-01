@@ -1,0 +1,7 @@
+{"summary": 
+    [
+        {"name":"location", "source":"location", "treatment":"levelCollate", "order":"reverse"}, 
+        {"name":"state", "source":"state", "treatment":"collate"}, 
+        {"name":"agent-name", "source":"agent-name", "treatment":"collate"}
+    ]
+}

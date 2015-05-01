@@ -43,7 +43,7 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
     }
 
     public void removeProperty(Object property){
-        if (property!=null){
+        if (property!=null && property instanceof String){
             property=((String)property).replace("\"","");
         }
         if (collation.containsKey(property)){
@@ -81,7 +81,7 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
         }
         computeInfo();
         results.put("info", itemInfo.get(property));
-        results.put("relInfo", itemInfo.get(property)-itemInfo.get("total"));
+        results.put("relInfo", itemInfo.get(property.toString())-itemInfo.get("total"));
         if (novel){
             removeProperty(property); // for info measurement purposes
         }
@@ -162,6 +162,11 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
     int totalCount= 0;
 //    double totalInfo= 0;
     Map<String, Double> itemInfo = new HashMap<String, Double>();
+    
+    private Map<String,String> options;
+    public void setOptions(Map<String, String> options){
+        this.options = options;
+    }
     
 
     

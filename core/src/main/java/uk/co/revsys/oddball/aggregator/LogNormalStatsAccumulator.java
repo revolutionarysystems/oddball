@@ -95,6 +95,11 @@ public class LogNormalStatsAccumulator implements PropertyAccumulator{
 
     }
 
+    private Map<String,String> options;
+    public void setOptions(Map<String, String> options){
+        this.options = options;
+    }
+    
     static final Logger LOGGER = LoggerFactory.getLogger("oddball");
     
 }
