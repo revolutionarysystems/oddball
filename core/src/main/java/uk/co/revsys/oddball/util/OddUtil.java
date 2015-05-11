@@ -174,28 +174,37 @@ public class OddUtil {
         return value;
     }
 
+    public String escapeQuotes(String value) {
+        value = value.replace("\"", "\\\"");
+        return value;
+    }
+
     public String ipRange(String ip, int length) {
         int version = 4;
-        if (ip.contains(":")){
-            version = 6;
+        if (ip==null){
+            return "";
+        } else {
+            if (ip.contains(":")){
+                version = 6;
+            }
+            String separatorRE = "\\.";
+            String separator = ".";
+            int ipLength = 4;
+            if (version==6){
+                separatorRE = ":";
+                separator = ":";
+                ipLength = 8;
+            }
+            String[] ipParts= ip.split(separatorRE);
+            length = Math.min(length, ipLength);
+            StringBuilder s = new StringBuilder("");
+            s.append(ipParts[0]);
+            for (int i=1; i<length; i++){
+                s.append(separator);
+                s.append(ipParts[i]);
+            }
+            return s.toString();
         }
-        String separatorRE = "\\.";
-        String separator = ".";
-        int ipLength = 4;
-        if (version==6){
-            separatorRE = ":";
-            separator = ":";
-            ipLength = 8;
-        }
-        String[] ipParts= ip.split(separatorRE);
-        length = Math.min(length, ipLength);
-        StringBuilder s = new StringBuilder("");
-        s.append(ipParts[0]);
-        for (int i=1; i<length; i++){
-            s.append(separator);
-            s.append(ipParts[i]);
-        }
-        return s.toString();
     }
 
     static final Logger LOGGER = LoggerFactory.getLogger("oddball");

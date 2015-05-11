@@ -19,8 +19,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.ResourceNotLoadedException;
-import uk.co.revsys.oddball.RuleSetMap;
-import uk.co.revsys.oddball.RuleTypeMap;
 import uk.co.revsys.oddball.cases.Case;
 import uk.co.revsys.oddball.cases.InvalidCaseException;
 import uk.co.revsys.oddball.cases.MapCase;
@@ -103,12 +101,12 @@ public class RuleSetImpl implements RuleSet {
     }
 
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery) throws InvalidCaseException, IOException {
-        return assessCase(aCase, key, ruleSetStr, persistOption, duplicateQuery, avoidQuery, this.forEachIn);
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery, RuleSet overridePersistRuleSet, boolean retag) throws InvalidCaseException, IOException {
+        return assessCase(aCase, key, ruleSetStr, persistOption, duplicateQuery, avoidQuery, this.forEachIn, overridePersistRuleSet, retag);
     }
 
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery, String forEachIn) throws InvalidCaseException, IOException {
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery, String forEachIn, RuleSet overridePersistRuleSet, boolean retag) throws InvalidCaseException, IOException {
 
         Opinion op = new OpinionImpl();
         MapCase aMapCase;
@@ -133,7 +131,7 @@ public class RuleSetImpl implements RuleSet {
                     if (avoidQuery != null) {
                         caseAvoidQuery = new OddUtil().replacePlaceholders(avoidQuery, (Map<String, Object>) subCase.getContentObject());
                     }
-                    Opinion subOp = assessCase(subCase, null, ruleSetStr, persistOption, caseDuplicateQuery, caseAvoidQuery, null);
+                    Opinion subOp = assessCase(subCase, null, ruleSetStr, persistOption, caseDuplicateQuery, caseAvoidQuery, null, overridePersistRuleSet, retag);
                     op.getTags().addAll(subOp.getTags());
                 }
             }
@@ -141,15 +139,7 @@ public class RuleSetImpl implements RuleSet {
 
         } else { // single case
             for (Rule rule : rules) {
-//                LOGGER.debug(rule.getRuleString());
-//                LOGGER.debug(rule.getLabel());
-//                LOGGER.debug(rule.asJSON());
                 Assessment as = rule.apply(aCase, this, key);
-//                try{
-//                    LOGGER.debug("assessing:"+rule.asJSON().toString());
-//                    LOGGER.debug(aCase.getJSONisedContent().toString());
-//                } catch (Exception e){}
-//                LOGGER.debug(as.getLabelStr());
                 op.incorporate(as);
             }
             if (op.getTags().isEmpty()) {
@@ -193,28 +183,36 @@ public class RuleSetImpl implements RuleSet {
             if (op.getLabel().contains("*ignore*")) {
                 op.getTags().clear();
             } else {
-                String persistCase = op.getEnrichedCase(ruleSetStr, aCase, true, null);
                 if (persistOption != NEVERPERSIST) {
+                    MongoDBHelper localPersist = this.getPersist();
+                    if (overridePersistRuleSet!=null){
+                        localPersist = overridePersistRuleSet.getPersist();
+                    }
                     String caseAvoidQuery = null;
                     if (avoidQuery != null) {
                         caseAvoidQuery = new OddUtil().replacePlaceholders(avoidQuery, (Map<String, Object>) aCase.getContentObject());
                     }
-                    if (caseAvoidQuery == null || getPersist().checkAlreadyExists(caseAvoidQuery) == null) {
+                    if (caseAvoidQuery == null || localPersist.checkAlreadyExists(caseAvoidQuery) == null) {
+                        String persistCase;
                         if (persistOption == UPDATEPERSIST) {
                             String caseDuplicateQuery = null;
                             if (duplicateQuery != null) {
                                 caseDuplicateQuery = new OddUtil().replacePlaceholders(duplicateQuery, (Map<String, Object>) aCase.getContentObject());
                             }
-                            String id = getPersist().checkAlreadyExists(caseDuplicateQuery);
+                            String id = localPersist.checkAlreadyExists(caseDuplicateQuery);
                             if (id!=null){
-                                persistCase=op.getEnrichedCase(ruleSetStr, aCase, false, id);
+                                persistCase=op.getEnrichedCase(ruleSetStr, aCase, false, id, retag);
+                            } else {
+                                persistCase = op.getEnrichedCase(ruleSetStr, aCase, true, null, retag);
                             }
                             while (id != null) {
-                                getPersist().removeCase(id);
-                                id = getPersist().checkAlreadyExists(caseDuplicateQuery);
+                                localPersist.removeCase(id);
+                                id = localPersist.checkAlreadyExists(caseDuplicateQuery);
                             }
+                        } else {
+                            persistCase = op.getEnrichedCase(ruleSetStr, aCase, true, null, retag);
                         }
-                        getPersist().insertCase(persistCase);
+                        localPersist.insertCase(persistCase);
                     }
                     //LOGGER.debug("inserting:"+duplicateQuery);
                 }

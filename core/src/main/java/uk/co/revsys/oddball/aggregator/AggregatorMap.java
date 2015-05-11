@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package uk.co.revsys.oddball;
+package uk.co.revsys.oddball.aggregator;
 
 import java.util.HashMap;
 import uk.co.revsys.oddball.aggregator.EpisodeAggregator;

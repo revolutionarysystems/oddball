@@ -6,6 +6,7 @@
 
 package uk.co.revsys.oddball.util;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +16,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.json.CDL;
@@ -27,10 +30,15 @@ import org.json.JSONArray;
 public class JSONUtil {
 
 
-    public static Map<String, Object> json2map(String json) throws IOException{
+    public static Map<String, Object> json2map(String json) throws JsonParseException{
 //	Map<String,Object> map = new HashMap<String,Object>();
 	ObjectMapper mapper = new ObjectMapper();
-        Map<String,Object> map = mapper.readValue(json, new TypeReference<HashMap<String,Object>>(){});
+        Map<String,Object> map = null;
+        try {
+            map = mapper.readValue(json, new TypeReference<HashMap<String,Object>>(){});
+        } catch (IOException ex) {
+            throw new JsonParseException("JSON parse failed:"+json,null);
+        }
         return map;
     }
     

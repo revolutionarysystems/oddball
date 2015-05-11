@@ -6,6 +6,8 @@
 
 package uk.co.revsys.oddball.rules;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -14,9 +16,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.cases.Case;
+import uk.co.revsys.oddball.util.JSONUtil;
 
 /**
  *
@@ -52,7 +56,7 @@ public class OpinionImpl implements Opinion{
         return tagStr.toString();
     }
 
-    public String derivedProperties(){
+    public String derivedProperties(List<String> tags){
         HashMap<String, String> alreadyAdded = new HashMap<String, String>();
         for (String tag: tags){
             if (tag.contains(".")){
@@ -115,8 +119,18 @@ public class OpinionImpl implements Opinion{
 //    }
 
     @Override
+    public String getEnrichedCase(String ruleSet, Case aCase, boolean generateUid, String forcedUid, boolean reEnrich) {
+        if (reEnrich){
+            return  enrichTaggedCase(ruleSet, aCase, generateUid, forcedUid); 
+            
+        } else {
+            return getEnrichedCase(ruleSet, aCase, generateUid, forcedUid);
+        }
+    }
+
+    @Override
     public String getEnrichedCase(String ruleSet, Case aCase, boolean generateUid, String forcedUid) {
-        String tags = getLabel();
+        String tagsString = getLabel();
         String caseStr = aCase.getJSONisedContent();
         if (assessTime==0){
             assessTime=new Date().getTime();
@@ -153,7 +167,7 @@ public class OpinionImpl implements Opinion{
         enrichedCase.append("\"ruleSet\" : \"" + ruleSet + "\", ");
         enrichedCase.append("\"case\" : " + caseStr + ", ");
         enrichedCase.append("\"owner\" : \"" + aCase.getOwner() + "\", ");
-        enrichedCase.append(tags.substring(1, tags.length() - 1)+ ", ");
+        enrichedCase.append(tagsString.substring(1, tagsString.length() - 1)+ ", ");
         if (id!=null){
             enrichedCase.append("\"_id\" : \"" + id + "\", ");
         } else {
@@ -167,10 +181,69 @@ public class OpinionImpl implements Opinion{
                 }
             }
         }
-        String propStr = derivedProperties();
+        String propStr = derivedProperties(getTags());
         enrichedCase.append(propStr.substring(1, propStr.length() - 1));
         enrichedCase.append(" }");
         return enrichedCase.toString();
+    }
+
+
+    @Override
+    public String enrichTaggedCase(String ruleSet, Case aCase, boolean generateUid, String forcedUid) {
+        String caseStr = aCase.getJSONisedContent();
+        Map caseMap = new HashMap();
+        caseMap.putAll((HashMap)aCase.getContentObject());
+        if (assessTime==0){
+            assessTime=new Date().getTime();
+        }
+        String timeStr = Long.toString(assessTime);
+        String caseTimeStr = null;
+        Map<String, String>  caseTimeMap = new HashMap<String, String>();
+        Map<String, Object> subCaseMap = (Map<String, Object>)caseMap.get("case");
+        try{
+            if (subCaseMap.containsKey("time")&& subCaseMap.get("time")!=null){
+                caseTimeStr = subCaseMap.get("time").toString();
+                GregorianCalendar gc = new GregorianCalendar();
+                gc.setTimeInMillis(Long.parseLong(caseTimeStr));
+                String displayTime = new Date(gc.getTimeInMillis()).toString();
+                caseTimeMap.put("display", displayTime);
+                String hod = String.format("%02d",gc.get(GregorianCalendar.HOUR_OF_DAY));
+                caseTimeMap.put("hod",hod);
+                String dow = Integer.toString(gc.get(GregorianCalendar.DAY_OF_WEEK));
+                caseTimeMap.put("dow",dow);
+            }
+        } catch (ClassCastException ex){
+            // just don't include the time
+        }
+        caseMap.put("timestamp",  timeStr);
+        caseMap.put("caseTime", caseTimeMap);
+        caseMap.put("ruleSet", ((String) caseMap.get("ruleSet"))+","+ruleSet);
+        caseMap.put("owner", aCase.getOwner());
+        List<String> prevTags = (List<String>)caseMap.get("tags");
+//        this.tags.addAll(prevTags);
+        prevTags.addAll(this.tags);
+        caseMap.put("tags", prevTags);
+        if (id!=null){
+            caseMap.put("_id", id);
+        } else {
+            if (generateUid){
+                id = UUID.randomUUID().toString();
+                caseMap.put("_id", id);
+            } else {
+                if (forcedUid!=null){
+                    id = forcedUid;
+                    caseMap.put("_id", id);
+                }
+            }
+        }
+        String propStr = derivedProperties(prevTags);
+        try {
+            Map<String, Object> props = JSONUtil.json2map(propStr);
+            caseMap.put("derived", props.get("derived"));
+        } catch (JsonParseException ex) {
+            LOGGER.warn("JSON parse failed for properties:"+propStr, ex);
+        }
+        return JSONUtil.map2json(caseMap);
     }
 
 

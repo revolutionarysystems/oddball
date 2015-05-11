@@ -6,6 +6,7 @@
 
 package uk.co.revsys.oddball.rules;
 
+import java.io.IOException;
 import java.util.List;
 import uk.co.revsys.oddball.cases.Case;
 
@@ -22,4 +23,6 @@ public interface Opinion {
     public void setId(String id);
 //    public String getEnrichedCase(String ruleSet, String caseStr);
     public String getEnrichedCase(String ruleSet, Case aCase, boolean generateUid, String forcedUid);
+    public String getEnrichedCase(String ruleSet, Case aCase, boolean generateUid, String forcedUid, boolean reEnrich);
+    public String enrichTaggedCase(String ruleSet, Case aCase, boolean generateUid, String forcedUid);    
 }

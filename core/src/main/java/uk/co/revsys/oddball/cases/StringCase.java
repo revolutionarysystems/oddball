@@ -6,6 +6,10 @@
 
 package uk.co.revsys.oddball.cases;
 
+import java.io.IOException;
+import java.util.Map;
+import uk.co.revsys.oddball.util.JSONUtil;
+
 /**
  *
  * @author Andrew
@@ -50,8 +54,21 @@ public class StringCase implements Case{
     
     @Override
     public String getOwner(){
-        // no way of obtaining for StringCase
-        return null;
+        try{
+            Map<String, Object> mapContent = JSONUtil.json2map(content);
+            if (mapContent.containsKey("owner")&& mapContent.get("owner")!=null){
+                return mapContent.get("owner").toString();
+            } else {
+                if (mapContent.containsKey("accountId")&& mapContent.get("accountId")!=null){
+                    return mapContent.get("accountId").toString();
+                } else {
+                    return null;
+                }
+            }
+        }
+        catch (IOException e){
+            return null;
+        }
     }
 
 }

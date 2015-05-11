@@ -67,10 +67,17 @@ public class Event implements Comparable<Event> {
             code=(String)derivedMap.get("code");
         }
         
-        if (code==null || code.equals("odDball")){
+        if (code==null){
+            code="S";
+        }
+        if (code.equals("odDball")){
             code="?";
         } else {
             code=code.substring(0,1);
+        }
+
+        if (state==null){
+            state="unknown";
         }
 
         if (eventMap.get("accountId")!=null){    

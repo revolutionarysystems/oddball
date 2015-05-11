@@ -484,8 +484,8 @@ public class OddballTest {
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
-        instance.assessCaseOpinion(ruleSetName, null, theCase, RuleSet.NEVERPERSIST, null, null, null);
         HashMap<String, String> options = new HashMap<String, String>();
+        instance.assessCaseOpinion(ruleSetName, null, theCase, RuleSet.NEVERPERSIST, null, null, options);
         options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
         int count = 0;
@@ -516,8 +516,8 @@ public class OddballTest {
             System.out.println(aCase);
             count++;
         }
-        instance.assessCaseOpinion(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"123789\"}", null, null);
-        instance.assessCaseOpinion(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"237890\"}", null, null);
+        instance.assessCaseOpinion(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"123789\"}", null, options);
+        instance.assessCaseOpinion(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"237890\"}", null, options);
         cases = instance.findQueryCases(ruleSetName, "{ }", options);
         count = 0;
         for (String aCase : cases) {
@@ -538,9 +538,9 @@ public class OddballTest {
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase); // should be added
-        instance.assessCaseOpinion(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"<series>\"}", null, null);
-        instance.assessCaseOpinion(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"<series>\"}", null, null);
         HashMap<String, String> options = new HashMap<String, String>();
+        instance.assessCaseOpinion(ruleSetName, null, theRevisedCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"<series>\"}", null, options);
+        instance.assessCaseOpinion(ruleSetName, null, theDifferentCase, RuleSet.UPDATEPERSIST, "{\"case.series\":\"<series>\"}", null, options);
         options.put("owner", "_all");
         Iterable<String> cases = instance.findQueryCases(ruleSetName, "{ }", options);
         int count = 0;
@@ -1494,6 +1494,33 @@ public class OddballTest {
     }
 
     @Test
+    public void testFindCasesQueryWithProcessorChain4b() throws Exception {
+        System.out.println("findCases");
+        String ruleSetName = "TestMongoEvent";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"owner\":\"ABC123\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"owner\":\"ABC123\"}");
+        Case yetAnotherCase = new MapCase("{\"browser\":\"opera\", \"platform\":\"android\", \"sessionId\":\"AA11\", \"owner\":\"ABC123\"}");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, anotherCase);
+        instance.assessCaseOpinion(ruleSetName, null, yetAnotherCase);
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        long future = new Date().getTime() + 1000000;
+        //options.put("processorChain", "[{\"transformer\":\"event.json\"},{\"filter\":\"{'browser':'opera'}\"},{\"aggregator\":\"episode\", \"timeOutReference\":\"" + Long.toString(future) + "\"}]");
+        //options.put("processorChain", "[{\"transformer\":\"event.json\"},{\"filter\":\"{'browser':'opera'}\"},{\"aggregator\":\"episode\", \"timeOutReference\":\"" + Long.toString(future) + "\"}, {\"tagger\":\"TestMongoEpisode\"}, {\"tagger\":\"TestMongoEpisode\"}]");
+        options.put("processorChain", "[{\"transformer\":\"event.json\"},{\"filter\":\"{'browser':'opera'}\"},{\"aggregator\":\"episode\", \"timeOutReference\":\"" + Long.toString(future) + "\"}, {\"tagger\":\"TestMongoEpisode\"}, {\"retagger\":\"TestMongoEpisode2\"}]");
+        Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        System.out.println(cases0);
+        assertTrue(cases0.size() == 1);
+        for (String aCase : cases0) {
+            System.out.println(aCase);
+            Map episodeMap = JSONUtil.json2map(aCase);
+            assertTrue(null!=((Map<String, Object>) episodeMap.get("case")).get("stateCodes"));
+        }
+    }
+
+    @Test
     public void testFindCasesQueryWithProcessorChainRevertResults() throws Exception {
         System.out.println("findCases");
         String ruleSetName = "TestMongoEvent";
@@ -1642,9 +1669,9 @@ public class OddballTest {
         Case theCase = new MapCase("{\"id\": \"123\", \"scripts\": [\"{async=false, defer=false, src=http://dev.echo-central.com/libraries.js, type=text/javascript}\",\"{async=true, defer=true, src=http://script.echo-central.com/wonderbar.js, type=text/javascript}\"]}");
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        HashMap<String, String> options = new HashMap<String, String>();
         Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
         System.out.println(result.getLabel());
-        HashMap<String, String> options = new HashMap<String, String>();
         options.put("owner", "_all");
         Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
         for (String aCase : cases0) {

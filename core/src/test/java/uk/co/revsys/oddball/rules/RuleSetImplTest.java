@@ -72,7 +72,7 @@ public class RuleSetImplTest {
         RuleSetImpl instance = new RuleSetImpl("Test", true);
         instance.addRule(new RegExRule(".*", "string"));
         instance.addRule(new RegExRule("a.*", "aString"));
-        Opinion result = instance.assessCase(aCase, null, "Test", RuleSet.ALWAYSPERSIST, null, null);
+        Opinion result = instance.assessCase(aCase, null, "Test", RuleSet.ALWAYSPERSIST, null, null, null, false);
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("aString"));
         System.out.println(result.getEnrichedCase("Test", aCase, false, null));
@@ -104,7 +104,7 @@ public class RuleSetImplTest {
         System.out.println("assessCase");
         Case aCase = new StringCase("abc123");
         RuleSet instance = RuleSetImpl.loadRuleSet("Test1", resourceRepository);
-        Opinion result = instance.assessCase(aCase, null, "Test1", RuleSet.NEVERPERSIST, null, null);
+        Opinion result = instance.assessCase(aCase, null, "Test1", RuleSet.NEVERPERSIST, null, null, null, false);
         System.out.println(result.getEnrichedCase("Test1", aCase, false, null));
         assertTrue(result.getLabel().contains("string"));
         assertTrue(result.getLabel().contains("aString"));
@@ -116,7 +116,7 @@ public class RuleSetImplTest {
         System.out.println("assessCase");
         Case aCase = new StringCase("abc123");
         RuleSet instance = RuleSetImpl.loadJSONRuleSet("TestJ.rules", resourceRepository);
-        Opinion result = instance.assessCase(aCase, null, "TestJ.rules", RuleSet.NEVERPERSIST, null, null);
+        Opinion result = instance.assessCase(aCase, null, "TestJ.rules", RuleSet.NEVERPERSIST, null, null, null, false);
         System.out.println(result.getEnrichedCase("TestJ.rules", aCase, false, null));
         assertTrue(result.getLabel().contains("string"));
     }
@@ -129,7 +129,7 @@ public class RuleSetImplTest {
         Case aCase = new MapCase("{\"id\": \"123\", \"scripts\": [\"{async=false, defer=false, src=http://dev.echo-central.com/libraries.js, type=text/javascript}\",\"{async=true, defer=true, src=http://script.echo-central.com/wonderbar.js, type=text/javascript}\"]}");
         //RuleSetImpl instance = new RuleSetImpl("Test1burst", true, "", 0);
         RuleSet instance = RuleSetImpl.loadRuleSet("Test1burst", resourceRepository);
-        Opinion result = instance.assessCase(aCase, null, "Test", RuleSet.NEVERPERSIST, null, null);
+        Opinion result = instance.assessCase(aCase, null, "Test", RuleSet.NEVERPERSIST, null, null, null, false);
         System.out.println(result.getEnrichedCase("Test", aCase, false, null));
         assertTrue(result.getLabel().contains("Libraries"));
         assertTrue(result.getLabel().contains("Wonderbar"));

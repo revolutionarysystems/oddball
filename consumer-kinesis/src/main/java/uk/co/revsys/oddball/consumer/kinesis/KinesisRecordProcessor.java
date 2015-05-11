@@ -83,6 +83,7 @@ public class KinesisRecordProcessor extends uk.co.revsys.kinesis.KinesisRecordPr
                         String replacement = extractProperty(placeholder, data);
                         processor = processor.replace("{" + placeholder + "}", replacement);
                     }
+                    
                     LOG.debug("Assessing " + ruleSet);
                     try {
                         oddball.assessCase(ruleSet, inboundTransformer, processor, new StringCase(data));
