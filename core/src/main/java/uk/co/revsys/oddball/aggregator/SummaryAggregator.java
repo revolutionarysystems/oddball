@@ -105,13 +105,18 @@ public class SummaryAggregator implements Aggregator{
         if (align.equals("clock")){
             reportStart = periodms * Math.round(-0.499999+reportStart/(1.0*periodms));
         }
-        periods = (int) Math.round(0.4999+(reportEnd-reportStart)/(1.0*periodms));  //round up number of periods to ensure coverage
+        periods = (int) Math.round(0.499999999+(reportEnd-reportStart)/(1.0*periodms));  //round up number of periods to ensure coverage
         int endIteration = 0;
         if (complete){   // except take first and last away if complete periods only wanted
             periods--;
             endIteration = 1;
         }
         // set up Summaries
+//        LOGGER.debug("id comparison");
+//        LOGGER.debug(Integer.toString(periods));
+//        LOGGER.debug(Long.toString(periodms));
+//        LOGGER.debug(Long.toString(reportStart));
+//        LOGGER.debug(Long.toString(reportEnd));
         for (int i=periods-1 ; i>=endIteration; i--){
             try {
                 summaries.add(new Summary(options.get("owner"), reportStart+i*periodms, periodms, summaryDefinition));

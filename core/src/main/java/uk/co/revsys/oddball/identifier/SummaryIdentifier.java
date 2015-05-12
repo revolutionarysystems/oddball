@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -32,14 +33,17 @@ public class SummaryIdentifier implements CaseIdentifier{
     
     
     @Override
-    public Map<String, Object> identify(RuleSet ruleSet, String caseString, Iterable<String> comparisonCases, Map<String, String> options, Oddball ob, ResourceRepository resourceRepository) throws ComparisonException, InvalidTimePeriodException, IOException, IdentificationSchemeNotLoadedException, UnknownBinException, IOException, DaoException, InvalidTimePeriodException, TransformerNotLoadedException, AggregationException{
+    public Map<String, Object> identify(RuleSet ruleSet, String caseString, Iterable<String> comparisonCases, Map<String, String> options, Oddball ob, ResourceRepository resourceRepository) throws ComparisonException, IOException, IdentificationSchemeNotLoadedException, UnknownBinException, IOException, DaoException, InvalidTimePeriodException, TransformerNotLoadedException, AggregationException{
         SummaryAggregator sa = new SummaryAggregator();
         IdentificationScheme ids = new IdentificationScheme(options.get("identificationScheme"), resourceRepository);
         String identificationPeriod = options.get("identificationPeriod");
         Map<String, Object> identification = new HashMap<String, Object>();
         try {
-//            Collection<Summary> comparisons = sa.summariseCases(comparisonCases, options, resourceRepository);
-            Summary comparison = sa.summariseCases(comparisonCases, options, resourceRepository).get(0); // should be just the 1
+            List<Summary> comparisons = sa.summariseCases(comparisonCases, options, resourceRepository);
+            if (comparisons.size()==0){
+                throw new InvalidTimePeriodException("No valid time periods for Summary Identifier");
+            }
+            Summary comparison = comparisons.get(0); // should be just the 1
             Map<String, Object> caseMap = JSONUtil.json2map(caseString);
             Map<String, Map<String, Object>> assessment = comparison.assess(caseMap);
             Map<String, Map<String, Object>> outcomes = new HashMap<String, Map<String, Object>>();
@@ -113,16 +117,18 @@ public class SummaryIdentifier implements CaseIdentifier{
         String applicableField = "";
         String queryField = "";
 
-//        System.out.println("Assessment");
-//        System.out.println(assessment);
+        System.out.println("Assessment");
+        System.out.println(assessment);
 
         for (String field : assessment.keySet()){
             try {
                 Map<String, Object> fieldAssessment = assessment.get(field);
-                if ((Float)fieldAssessment.get("proportion")<1.0){
-                    nonUnique.add(field);
-                } else {
-                    totalPowers++;
+                if (fieldAssessment.containsKey("proportion")){
+                    if ((Float)fieldAssessment.get("proportion")<1.0){
+                        nonUnique.add(field);
+                    } else {
+                        totalPowers++;
+                    }
                 }
                 if ((includeFields.contains(field)) && ((Double)fieldAssessment.get("info")>0.0)){
                     relInfo = (Double)fieldAssessment.get("relInfo");
@@ -170,7 +176,8 @@ public class SummaryIdentifier implements CaseIdentifier{
             for (String field : assessment.keySet()){
                 try {
                     Map<String, Object> fieldAssessment = assessment.get(field);
-                    if ((Float)fieldAssessment.get("proportion")<1.0){
+                    
+                    if (fieldAssessment.containsKey("proportion") && (Float)fieldAssessment.get("proportion")<1.0){
                         nonUnique.add(field);
                     }
                     if ((includeFields.contains(field)) && ((Integer)fieldAssessment.get("count")>maxCount)){

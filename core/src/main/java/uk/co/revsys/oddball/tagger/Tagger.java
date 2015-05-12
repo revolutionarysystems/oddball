@@ -6,6 +6,7 @@
 
 package uk.co.revsys.oddball.tagger;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +30,7 @@ public class Tagger {
         this.ruleSet = ruleSet;
     }
     
-    public String tagCase(Case aCase, Map<String, String> options, int persistOption, String duplicateQuery, String avoidQuery, RuleSet overridePersistRuleSet) throws OwnerMissingException, InvalidCaseException, IOException{
+    public String tagCase(Case aCase, Map<String, String> options, int persistOption, String duplicateQuery, String avoidQuery, RuleSet overridePersistRuleSet) throws OwnerMissingException, InvalidCaseException, JsonParseException{
         if (options.containsKey("owner")) {
             aCase.ensureOwner(options.get("owner"));
         }
@@ -47,7 +48,7 @@ public class Tagger {
     }
 
         
-    public Opinion tagCaseOpinion(Case aCase, Map<String, String> options, int persistOption, String duplicateQuery, String avoidQuery, RuleSet overridePersistRuleSet) throws OwnerMissingException, InvalidCaseException, IOException{
+    public Opinion tagCaseOpinion(Case aCase, Map<String, String> options, int persistOption, String duplicateQuery, String avoidQuery, RuleSet overridePersistRuleSet) throws OwnerMissingException, InvalidCaseException, JsonParseException{
         Collection<String> results = new ArrayList<String>();
         boolean retag = false;
         if (options.containsKey("retag")&&options.get("retag").equals("true")){

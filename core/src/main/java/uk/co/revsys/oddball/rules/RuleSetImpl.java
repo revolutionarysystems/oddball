@@ -5,6 +5,7 @@
  */
 package uk.co.revsys.oddball.rules;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -101,12 +102,12 @@ public class RuleSetImpl implements RuleSet {
     }
 
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery, RuleSet overridePersistRuleSet, boolean retag) throws InvalidCaseException, IOException {
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery, RuleSet overridePersistRuleSet, boolean retag) throws InvalidCaseException, JsonParseException{
         return assessCase(aCase, key, ruleSetStr, persistOption, duplicateQuery, avoidQuery, this.forEachIn, overridePersistRuleSet, retag);
     }
 
     @Override
-    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery, String forEachIn, RuleSet overridePersistRuleSet, boolean retag) throws InvalidCaseException, IOException {
+    public Opinion assessCase(Case aCase, String key, String ruleSetStr, int persistOption, String duplicateQuery, String avoidQuery, String forEachIn, RuleSet overridePersistRuleSet, boolean retag) throws InvalidCaseException, JsonParseException{
 
         Opinion op = new OpinionImpl();
         MapCase aMapCase;

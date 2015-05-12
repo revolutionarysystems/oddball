@@ -5,6 +5,7 @@
  */
 package uk.co.revsys.oddball.rules;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
@@ -53,7 +54,7 @@ public class MongoDBHelper {
         cases.drop();
     }
 
-    public String insertCase(String content) throws IOException {
+    public String insertCase(String content) throws JsonParseException{
         // jongo interprets # as parameter.
         content = content.replace("#", "(hash)");
         Map<String, Object> mapCase = JSONUtil.json2map(content);
@@ -150,7 +151,7 @@ public class MongoDBHelper {
         }
     }
 
-    private BasicDBObject buildQuery(String owner, String queryString, Map<String, String> options) throws InvalidTimePeriodException, IOException {
+    private BasicDBObject buildQuery(String owner, String queryString, Map<String, String> options) throws InvalidTimePeriodException, JsonParseException{
         if (queryString == null) {
             queryString = "{ }";
         }
@@ -210,7 +211,7 @@ public class MongoDBHelper {
         return query;
     }
 
-    public Collection<String> findCasesForOwner(String owner, String queryString, Map<String, String> options) throws DaoException, InvalidTimePeriodException, IOException {
+    public Collection<String> findCasesForOwner(String owner, String queryString, Map<String, String> options) throws DaoException, InvalidTimePeriodException, JsonParseException {
         BasicDBObject query = buildQuery(owner, queryString, options);
         ArrayList<String> caseList = new ArrayList<String>();
         if (options.get("count") != null && ((String)options.get("count")).equals("true")) {
@@ -476,7 +477,11 @@ public class MongoDBHelper {
     }
 
     private void addForEachQuery(BasicDBObject query, String forEach, String forEachValue) {
-        query.append(forEach, forEachValue);
+        String[] forEachProps = forEach.split(",");
+        String[] forEachVals = forEachValue.split(",");
+        for (int i =0 ; i<forEachProps.length; i++){
+            query.append(forEachProps[i], forEachVals[i]);
+        }
     }
 
     private void addSeriesQuery(BasicDBObject query, String series) {
