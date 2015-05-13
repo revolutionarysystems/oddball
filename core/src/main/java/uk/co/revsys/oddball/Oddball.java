@@ -97,6 +97,7 @@ public class Oddball {
         Collection<String> results = new ArrayList<String>();
         results.add(taggedCase);
         if (options.containsKey("processor")) {
+            LOGGER.debug("Applying processor:" + options.get("processor"));
             results = applyProcessor(results, options, tagger.getRuleSet(), "{}", options.get("ownerDir"), JSONUtil.json2map(aCase.toString()));
         }
         return results;
@@ -625,6 +626,8 @@ public class Oddball {
             for (Object step : chainSteps) {
                 interimResults = new ArrayList<String>();
                 Map<String, String> stepMap = (Map<String, String>) step;
+                LOGGER.debug("Processor Step");
+                LOGGER.debug(stepMap.toString());
                 for (String key : stepMap.keySet()) {
                     stepMap.put(key, stepMap.get(key).replace("{owner}", ownerDir + "/").replace("{account}", ownerDir + "/"));
                 }
