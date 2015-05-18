@@ -104,6 +104,10 @@
 		<constructor-arg index="0" ref="mongo"/>
 		<constructor-arg index="1" value="uk.co.revsys.user.manager.model.Permission"/>
 	</bean>
+    
+    <bean id="securityFilter" class="uk.co.revsys.oddball.service.rest.SecurityFilter">
+        <constructor-arg ref="authorisationHandler"/>
+    </bean>
 
     <!--bean id="realm" class="uk.co.revsys.user.manager.shiro.realm.UserManagerRealm">
         <constructor-arg index="0" ref="httpClient"/>

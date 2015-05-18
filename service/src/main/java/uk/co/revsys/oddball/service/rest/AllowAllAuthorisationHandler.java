@@ -12,4 +12,9 @@ public class AllowAllAuthorisationHandler implements AuthorisationHandler{
         return true;
     }
 
+    @Override
+    public boolean isUser() {
+        return true;
+    }
+
 }
