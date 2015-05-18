@@ -48,6 +48,7 @@ public class SummaryIdentifier implements CaseIdentifier{
             Map<String, Map<String, Object>> assessment = comparison.assess(caseMap);
             Map<String, Map<String, Object>> outcomes = new HashMap<String, Map<String, Object>>();
             Map<String, Object> primaryOutcome = null;
+            Map<String, Object> combinedOutcome = new HashMap<String, Object>();
             for (Map<String, Object> indicator : (ArrayList<Map<String, Object>>) ids.getScheme()){
                 Map<String, Object> outcome = tryIndicator(ruleSet, sa, caseMap, indicator, identificationPeriod, assessment, options, ob, resourceRepository);
                 if (outcome!=null){
@@ -58,27 +59,38 @@ public class SummaryIdentifier implements CaseIdentifier{
                 }
             }
             if (primaryOutcome !=null){
+                ArrayList<String> combiningQueries = new ArrayList<String> ();
                 for (Map<String, Object> outcome : (Collection<Map<String, Object>>) outcomes.values()){
                     if (!outcome.get("rank").equals("primary")){
                         String comparePrimary = "";
                         if ((Integer)outcome.get("count")==1 && (Integer)primaryOutcome.get("count")==1){
                             comparePrimary = "SingleEQPrimary";
+                            combiningQueries.add((String)outcome.get("query"));                        
                         }
                         if ((Integer)outcome.get("count")==1 && (Integer)primaryOutcome.get("count")>1){
                             comparePrimary = "SingleLTPrimary";
+                            combiningQueries.add((String)outcome.get("query"));                        
                         }
                         if ((Integer)outcome.get("count")>1 && (Integer)primaryOutcome.get("count")==1){
                             comparePrimary = "MultipleGTSinglePrimary";
+                            if ((Double) outcome.get("power")> 0.6){
+                                combiningQueries.add((String)outcome.get("query"));                        
+                            }
                         }
                         if ((Integer)outcome.get("count")>1 && (Integer)primaryOutcome.get("count")>1){
                             if ((Integer)outcome.get("count") == (Integer)primaryOutcome.get("count")){
                                 comparePrimary = "MultipleEQPrimary";
+                                combiningQueries.add((String)outcome.get("query"));                        
                             }
                             if ((Integer)outcome.get("count")> (Integer)primaryOutcome.get("count")){
                                 comparePrimary = "MultipleGTPrimary";
+                                if ((Double) outcome.get("power")> 0.6){
+                                    combiningQueries.add((String)outcome.get("query"));                        
+                                }
                             }
                             if ((Integer)outcome.get("count")< (Integer)primaryOutcome.get("count")){
                                 comparePrimary = "MultipleLTPrimary";
+                                combiningQueries.add((String)outcome.get("query"));                        
                             }
                         }
                         outcome.put("compareToPrimary",comparePrimary);
@@ -86,6 +98,16 @@ public class SummaryIdentifier implements CaseIdentifier{
                         outcome.put("compareToPrimary","isPrimary");
                     }
                 }
+                StringBuilder combinedQuerySB = new StringBuilder("{\"$or\":[");
+                for (String query : combiningQueries){
+                    combinedQuerySB.append(query);
+                    combinedQuerySB.append(",");
+                }
+                combinedQuerySB.append((String)primaryOutcome.get("query"));
+                combinedQuerySB.append("]}");
+                combinedOutcome.put("query", combinedQuerySB.toString());
+                outcomes.put("combined", combinedOutcome);
+
             }            
 //            identification.put("identification", outcomes);
             caseMap.put("identification", outcomes);

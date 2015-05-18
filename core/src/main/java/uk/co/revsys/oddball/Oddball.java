@@ -536,10 +536,15 @@ public class Oddball {
             comparisonOptions.put("binQuery", binQuery);
         }
         comparisonOptions.remove("selector");
+        LOGGER.debug("Comparison Query");
+        LOGGER.debug(comparisonOptions.toString());
+        LOGGER.debug(query);
+        
         Collection<String> result = ruleSet.getPersist().findCasesForOwner(options.get("owner"), query, comparisonOptions);
         if (options.get("transformer") != null) {
             result = transformResults(result, getDefaultedTransformer("", options));
         }
+        LOGGER.debug(Integer.toString(result.size()));
         return result;
     }
 
@@ -659,6 +664,9 @@ public class Oddball {
                     }
                     if (options.get("query") != null) {
                         subOptions.put("query", options.get("query"));
+                    }
+                    if (options.get("ownerProperty") != null) {
+                        subOptions.put("ownerProperty", options.get("ownerProperty"));
                     }
                     if (options.get("forEach") != null) {
                         subOptions.put("forEach", options.get("forEach"));

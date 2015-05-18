@@ -768,6 +768,68 @@ public class OddballTest {
     }
 
     @Test
+    public void testFindMaxQuery() throws Exception {
+        System.out.println("findLatest");
+        String ruleSetName = "TestMongo.txt";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"response\":100, \"sessionId\":\"AA11\"}");
+        Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"response\":150, \"sessionId\":\"AA12\"}");
+        Case yetAnotherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"response\":180, \"sessionId\":\"AA12\"}");
+
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        Opinion result3 = instance.assessCaseOpinion(ruleSetName, null, yetAnotherCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        for (String aCase : cases0) {
+            System.out.println(aCase);
+        }
+        assertTrue(cases0.iterator().hasNext());
+        options.put("selector", "max:case.response");
+        Collection<String> latestCase = instance.findQueryCases(ruleSetName, "{}", options);
+        System.out.println(latestCase);
+        assertTrue(latestCase.size() == 1);
+        String first = latestCase.iterator().next();
+        assertTrue(first.contains("\"response\" : 180"));
+    }
+
+    @Test
+    public void testFindMinQuery() throws Exception {
+        System.out.println("findLatest");
+        String ruleSetName = "TestMongo.txt";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"response\":100, \"sessionId\":\"AA11\"}");
+        Case otherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"response\":150, \"sessionId\":\"AA12\"}");
+        Case yetAnotherCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"response\":180, \"sessionId\":\"AA12\"}");
+
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        Opinion result2 = instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        Opinion result3 = instance.assessCaseOpinion(ruleSetName, null, yetAnotherCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, otherCase);
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        Iterable<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        for (String aCase : cases0) {
+            System.out.println(aCase);
+        }
+        assertTrue(cases0.iterator().hasNext());
+        options.put("selector", "min:case.response");
+        Collection<String> latestCase = instance.findQueryCases(ruleSetName, "{}", options);
+        assertTrue(latestCase.size() == 1);
+        String first = latestCase.iterator().next();
+        System.out.println(first);
+        assertTrue(first.contains("\"response\" : 100"));
+    }
+
+
+    
+    @Test
     public void testFindLatestSkipQuery() throws Exception {
         System.out.println("findLatest");
         String ruleSetName = "TestMongo.txt";

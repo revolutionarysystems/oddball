@@ -243,6 +243,20 @@ public class MongoDBHelper {
             if (selector.contains("caseEarliest")) {
                 sort = new BasicDBObject("case.time", 1);
             }
+            if (selector.contains("max:")) {
+                String property = selector.substring(selector.indexOf(":")+1);
+                if (property.contains(" ")){
+                    property = property.substring(0,property.indexOf(" "));
+                }
+                sort = new BasicDBObject(property, -1);
+            }
+            if (selector.contains("min:")) {
+                String property = selector.substring(selector.indexOf(":")+1);
+                if (property.contains(" ")){
+                    property = property.substring(0,property.indexOf(" "));
+                }
+                sort = new BasicDBObject(property, 1);
+            }
             int retrieveCount = 1;
             int skipCount = 0;
             if (selector.contains(" ")) {

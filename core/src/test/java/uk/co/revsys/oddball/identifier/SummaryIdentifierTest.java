@@ -416,6 +416,7 @@ public class SummaryIdentifierTest{
         assertEquals(3, ((Map)((Map)identification.get("identification")).get("ref")).get("count"));
         assertEquals(0.5, ((Map)((Map)identification.get("identification")).get("ref")).get("power"));
         assertEquals(4, ((Map)((Map)identification.get("identification")).get("city")).get("count"));
+        assertEquals("{\"$or\":[{\"case.ref\":\"1234\"}]}", ((Map)((Map)identification.get("identification")).get("combined")).get("query"));
     }
 
   
