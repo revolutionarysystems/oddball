@@ -21,19 +21,19 @@
         <dependency>
 			<groupId>uk.co.revsys.enricher</groupId>
 			<artifactId>enricher-core</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<version>0.1.0</version>
 		</dependency>
         
         <dependency>
 			<groupId>uk.co.revsys.aws-utils</groupId>
 			<artifactId>kinesis-processor</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<version>0.2.0</version>
 		</dependency>
         
         <dependency>
 			<groupId>uk.co.revsys.resource-repository</groupId>
 			<artifactId>resource-repository-core</artifactId>
-			<version>0.2.0-SNAPSHOT</version>
+			<version>0.2.0</version>
 		</dependency>
         
 		<dependency>
