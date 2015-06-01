@@ -252,6 +252,24 @@ public class OddballTest {
         assertTrue(result.getEnrichedCase(ruleSetName, aCase, false, null).contains("\"anotherType\" : \"abcd-ish\""));
     }
 
+    @Test
+    public void testAssessCaseMatchPrefixRuleOverrideExclusive() throws Exception {
+        System.out.println("assessCase");
+        String ruleSetName = "Test3d.txt";
+        Case aCase = new StringCase("abcd123");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
+        System.out.println(result.getLabel());
+        System.out.println(result.getEnrichedCase(ruleSetName, aCase, false, null));
+        assertTrue(result.getLabel().contains("string"));
+        assertTrue(result.getLabel().contains("stringType.spoton"));
+        assertFalse(result.getLabel().contains("stringType.aString"));
+        assertTrue(result.getLabel().contains("anotherType.abcd-ish"));
+        System.out.println(result.getLabel());
+        assertFalse(result.getLabel().contains("null"));
+        assertTrue(result.getEnrichedCase(ruleSetName, aCase, false, null).contains("\"anotherType\" : \"abcd-ish\""));
+    }
+
     /**
      * Test of assessCase method, of class Oddball.
      */
@@ -332,6 +350,25 @@ public class OddballTest {
     @Test
     public void testAssessCaseOddballMongoRulesFileWithIndex() throws Exception {
         System.out.println("assessCase");
+        String ruleSetName = "TestMongo3a.rules"; // rule C is exclusive
+
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+
+        Case aCase = new MapCase("{\"browser\":\"chromium\", \"platform\":\"windows\"}");
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("ruleC"));
+        assertFalse(result.getLabel().contains("ruleB"));
+
+        aCase = new MapCase("{\"browser\":\"google\", \"platform\":\"windows\"}");
+        result = instance.assessCaseOpinion(ruleSetName, null, aCase);
+        assertTrue(result.getLabel().contains("ruleC"));
+        assertFalse(result.getLabel().contains("ruleB"));
+    }
+
+    @Test
+    public void testAssessCaseOddballMongoRulesFileWithIndexAndReplacementRule() throws Exception {
+        System.out.println("assessCase");
         String ruleSetName = "TestMongo3.rules";
 
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
@@ -365,6 +402,25 @@ public class OddballTest {
         result = instance.assessCaseOpinion(ruleSetName, null, aCase);
         assertTrue(result.getLabel().contains("ruleC"));
         assertTrue(result.getLabel().contains("ruleB"));
+    }
+
+    @Test
+    public void testAssessCaseOddballMongoRulesFileReplacedTag() throws Exception {
+        System.out.println("assessCase");
+        String ruleSetName = "TestMongo2b.rules";
+
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+
+        Case aCase = new MapCase("{\"browser\":\"chromium\", \"platform\":\"windows\"}");
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
+        System.out.println(result.getLabel());
+        assertTrue(result.getLabel().contains("ruleC"));
+        assertFalse(result.getLabel().contains("ruleB"));
+
+        aCase = new MapCase("{\"browser\":\"google\", \"platform\":\"windows\"}");
+        result = instance.assessCaseOpinion(ruleSetName, null, aCase);
+        assertTrue(result.getLabel().contains("ruleC"));
+        assertFalse(result.getLabel().contains("ruleB"));
     }
 
     @Test

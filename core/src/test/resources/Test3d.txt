@@ -1,0 +1,14 @@
+#comment should be ignored
+[stringType]
+aString:a.*
+allas:a*
+<spoton:abcd123
+
+#blank line also ignored
+[anotherType:whoops!]
+abc-ish:abc.*
+abc-ish>abcd-ish:abcd.*
+
+[other]
+#other tags should have no prefix
+string:.*

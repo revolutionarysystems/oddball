@@ -1,0 +1,27 @@
+{
+	"ruleSet": {
+		"ruleType": "mongo",
+		"tagTypes": [{
+			"tagType": "other",
+			"rules": [
+				{
+					"ruleString": "{\"browser\":\"chrome\"}",
+					"label": "ruleB"
+				},
+				{
+					"ruleString": "{\"browser\":\"chromium\"}",
+					"label": "ruleB"
+				},
+				{
+					"ruleString": "{\"browser\":\"google\"}",
+					"label": "ruleB"
+				},
+				{
+					"ruleString": "{\"platform\":\"windows\"}",
+					"label": "<ruleC"
+				}
+			]
+		}
+		]
+	}
+}

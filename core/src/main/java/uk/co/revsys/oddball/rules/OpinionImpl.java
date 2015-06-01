@@ -220,7 +220,22 @@ public class OpinionImpl implements Opinion{
         caseMap.put("ruleSet", ((String) caseMap.get("ruleSet"))+","+ruleSet);
         caseMap.put("owner", aCase.getOwner());
         List<String> prevTags = (List<String>)caseMap.get("tags");
+        List<String> tagsToRemove = new ArrayList<String>();
 //        this.tags.addAll(prevTags);
+        for (String tag : this.tags){
+            if (tag.contains(".")){
+                String prefix = tag.substring(0,tag.indexOf("."));
+                for (String prevTag : prevTags){
+                    if (prevTag.contains(prefix)){
+                        tagsToRemove.add(prevTag);
+                    }
+                }
+            }
+        }
+        for (String tag : tagsToRemove){
+            prevTags.remove(tag);
+        }
+        
         prevTags.addAll(this.tags);
         caseMap.put("tags", prevTags);
         if (id!=null){
@@ -267,11 +282,29 @@ public class OpinionImpl implements Opinion{
                     tags.add(as.getLabelStr());
                     evidence.add(as);
                 }
-            } else {
-                tags.add(as.getLabelStr());
-                evidence.add(as);
+            } else { 
+                if (tag.indexOf("<")>=0){ // tag replacement
+                    String[] parts= tag.split("<");
+                    String prefixPlus = parts[0];
+                    String value = parts[1];
+                    HashSet <String> toRemove = new HashSet<String>();
+                    for (String t : tags){
+                        if (t.indexOf(prefixPlus)==0){
+                            toRemove.add(t);
+                        }
+                    }
+                    for (String t: toRemove){
+                        tags.remove(t);
+                    }
+                    as.setLabelStr(prefixPlus+value);
+                    tags.add(as.getLabelStr());
+                    evidence.add(as);
+                }
+                else {
+                   tags.add(as.getLabelStr());
+                   evidence.add(as);
+                }
             }
-            
             
         }
     }

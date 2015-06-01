@@ -485,7 +485,7 @@ public class Oddball {
         }
     }
 
-    private Collection<String> identifyResults(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner) throws ComparisonException, InvalidTimePeriodException, UnknownBinException,DaoException, TransformerNotLoadedException, IdentificationSchemeNotLoadedException, AggregationException, JsonParseException {
+    private Collection<String> identifyResults(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, TransformerNotLoadedException, IdentificationSchemeNotLoadedException, AggregationException, JsonParseException {
         options.put("owner", owner);
 //        LOGGER.debug("identify query and options");
 //        LOGGER.debug(query);
@@ -536,15 +536,11 @@ public class Oddball {
             comparisonOptions.put("binQuery", binQuery);
         }
         comparisonOptions.remove("selector");
-        LOGGER.debug("Comparison Query");
-        LOGGER.debug(comparisonOptions.toString());
-        LOGGER.debug(query);
-        
+
         Collection<String> result = ruleSet.getPersist().findCasesForOwner(options.get("owner"), query, comparisonOptions);
         if (options.get("transformer") != null) {
             result = transformResults(result, getDefaultedTransformer("", options));
         }
-        LOGGER.debug(Integer.toString(result.size()));
         return result;
     }
 
@@ -626,120 +622,120 @@ public class Oddball {
             }
         }
         ArrayList<Object> chainSteps = new ArrayList<Object>();
-            Map chain = JSONUtil.json2map("{\"chain\":" + processorChain + "}");
-            chainSteps = (ArrayList<Object>) chain.get("chain");
-            for (Object step : chainSteps) {
-                interimResults = new ArrayList<String>();
-                Map<String, String> stepMap = (Map<String, String>) step;
-                LOGGER.debug("Processor Step");
-                LOGGER.debug(stepMap.toString());
-                for (String key : stepMap.keySet()) {
-                    stepMap.put(key, stepMap.get(key).replace("{owner}", ownerDir + "/").replace("{account}", ownerDir + "/"));
-                }
-                if (stepMap.get("retriever") != null) {
-                    Map<String, String> subOptions = (Map<String, String>) options;
-                    subOptions.putAll(stepMap);
-                    interimResults.addAll(retrieveResults(results, subOptions, owner, caseMap));
-                }
-                if (stepMap.get("transformer") != null) {
-                    interimResults.addAll(transformResults(results, (String) stepMap.get("transformer")));
-                }
-                if (stepMap.get("aggregator") != null) {
-                    Map<String, String> subOptions = (Map<String, String>) stepMap;
-                    if (options.get("recent") != null && subOptions.get("recent") == null) {
-                        subOptions.put("recent", options.get("recent"));
-                    }
-                    if (owner != null && subOptions.get("owner") == null) {
-                        subOptions.put("owner", owner);
-                    }
-                    interimResults.addAll(aggregateResults(results, subOptions));
-                }
-                if (stepMap.get("comparator") != null) {
-                    Map<String, String> subOptions = (Map<String, String>) stepMap;
-                    if (options.get("recent") != null) {
-                        subOptions.put("recent", options.get("recent"));
-                    }
-                    if (options.get("caseRecent") != null) {
-                        subOptions.put("caseRecent", options.get("recent"));
-                    }
-                    if (options.get("query") != null) {
-                        subOptions.put("query", options.get("query"));
-                    }
-                    if (options.get("ownerProperty") != null) {
-                        subOptions.put("ownerProperty", options.get("ownerProperty"));
-                    }
-                    if (options.get("forEach") != null) {
-                        subOptions.put("forEach", options.get("forEach"));
-                    }
-                    if (options.get("forEachValue") != null) {
-                        subOptions.put("forEachValue", options.get("forEachValue"));
-                    }
-                    interimResults.addAll(compareResults(results, subOptions, ruleSet, query, owner));
-                }
-                if (stepMap.get("identifier") != null) {
-                    Map<String, String> subOptions = (Map<String, String>) stepMap;
-                    if (options.get("recent") != null  && subOptions.get("recent") == null) {
-                        subOptions.put("recent", options.get("recent"));
-                    }
-                    if (options.get("caseRecent") != null && subOptions.get("caseRecent") == null) {
-                        subOptions.put("caseRecent", options.get("caseRecent"));
-                    }
-                    if (options.get("query") != null && subOptions.get("query") == null) {
-                        subOptions.put("query", options.get("query"));
-                    }
-                    if (options.get("forEach") != null) {
-                        subOptions.put("forEach", options.get("forEach"));
-                    }
-                    if (options.get("forEachValue") != null) {
-                        subOptions.put("forEachValue", options.get("forEachValue"));
-                    }
-                    if (stepMap.get("identityTransformer") != null) {
-                        subOptions.put("transformer", stepMap.get("identityTransformer"));
-                    }
-                    RuleSet stepRuleSet = ruleSet;
-                    if (stepMap.get("ruleSet") != null) {
-                        stepRuleSet = ensureRuleSet(stepMap.get("ruleSet"));
-                        subOptions.put("transformer", stepMap.get("identityTransformer"));
-                    }
-                    
-                    interimResults.addAll(identifyResults(results, subOptions, stepRuleSet, subOptions.get("query"), owner));
-                }
-                if (stepMap.get("tagger") != null) {
-                    interimResults.addAll(tagResults(results, (Map<String, String>) stepMap));
-                }
-                if (stepMap.get("retagger") != null) {
-                    stepMap.put("retag", "true");
-                    stepMap.put("tagger", stepMap.get("retagger"));
-                    try {
-                        interimResults.addAll(tagResults(results, (Map<String, String>) stepMap));
-                    } catch (RuleSetNotLoadedException e) {
-                        interimResults.addAll((Collection) results);
-                        LOGGER.warn("Retag ruleSet " + stepMap.get("retagger") + " not loaded - process continues", e);
-                    }
-                }
-                if (stepMap.get("filter") != null) {
-                    interimResults.addAll(filterResults(results, (Map<String, String>) stepMap));
-                }
-                if (stepMap.get("processor") != null) {
-                    if (owner != null && stepMap.get("owner") == null) {
-                        stepMap.put("owner", owner);
-                    }
-                    if (ownerDir != null && stepMap.get("ownerDir") == null) {
-                        stepMap.put("ownerDir", ownerDir);
-                    }
-                    try {
-                        interimResults.addAll(applyProcessor(results, (Map<String, String>) stepMap, ruleSet, query, owner, caseMap));
-                    } catch (ProcessorNotLoadedException ex) {  //log but don't fail
-                        LOGGER.warn("Processor not loaded:" + stepMap.get("processor"), ex);
-                    }
-                }
-                if (stepMap.get("results") == null || stepMap.get("results").equals("retain")) {
-                    results = interimResults;
-                } else { //revert
-                    interimResults = (ArrayList<String>) results;
-                }
-                //LOGGER.debug(step.toString());
+        Map chain = JSONUtil.json2map("{\"chain\":" + processorChain + "}");
+        chainSteps = (ArrayList<Object>) chain.get("chain");
+        for (Object step : chainSteps) {
+            interimResults = new ArrayList<String>();
+            Map<String, String> stepMap = (Map<String, String>) step;
+//            LOGGER.debug("Processor Step");
+//            LOGGER.debug(stepMap.toString());
+            for (String key : stepMap.keySet()) {
+                stepMap.put(key, stepMap.get(key).replace("{owner}", ownerDir + "/").replace("{account}", ownerDir + "/"));
             }
+            if (stepMap.get("retriever") != null) {
+                Map<String, String> subOptions = (Map<String, String>) options;
+                subOptions.putAll(stepMap);
+                interimResults.addAll(retrieveResults(results, subOptions, owner, caseMap));
+            }
+            if (stepMap.get("transformer") != null) {
+                interimResults.addAll(transformResults(results, (String) stepMap.get("transformer")));
+            }
+            if (stepMap.get("aggregator") != null) {
+                Map<String, String> subOptions = (Map<String, String>) stepMap;
+                if (options.get("recent") != null && subOptions.get("recent") == null) {
+                    subOptions.put("recent", options.get("recent"));
+                }
+                if (owner != null && subOptions.get("owner") == null) {
+                    subOptions.put("owner", owner);
+                }
+                interimResults.addAll(aggregateResults(results, subOptions));
+            }
+            if (stepMap.get("comparator") != null) {
+                Map<String, String> subOptions = (Map<String, String>) stepMap;
+                if (options.get("recent") != null) {
+                    subOptions.put("recent", options.get("recent"));
+                }
+                if (options.get("caseRecent") != null) {
+                    subOptions.put("caseRecent", options.get("recent"));
+                }
+                if (options.get("query") != null) {
+                    subOptions.put("query", options.get("query"));
+                }
+                if (options.get("ownerProperty") != null) {
+                    subOptions.put("ownerProperty", options.get("ownerProperty"));
+                }
+                if (options.get("forEach") != null) {
+                    subOptions.put("forEach", options.get("forEach"));
+                }
+                if (options.get("forEachValue") != null) {
+                    subOptions.put("forEachValue", options.get("forEachValue"));
+                }
+                interimResults.addAll(compareResults(results, subOptions, ruleSet, query, owner));
+            }
+            if (stepMap.get("identifier") != null) {
+                Map<String, String> subOptions = (Map<String, String>) stepMap;
+                if (options.get("recent") != null && subOptions.get("recent") == null) {
+                    subOptions.put("recent", options.get("recent"));
+                }
+                if (options.get("caseRecent") != null && subOptions.get("caseRecent") == null) {
+                    subOptions.put("caseRecent", options.get("caseRecent"));
+                }
+                if (options.get("query") != null && subOptions.get("query") == null) {
+                    subOptions.put("query", options.get("query"));
+                }
+                if (options.get("forEach") != null) {
+                    subOptions.put("forEach", options.get("forEach"));
+                }
+                if (options.get("forEachValue") != null) {
+                    subOptions.put("forEachValue", options.get("forEachValue"));
+                }
+                if (stepMap.get("identityTransformer") != null) {
+                    subOptions.put("transformer", stepMap.get("identityTransformer"));
+                }
+                RuleSet stepRuleSet = ruleSet;
+                if (stepMap.get("ruleSet") != null) {
+                    stepRuleSet = ensureRuleSet(stepMap.get("ruleSet"));
+                    subOptions.put("transformer", stepMap.get("identityTransformer"));
+                }
+
+                interimResults.addAll(identifyResults(results, subOptions, stepRuleSet, subOptions.get("query"), owner));
+            }
+            if (stepMap.get("tagger") != null) {
+                interimResults.addAll(tagResults(results, (Map<String, String>) stepMap));
+            }
+            if (stepMap.get("retagger") != null) {
+                stepMap.put("retag", "true");
+                stepMap.put("tagger", stepMap.get("retagger"));
+                try {
+                    interimResults.addAll(tagResults(results, (Map<String, String>) stepMap));
+                } catch (RuleSetNotLoadedException e) {
+                    interimResults.addAll((Collection) results);
+                    LOGGER.warn("Retag ruleSet " + stepMap.get("retagger") + " not loaded - process continues", e);
+                }
+            }
+            if (stepMap.get("filter") != null) {
+                interimResults.addAll(filterResults(results, (Map<String, String>) stepMap));
+            }
+            if (stepMap.get("processor") != null) {
+                if (owner != null && stepMap.get("owner") == null) {
+                    stepMap.put("owner", owner);
+                }
+                if (ownerDir != null && stepMap.get("ownerDir") == null) {
+                    stepMap.put("ownerDir", ownerDir);
+                }
+                try {
+                    interimResults.addAll(applyProcessor(results, (Map<String, String>) stepMap, ruleSet, query, owner, caseMap));
+                } catch (ProcessorNotLoadedException ex) {  //log but don't fail
+                    LOGGER.warn("Processor not loaded:" + stepMap.get("processor"), ex);
+                }
+            }
+            if (stepMap.get("results") == null || stepMap.get("results").equals("retain")) {
+                results = interimResults;
+            } else { //revert
+                interimResults = (ArrayList<String>) results;
+            }
+            //LOGGER.debug(step.toString());
+        }
 //        } catch (IOException ex) {
 //            throw new InvalidCaseException("{\"chain\":" + processorChain + "}");
 //        }
@@ -777,22 +773,22 @@ public class Oddball {
         return result;
     }
 
-    private ArrayList<String> dimensionCombinations(ArrayList<ArrayList<String>> distinctDimensionValues){
-        if (distinctDimensionValues.size()==1){
+    private ArrayList<String> dimensionCombinations(ArrayList<ArrayList<String>> distinctDimensionValues) {
+        if (distinctDimensionValues.size() == 1) {
             return distinctDimensionValues.get(0);
         } else {
             ArrayList<String> firstDimension = distinctDimensionValues.remove(0);
             ArrayList<String> subResult = dimensionCombinations(distinctDimensionValues);
-            ArrayList<String> result = new ArrayList<String> ();
-            for (String a : firstDimension){
-                for (String b : subResult){
-                    result.add(a+","+b);
+            ArrayList<String> result = new ArrayList<String>();
+            for (String a : firstDimension) {
+                for (String b : subResult) {
+                    result.add(a + "," + b);
                 }
             }
             return result;
         }
-    } 
-    
+    }
+
     public Collection<String> findQueryCasesForEach(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException, InvalidTimePeriodException, ProcessorNotLoadedException, ComparisonException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException {
         ArrayList<String> cases = new ArrayList<String>();
         String forEach = options.get("forEach");
@@ -811,16 +807,16 @@ public class Oddball {
         distinctOptions.remove("processorChain");
         String forEachProps[] = forEach.split(",");
         ArrayList<ArrayList<String>> distinctDimensionValues = new ArrayList<ArrayList<String>>();
-        for (String forEachProp:forEachProps){
+        for (String forEachProp : forEachProps) {
             distinctOptions.put("distinct", forEachProp);
             ArrayList<String> allDistinct = new ArrayList<String>();
             allDistinct.addAll(findQueryCases(ruleSetName, query, distinctOptions));
             distinctDimensionValues.add(allDistinct);
         }
         ArrayList<String> combinations = dimensionCombinations(distinctDimensionValues);
-        for (String combination : combinations){
+        for (String combination : combinations) {
             options.put("forEachValue", combination.replace("\"", ""));
-            cases.addAll(wrapSimpleValues(combination.replace("\",\"",","), findQueryCases(ruleSetName, query, options)));
+            cases.addAll(wrapSimpleValues(combination.replace("\",\"", ","), findQueryCases(ruleSetName, query, options)));
         }
 //        }
         return cases;

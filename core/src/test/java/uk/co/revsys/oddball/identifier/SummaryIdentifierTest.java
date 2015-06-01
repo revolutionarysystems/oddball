@@ -403,6 +403,7 @@ public class SummaryIdentifierTest{
         options.put("periodEnd", "1002000");
         options.put("identificationPeriod", "1000Y");
         options.put("identificationScheme", "idScheme.scheme");
+        options.put("identificationLabel", "alternateId");
         options.put("owner", "_all");
         Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
         System.out.println("Signals");
@@ -413,10 +414,10 @@ public class SummaryIdentifierTest{
         Map identification = si.identify(instance.reloadRuleSet("TestIdentifier.txt"), signalOfInterest, cases0, options, instance, resourceRepository);
         System.out.println("identification");
         System.out.println(identification);
-        assertEquals(3, ((Map)((Map)identification.get("identification")).get("ref")).get("count"));
-        assertEquals(0.5, ((Map)((Map)identification.get("identification")).get("ref")).get("power"));
-        assertEquals(4, ((Map)((Map)identification.get("identification")).get("city")).get("count"));
-        assertEquals("{\"$or\":[{\"case.ref\":\"1234\"}]}", ((Map)((Map)identification.get("identification")).get("combined")).get("query"));
+        assertEquals(3, ((Map)((Map)identification.get("alternateId")).get("ref")).get("count"));
+        assertEquals(0.5, ((Map)((Map)identification.get("alternateId")).get("ref")).get("power"));
+        assertEquals(4, ((Map)((Map)identification.get("alternateId")).get("city")).get("count"));
+        assertEquals("{\"$or\":[{\"case.ref\":\"1234\"}]}", ((Map)((Map)identification.get("alternateId")).get("combined")).get("query"));
     }
 
   

@@ -43,7 +43,22 @@ public class SummaryIdentifier implements CaseIdentifier{
             if (comparisons.size()==0){
                 throw new InvalidTimePeriodException("No valid time periods for Summary Identifier");
             }
-            Summary comparison = comparisons.get(0); // should be just the 1
+            Summary comparison = comparisons.get(0); // should be just the 
+            Map<String, Object> comparisonMap = comparison.asMap();
+            Double totalInfo = 0.0;
+            for (String key : comparisonMap.keySet()){
+                try {
+                    Map<String, Object> distribution = (Map<String, Object>) comparisonMap.get(key);
+                    Double info = (Double) distribution.get("information");
+                    totalInfo += info;
+                }
+                catch (ClassCastException e){
+                    // ignore this key
+                }
+                catch (NullPointerException e){
+                    // ignore this key
+                }
+            }
             Map<String, Object> caseMap = JSONUtil.json2map(caseString);
             Map<String, Map<String, Object>> assessment = comparison.assess(caseMap);
             Map<String, Map<String, Object>> outcomes = new HashMap<String, Map<String, Object>>();
@@ -58,10 +73,12 @@ public class SummaryIdentifier implements CaseIdentifier{
                     outcomes.put((String)indicator.get("name"),outcome);
                 }
             }
+            primaryOutcome.put("relInfoReduction", 1);
             if (primaryOutcome !=null){
                 ArrayList<String> combiningQueries = new ArrayList<String> ();
                 for (Map<String, Object> outcome : (Collection<Map<String, Object>>) outcomes.values()){
                     if (!outcome.get("rank").equals("primary")){
+                        outcome.put("relInfoReduction", ((Double)outcome.get("infoReduction"))/((Double)primaryOutcome.get("infoReduction")));
                         String comparePrimary = "";
                         if ((Integer)outcome.get("count")==1 && (Integer)primaryOutcome.get("count")==1){
                             comparePrimary = "SingleEQPrimary";
@@ -110,7 +127,11 @@ public class SummaryIdentifier implements CaseIdentifier{
 
             }            
 //            identification.put("identification", outcomes);
-            caseMap.put("identification", outcomes);
+            if (options.containsKey("identificationLabel")){
+                caseMap.put(options.get("identificationLabel"), outcomes);
+            } else {
+                caseMap.put("identification", outcomes);
+            }
 //            return identification;
             return caseMap;
         }
@@ -133,15 +154,15 @@ public class SummaryIdentifier implements CaseIdentifier{
         ArrayList<String> includeFields = (ArrayList<String>) indicator.get("include-fields");
         ArrayList<String> queryFields = (ArrayList<String>) indicator.get("query-fields");
         int totalPowers = 0;
+        //int totalInfo = 0;
         double relInfo = 0;
         ArrayList<String> nonUnique = new ArrayList();
         ArrayList<String> prevNonUnique = new ArrayList();
         String applicableField = "";
         String queryField = "";
 
-        System.out.println("Assessment");
-        System.out.println(assessment);
-
+        Double totalInfo1 = 0.0;
+        int infoFactors1 = 0;
         for (String field : assessment.keySet()){
             try {
                 Map<String, Object> fieldAssessment = assessment.get(field);
@@ -151,11 +172,16 @@ public class SummaryIdentifier implements CaseIdentifier{
                     } else {
                         totalPowers++;
                     }
+                    
                 }
                 if ((includeFields.contains(field)) && ((Double)fieldAssessment.get("info")>0.0)){
                     relInfo = (Double)fieldAssessment.get("relInfo");
                     applicableField = field;
                     queryField = queryFields.get(0);
+                }
+                if (fieldAssessment.containsKey("info")){
+                    totalInfo1+= (Double)fieldAssessment.get("info");
+                    infoFactors1++;
                 }
             }
             catch (NullPointerException e){
@@ -187,7 +213,6 @@ public class SummaryIdentifier implements CaseIdentifier{
     //        LOGGER.debug("Extended ID");
     //        LOGGER.debug((String)indicator.get("name"));
     //        LOGGER.debug(comparison.asMap().toString());
-
             for (String field : nonUnique){
                 prevNonUnique.add(field);
             }
@@ -195,6 +220,8 @@ public class SummaryIdentifier implements CaseIdentifier{
             nonUnique.clear();
             int maxCount=0;
 
+            Double totalInfo2 = 0.0;
+            int infoFactors2 = 0;
             for (String field : assessment.keySet()){
                 try {
                     Map<String, Object> fieldAssessment = assessment.get(field);
@@ -204,6 +231,10 @@ public class SummaryIdentifier implements CaseIdentifier{
                     }
                     if ((includeFields.contains(field)) && ((Integer)fieldAssessment.get("count")>maxCount)){
                         maxCount = (Integer)fieldAssessment.get("count");
+                    }
+                    if (fieldAssessment.containsKey("info")){
+                        totalInfo2+= (Double)fieldAssessment.get("info");
+                        infoFactors2++;
                     }
                 }
                 catch (NullPointerException e){
@@ -225,6 +256,7 @@ public class SummaryIdentifier implements CaseIdentifier{
 
             outcome.put("query", query);
             outcome.put("power", 1.0*totalPowers/candidateCount);
+            outcome.put("infoReduction", (totalInfo1/infoFactors1)-(totalInfo2/infoFactors2));
             outcome.put("strength", relInfo);
             outcome.put("rank", indicator.get("rank"));
             outcome.put("support", comparison.asMap());
