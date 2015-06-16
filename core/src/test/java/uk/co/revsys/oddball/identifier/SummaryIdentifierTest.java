@@ -315,7 +315,7 @@ public class SummaryIdentifierTest{
         System.out.println(identification);
         assertEquals(1, ((Map)((Map)identification.get("identification")).get("ref")).get("count"));
         assertTrue(0.001> 0.25 - (Double)((Map)((Map)identification.get("identification")).get("ref")).get("power"));
-        assertEquals(0, ((Map)((Map)identification.get("identification")).get("city")).get("count"));
+        assertTrue(((Map)((Map)identification.get("identification")).get("city"))==null);
     }
 
  

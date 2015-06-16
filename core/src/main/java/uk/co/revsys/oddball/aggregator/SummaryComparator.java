@@ -33,13 +33,16 @@ public class SummaryComparator implements CaseComparator{
     public Map compare(String caseString, Iterable<String> comparisonCases, Map<String, String> options, ResourceRepository resourceRepository) throws ComparisonException, InvalidTimePeriodException, IOException{
         SummaryAggregator sa = new SummaryAggregator();
         try {
-//            LOGGER.debug("compareToSummary");
-//            LOGGER.debug(caseString);
+            LOGGER.debug("compareToSummary");
+            LOGGER.debug(caseString);
 ////            Collection<Summary> comparisons = sa.summariseCases(comparisonCases, options, resourceRepository);
 //            LOGGER.debug(Integer.toString(comparisons.size()));
 //            LOGGER.debug(comparisons.toString());
             Summary comparison = sa.summariseCases(comparisonCases, options, resourceRepository).get(0); // should be just the 1
 //            LOGGER.debug(comparison.asMap().toString());
+            String comparisonCase = comparisonCases.iterator().next();
+            LOGGER.debug(comparisonCase);
+            LOGGER.debug(comparison.asMap().toString());
             Map<String, Object> caseMap = JSONUtil.json2map(caseString);
             caseMap.put("comparison", comparison.assess(caseMap));
 //            return comparison.assess(caseMap);

@@ -462,6 +462,10 @@ public class Oddball {
     private Collection<String> compareResults(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, TransformerNotLoadedException, JsonParseException {
         options.put("owner", owner);
         Collection<String> comparisonResults = comparisonResults(ruleSet, query, options);
+        LOGGER.debug("comparison cases");
+        LOGGER.debug(ruleSet.getName());
+        LOGGER.debug(options.toString());
+        LOGGER.debug(Integer.toString(comparisonResults.size()));
 
         ArrayList<String> comparedResults = new ArrayList<String>();
         Class comparatorClass = new ComparatorMap().get(options.get("comparator"));
@@ -627,8 +631,8 @@ public class Oddball {
         for (Object step : chainSteps) {
             interimResults = new ArrayList<String>();
             Map<String, String> stepMap = (Map<String, String>) step;
-//            LOGGER.debug("Processor Step");
-//            LOGGER.debug(stepMap.toString());
+            LOGGER.debug("Processor Step");
+            LOGGER.debug(stepMap.toString());
             for (String key : stepMap.keySet()) {
                 stepMap.put(key, stepMap.get(key).replace("{owner}", ownerDir + "/").replace("{account}", ownerDir + "/"));
             }
@@ -670,7 +674,12 @@ public class Oddball {
                 if (options.get("forEachValue") != null) {
                     subOptions.put("forEachValue", options.get("forEachValue"));
                 }
-                interimResults.addAll(compareResults(results, subOptions, ruleSet, query, owner));
+                RuleSet stepRuleSet = ruleSet;
+                if (stepMap.get("comparisonRuleSet") != null) {
+                    stepRuleSet = ensureRuleSet(stepMap.get("comparisonRuleSet"));
+                    subOptions.put("transformer", stepMap.get("identityTransformer"));
+                }
+                interimResults.addAll(compareResults(results, subOptions, stepRuleSet, query, owner));
             }
             if (stepMap.get("identifier") != null) {
                 Map<String, String> subOptions = (Map<String, String>) stepMap;

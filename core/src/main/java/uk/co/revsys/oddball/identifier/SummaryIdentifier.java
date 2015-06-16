@@ -73,8 +73,8 @@ public class SummaryIdentifier implements CaseIdentifier{
                     outcomes.put((String)indicator.get("name"),outcome);
                 }
             }
-            primaryOutcome.put("relInfoReduction", 1);
             if (primaryOutcome !=null){
+                primaryOutcome.put("relInfoReduction", 1);
                 ArrayList<String> combiningQueries = new ArrayList<String> ();
                 for (Map<String, Object> outcome : (Collection<Map<String, Object>>) outcomes.values()){
                     if (!outcome.get("rank").equals("primary")){
@@ -208,59 +208,64 @@ public class SummaryIdentifier implements CaseIdentifier{
             ArrayList<Summary> comparisons=sa.summariseCases(comparisonCases, subOptions, resourceRepository);
 
 
-            Summary comparison = comparisons.get(0); // should be just the 1
-            assessment = comparison.assess(caseMap);
-    //        LOGGER.debug("Extended ID");
-    //        LOGGER.debug((String)indicator.get("name"));
-    //        LOGGER.debug(comparison.asMap().toString());
-            for (String field : nonUnique){
-                prevNonUnique.add(field);
-            }
+            if (comparisons.size()==0){
+                LOGGER.warn("Identity indicator failed:"+indicator.get("name"));
+                return null;
+            } else {
+                Summary comparison = comparisons.get(0); // should be just the 1
+                assessment = comparison.assess(caseMap);
+        //        LOGGER.debug("Extended ID");
+        //        LOGGER.debug((String)indicator.get("name"));
+        //        LOGGER.debug(comparison.asMap().toString());
+                for (String field : nonUnique){
+                    prevNonUnique.add(field);
+                }
 
-            nonUnique.clear();
-            int maxCount=0;
+                nonUnique.clear();
+                int maxCount=0;
 
-            Double totalInfo2 = 0.0;
-            int infoFactors2 = 0;
-            for (String field : assessment.keySet()){
-                try {
-                    Map<String, Object> fieldAssessment = assessment.get(field);
-                    
-                    if (fieldAssessment.containsKey("proportion") && (Float)fieldAssessment.get("proportion")<1.0){
-                        nonUnique.add(field);
+                Double totalInfo2 = 0.0;
+                int infoFactors2 = 0;
+                for (String field : assessment.keySet()){
+                    try {
+                        Map<String, Object> fieldAssessment = assessment.get(field);
+
+                        if (fieldAssessment.containsKey("proportion") && (Float)fieldAssessment.get("proportion")<1.0){
+                            nonUnique.add(field);
+                        }
+                        if ((includeFields.contains(field)) && ((Integer)fieldAssessment.get("count")>maxCount)){
+                            maxCount = (Integer)fieldAssessment.get("count");
+                        }
+                        if (fieldAssessment.containsKey("info")){
+                            totalInfo2+= (Double)fieldAssessment.get("info");
+                            infoFactors2++;
+                        }
                     }
-                    if ((includeFields.contains(field)) && ((Integer)fieldAssessment.get("count")>maxCount)){
-                        maxCount = (Integer)fieldAssessment.get("count");
-                    }
-                    if (fieldAssessment.containsKey("info")){
-                        totalInfo2+= (Double)fieldAssessment.get("info");
-                        infoFactors2++;
+                    catch (NullPointerException e){
+                        LOGGER.warn("Identity indicator failed:"+field, e);
                     }
                 }
-                catch (NullPointerException e){
-                    LOGGER.warn("Identity indicator failed:"+field, e);
+
+                for (String field2 : nonUnique){
+                    prevNonUnique.remove(field2);
                 }
+        //        System.out.println(prevNonUnique);
+                totalPowers+=prevNonUnique.size();
+        //        System.out.println("Total Powers");
+        //        System.out.println(totalPowers);
+
+                HashMap<String, Object> outcome = new HashMap<String, Object> ();
+                outcome.put("indicator", indicator.get("name"));
+                outcome.put("count", maxCount);
+
+                outcome.put("query", query);
+                outcome.put("power", 1.0*totalPowers/candidateCount);
+                outcome.put("infoReduction", (totalInfo1/infoFactors1)-(totalInfo2/infoFactors2));
+                outcome.put("strength", relInfo);
+                outcome.put("rank", indicator.get("rank"));
+                outcome.put("support", comparison.asMap());
+                return outcome;
             }
-
-            for (String field2 : nonUnique){
-                prevNonUnique.remove(field2);
-            }
-    //        System.out.println(prevNonUnique);
-            totalPowers+=prevNonUnique.size();
-    //        System.out.println("Total Powers");
-    //        System.out.println(totalPowers);
-
-            HashMap<String, Object> outcome = new HashMap<String, Object> ();
-            outcome.put("indicator", indicator.get("name"));
-            outcome.put("count", maxCount);
-
-            outcome.put("query", query);
-            outcome.put("power", 1.0*totalPowers/candidateCount);
-            outcome.put("infoReduction", (totalInfo1/infoFactors1)-(totalInfo2/infoFactors2));
-            outcome.put("strength", relInfo);
-            outcome.put("rank", indicator.get("rank"));
-            outcome.put("support", comparison.asMap());
-            return outcome;
         } else {
                 LOGGER.warn("Identity indicator failed:"+indicator.get("name"));
                 return null;

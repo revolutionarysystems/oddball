@@ -59,6 +59,7 @@ public class Summary {
         for (String accName : accumulators.keySet()){
             String propertyPath = properties.get(accName);
             Object propertyValue = new OddUtil().getDeepProperty(caseMap, propertyPath); 
+            // accept comma-separated list of properties, to provide comma-separated values
             accumulators.get(accName).accumulateProperty(propertyValue);
         }
         if (caseTime<this.firstCaseTime){
@@ -200,12 +201,19 @@ public class Summary {
             summaryMap.put("lastCaseTime", lastCaseTime);
         }
         summaryMap.put("duration", duration);
-        summaryMap.put("count", count);
+        summaryMap.put("count", getCount());
         for (String accName : accumulators.keySet()){
             summaryMap.put(accName, accumulators.get(accName).readOffResults());
             
         }
         return summaryMap;
+    }
+
+    /**
+     * @return the count
+     */
+    public long getCount() {
+        return count;
     }
     
     

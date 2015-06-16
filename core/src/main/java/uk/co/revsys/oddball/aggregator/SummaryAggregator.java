@@ -45,7 +45,7 @@ public class SummaryAggregator implements Aggregator{
         catch (SummaryDefinitionNotLoadedException e){
             throw new AggregationException("Summary Definition could not be loaded", e);
         }
-        ArrayList<Summary> summaries = new ArrayList<Summary>();
+        ArrayList<Summary> summaries= new ArrayList<Summary>();
         // set up time window parameters
         String align = "now";
         if (options.get("align")!=null){
@@ -143,10 +143,26 @@ public class SummaryAggregator implements Aggregator{
             } catch (IOException e){
                 throw new AggregationException("Case could not be parsed:"+caseString, e);
             }
-                
+            
                 
         }
-        return summaries;
+
+        // weed out empty summaries
+        ArrayList<Summary> toReturn= new ArrayList<Summary>();
+        int summarySmallest = 1;
+        if (options.containsKey("summarySmallest")){
+            summarySmallest = Integer.parseInt(options.get("summarySmallest"));
+        }
+        for (Summary summary : summaries){
+            if (summary.getCount()>=summarySmallest){
+                toReturn.add(summary);
+            }
+        }
+//        System.out.println("summaries");
+//        System.out.println(summaries.size());
+//        System.out.println(summaries.get(0).asMap().toString());
+//        System.out.println(toReturn.size());
+        return toReturn;
     }
 
     private ArrayList<Summary> summaries;

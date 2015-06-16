@@ -475,11 +475,7 @@ public class SummaryAggregatorTest{
         List<Map> summaries = sa.aggregateCases(signals, options, resourceRepository);
         System.out.println("summaries");
         System.out.println(summaries);
-        assertTrue(summaries.size()==1);
-        Map summaryMap = summaries.get(0);
-        assertEquals("test-account", (String)summaryMap.get("owner"));
-        Map cityMap =(Map) summaryMap.get("city");
-        assertEquals(null, cityMap.get("london"));
+        assertTrue(summaries.size()==0);
 
     }
     
@@ -536,6 +532,7 @@ public class SummaryAggregatorTest{
         options.put("periodEnd", "1002000");
         options.put("division", "2000");
         options.put("owner", "test-account");
+        options.put("summarySmallest", "2");
         List<Map> summaries = sa.aggregateCases(signals, options, resourceRepository);
         System.out.println("summaries");
         System.out.println(summaries);
