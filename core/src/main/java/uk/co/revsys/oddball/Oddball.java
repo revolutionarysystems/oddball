@@ -462,10 +462,10 @@ public class Oddball {
     private Collection<String> compareResults(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, TransformerNotLoadedException, JsonParseException {
         options.put("owner", owner);
         Collection<String> comparisonResults = comparisonResults(ruleSet, query, options);
-        LOGGER.debug("comparison cases");
-        LOGGER.debug(ruleSet.getName());
-        LOGGER.debug(options.toString());
-        LOGGER.debug(Integer.toString(comparisonResults.size()));
+//        LOGGER.debug("comparison cases");
+//        LOGGER.debug(ruleSet.getName());
+//        LOGGER.debug(options.toString());
+//        LOGGER.debug(Integer.toString(comparisonResults.size()));
 
         ArrayList<String> comparedResults = new ArrayList<String>();
         Class comparatorClass = new ComparatorMap().get(options.get("comparator"));
@@ -524,9 +524,12 @@ public class Oddball {
 
     public Collection<String> comparisonResults(RuleSet ruleSet, String query, Map<String, String> options) throws UnknownBinException, DaoException, InvalidTimePeriodException, TransformerNotLoadedException, JsonParseException {
         Map<String, String> comparisonOptions = new HashMap<String, String>();
+//        LOGGER.debug("comparisonResults");
+//        LOGGER.debug(options.toString());
         comparisonOptions.putAll(options);
         if (options.containsKey("comparisonQuery")) {
             comparisonOptions.put("query", options.get("comparisonQuery"));
+            query = options.get("comparisonQuery");
         }
         if (options.containsKey("comparisonAgo")) {
             comparisonOptions.put("ago", options.get("comparisonAgo"));
@@ -541,6 +544,7 @@ public class Oddball {
         }
         comparisonOptions.remove("selector");
 
+//        LOGGER.debug(comparisonOptions.toString());
         Collection<String> result = ruleSet.getPersist().findCasesForOwner(options.get("owner"), query, comparisonOptions);
         if (options.get("transformer") != null) {
             result = transformResults(result, getDefaultedTransformer("", options));
@@ -592,12 +596,33 @@ public class Oddball {
             if (options.containsKey("query")) {
                 query = options.get("query").replace("'", "\"");
                 OddUtil ou = new OddUtil();
+//                if (caseMap!=null){
+//                    LOGGER.debug(caseMap.toString());
+//                }
+//                LOGGER.debug(input);
                 if (caseMap == null) {
                     caseMap = (Map<String, Object>) JSONUtil.json2map(input).get("case");
                 }
-                query = ou.replacePlaceholders(query, caseMap);
+                if (caseMap!=null){
+                    query = ou.replacePlaceholders(query, caseMap);
+                }
             }
-            retrievedResults.addAll(initialQuery(owner, options.get("ruleSet"), query, options));
+            if (!(input.equals("{}"))&&options.containsKey("results")&& options.get("results").equals("addLink")){
+                Collection<String> retrieved = initialQuery(owner, options.get("ruleSet"), query, options);
+                String first = "none retrieved from "+options.get("ruleSet")+" using "+query;
+                if (retrieved.iterator().hasNext()){
+                    first = (String)retrieved.iterator().next();
+                } 
+                String linkName = "link";
+                if (options.containsKey("resultName")){
+                    linkName = (String) options.get("resultName");
+                }
+                String linkedInput = addLink(input, first, linkName);
+                retrievedResults.add(linkedInput);
+            } else {
+                retrievedResults.addAll(initialQuery(owner, options.get("ruleSet"), query, options));
+            }
+            
         }
         return retrievedResults;
     }
@@ -631,8 +656,8 @@ public class Oddball {
         for (Object step : chainSteps) {
             interimResults = new ArrayList<String>();
             Map<String, String> stepMap = (Map<String, String>) step;
-            LOGGER.debug("Processor Step");
-            LOGGER.debug(stepMap.toString());
+//            LOGGER.debug("Processor Step");
+//            LOGGER.debug(stepMap.toString());
             for (String key : stepMap.keySet()) {
                 stepMap.put(key, stepMap.get(key).replace("{owner}", ownerDir + "/").replace("{account}", ownerDir + "/"));
             }
@@ -657,16 +682,24 @@ public class Oddball {
             if (stepMap.get("comparator") != null) {
                 Map<String, String> subOptions = (Map<String, String>) stepMap;
                 if (options.get("recent") != null) {
-                    subOptions.put("recent", options.get("recent"));
+                    if (subOptions.get("recent") == null) {
+                        subOptions.put("recent", options.get("recent"));
+                    }
                 }
                 if (options.get("caseRecent") != null) {
-                    subOptions.put("caseRecent", options.get("recent"));
+                    if (subOptions.get("caseRecent") == null) {
+                        subOptions.put("caseRecent", options.get("recent"));
+                    }
                 }
                 if (options.get("query") != null) {
-                    subOptions.put("query", options.get("query"));
+                    if (subOptions.get("query") == null && subOptions.get("comparisonQuery") == null) {
+                        subOptions.put("query", options.get("query"));
+                    }
                 }
                 if (options.get("ownerProperty") != null) {
-                    subOptions.put("ownerProperty", options.get("ownerProperty"));
+                    if (subOptions.get("ownerProperty") == null) {
+                        subOptions.put("ownerProperty", options.get("ownerProperty"));
+                    }
                 }
                 if (options.get("forEach") != null) {
                     subOptions.put("forEach", options.get("forEach"));
@@ -679,7 +712,13 @@ public class Oddball {
                     stepRuleSet = ensureRuleSet(stepMap.get("comparisonRuleSet"));
                     subOptions.put("transformer", stepMap.get("identityTransformer"));
                 }
-                interimResults.addAll(compareResults(results, subOptions, stepRuleSet, query, owner));
+
+                try {
+                    interimResults.addAll(compareResults(results, subOptions, stepRuleSet, query, owner));
+                } catch (ComparisonException e) {
+                    interimResults.addAll((Collection) results);
+                    LOGGER.warn("Comparator " + stepMap.get("comparator") + " failed - process continues", e);
+                }
             }
             if (stepMap.get("identifier") != null) {
                 Map<String, String> subOptions = (Map<String, String>) stepMap;
@@ -738,9 +777,10 @@ public class Oddball {
                     LOGGER.warn("Processor not loaded:" + stepMap.get("processor"), ex);
                 }
             }
-            if (stepMap.get("results") == null || stepMap.get("results").equals("retain")) {
+            if (stepMap.get("results") == null || stepMap.get("results").equals("retain") || stepMap.get("results").equals("addLink")) {
                 results = interimResults;
-            } else { //revert
+            }
+            else { //revert
                 interimResults = (ArrayList<String>) results;
             }
             //LOGGER.debug(step.toString());
@@ -750,6 +790,15 @@ public class Oddball {
 //        }
         processedResults.addAll(interimResults);
         return processedResults;
+    }
+    
+    private  String addLink(String baseResult, String linkResult, String resultName) throws JsonParseException{
+        Map<String, Object>baseMap=JSONUtil.json2map(baseResult);
+        Map<String, Object>linkMap=JSONUtil.json2map(linkResult);
+//            baseMap.put(resultName, "test");
+        String linkId = (String)linkMap.get("_id");
+        baseMap.put(resultName, linkId);
+        return JSONUtil.map2json(baseMap);
     }
 
     private String getDefaultedTransformer(String ruleSetName, Map<String, String> options) {

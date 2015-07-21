@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,32 +34,25 @@ public class SummaryComparator implements CaseComparator{
     public Map compare(String caseString, Iterable<String> comparisonCases, Map<String, String> options, ResourceRepository resourceRepository) throws ComparisonException, InvalidTimePeriodException, IOException{
         SummaryAggregator sa = new SummaryAggregator();
         try {
-            LOGGER.debug("compareToSummary");
-            LOGGER.debug(caseString);
-////            Collection<Summary> comparisons = sa.summariseCases(comparisonCases, options, resourceRepository);
+//            LOGGER.debug("compareToSummary");
+//            LOGGER.debug(caseString);
+//            LOGGER.debug(options.toString());
+            List<Summary> comparisons = sa.summariseCases(comparisonCases, options, resourceRepository);
 //            LOGGER.debug(Integer.toString(comparisons.size()));
-//            LOGGER.debug(comparisons.toString());
-            Summary comparison = sa.summariseCases(comparisonCases, options, resourceRepository).get(0); // should be just the 1
-//            LOGGER.debug(comparison.asMap().toString());
+            if (comparisons.size()<1){
+                throw new ComparisonException("No cases for comparison");
+            }
+            Summary comparison = comparisons.get(0); // should be just the 1
             String comparisonCase = comparisonCases.iterator().next();
-            LOGGER.debug(comparisonCase);
-            LOGGER.debug(comparison.asMap().toString());
+//            LOGGER.debug(comparison.asMap().toString());
             Map<String, Object> caseMap = JSONUtil.json2map(caseString);
+//            LOGGER.debug(comparison.assess(caseMap).toString());
             caseMap.put("comparison", comparison.assess(caseMap));
-//            return comparison.assess(caseMap);
             return caseMap;
         }
         catch (AggregationException ex){
             throw new ComparisonException(ex.getMessage());
         }
-//        String summaryDefinitionName = options.get("summaryDefinition");
-//        try {
-//            this.summaryDefinition = new SummaryDefinition(summaryDefinitionName, resourceRepository);
-//        }
-//        catch (SummaryDefinitionNotLoadedException e){
-//            throw new AggregationException("Summary Definition could not be loaded", e);
-//        }
-        
         
     }
 

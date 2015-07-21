@@ -31,6 +31,10 @@ public class EpisodeAggregator implements Aggregator {
         if (options.containsKey("watchList")) {
             watchList = options.get("watchList");
         }
+        String excludeCodes = "";
+        if (options.containsKey("excludeCodes")) {
+            excludeCodes = options.get("excludeCodes");
+        }
         String customDataTag = "case.customData";
         if (options.containsKey("customDataTag")) {
             customDataTag = options.get("customDataTag");
@@ -52,7 +56,7 @@ public class EpisodeAggregator implements Aggregator {
             descriptionProperty = options.get("descriptionProperty");
         }
         try {
-            for (Episode ep : aggregateEvents(caseStrings, timeOutPeriod, timeOutReference, watchList, descriptionProperty, customDataTag)) {
+            for (Episode ep : aggregateEvents(caseStrings, timeOutPeriod, timeOutReference, watchList, descriptionProperty, customDataTag, excludeCodes)) {
                 response.add(ep.asMap());
             }
         } catch (EventNotCreatedException e) {
@@ -61,7 +65,7 @@ public class EpisodeAggregator implements Aggregator {
         return response;
     }
 
-    public ArrayList<Episode> aggregateEvents(Iterable<String> eventStrings, long timeOutPeriod, long timeOutReference, String watchList, String descriptionProperty, String customDataTag) throws EventNotCreatedException {
+    public ArrayList<Episode> aggregateEvents(Iterable<String> eventStrings, long timeOutPeriod, long timeOutReference, String watchList, String descriptionProperty, String customDataTag, String excludeCodes) throws EventNotCreatedException {
         ArrayList<Event> eventList = new ArrayList<Event>();
         for (String eventString : eventStrings) {
             try {
@@ -88,10 +92,16 @@ public class EpisodeAggregator implements Aggregator {
                     episodes.add(currentEpisode);
                     currentEpisode = new Episode(event.getOwner(), event.getAgent(), event.getSeries(), event.getEventTime(), event.getTagTime(), watchList, customDataTag);
                 } else {  //not Timed out
-                    currentEpisode.recordInterval(previousEventTime, event.getEventTime(), event.getTagTime());
+                    if (!excludeCodes.contains(event.getCode())){
+                        currentEpisode.recordInterval(previousEventTime, event.getEventTime(), event.getTagTime());
+                    }
                 }
             }
-            currentEpisode.recordState(event.getState(), event.getCode(), event.getEventTime(), event.getTagTime(), event.getCaseMap(), descriptionProperty);
+            if (excludeCodes.contains(event.getCode())){
+                currentEpisode.markTime(event.getEventTime(), event.getTagTime());
+            } else {
+                currentEpisode.recordState(event.getState(), event.getCode(), event.getEventTime(), event.getTagTime(), event.getCaseMap(), descriptionProperty);
+            }
             previousEventTime = event.getEventTime();
             previousTagTime = event.getTagTime();
         }

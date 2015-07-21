@@ -41,6 +41,11 @@ public class Episode {
             } 
         }
     }
+    public void markTime(long thisTime, long thisTagTime) {
+        this.endTime = thisTime;
+        this.lastTagTime = thisTagTime;
+        this.duration = this.endTime - this.startTime;
+    }
 
     public void recordState(String state, String code, long thisTime, long thisTagTime, Map<String, Object> caseMap, String descriptionProperty) {
 //    public void recordState(String state, String code, long thisTime, long thisTagTime) {

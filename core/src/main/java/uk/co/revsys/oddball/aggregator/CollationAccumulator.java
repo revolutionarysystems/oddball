@@ -130,6 +130,7 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator{
     public void computeInfo(){
         //Map<Object, Object> results = new HashMap<Object, Object>();
         ArrayList<Map<String, Object>> innerResults = new ArrayList<Map<String, Object>> ();
+        totalCount=0;
         for (Object item:collation.keySet()){
             Map<String, Object> cell = new HashMap<String, Object>();
             cell.put("value", item);

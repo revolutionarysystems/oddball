@@ -61,7 +61,7 @@ public class EpisodeAggregatorTest{
                 + "\"tagTime\": \"1409579263300\","
                 + "\"state\": \"Quit\"}");
         EpisodeAggregator ea = new EpisodeAggregator();
-        List<Episode> episodes = ea.aggregateEvents(events, 30000, 1409579264000L, "", null, null);
+        List<Episode> episodes = ea.aggregateEvents(events, 30000, 1409579264000L, "", null, null, "");
         assertTrue(episodes.size()==1);
         Episode ep = episodes.get(0);
         assertEquals("A0B0C", ep.getStateCodes());
@@ -75,7 +75,7 @@ public class EpisodeAggregatorTest{
         assertTrue(300L==ep.getDuration());
         assertTrue(ep.isOpen());
         System.out.println(ep.asMap());
-        List<Episode> episodes2 = ea.aggregateEvents(events, 30000, 1409589263988L, "", null, null);
+        List<Episode> episodes2 = ea.aggregateEvents(events, 30000, 1409589263988L, "", null, null, "");
         assertTrue(episodes2.size()==1);
         Episode ep2 = episodes2.get(0);
         assertEquals("A0B0CX", ep2.getStateCodes());
@@ -83,7 +83,7 @@ public class EpisodeAggregatorTest{
         assertTrue(300L==ep2.getDuration());
         assertFalse(ep2.isOpen());
         System.out.println(ep2.asMap());
-        List<Episode> episodes3 = ea.aggregateEvents(events, 150, 1409589263988L, "", null, null);
+        List<Episode> episodes3 = ea.aggregateEvents(events, 150, 1409589263988L, "", null, null, "");
         assertTrue(episodes3.size()==2);
         Episode ep3a = episodes3.get(0);
         assertEquals("A0BX", ep3a.getStateCodes());
@@ -94,6 +94,71 @@ public class EpisodeAggregatorTest{
         
     }
 
+    @Test
+    public void testAggregateEventsWithExclude() throws EventNotCreatedException {
+        HashSet<String> events = new HashSet<String>();
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"A\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6c\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263000\","
+                + "\"tagTime\": \"1409579263000\","
+                + "\"state\": \"Home\"}");
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"B\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6d\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263100\","
+                + "\"tagTime\": \"1409579263100\","
+                + "\"state\": \"Info\"}");
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"C\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6e\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263300\","
+                + "\"tagTime\": \"1409579263300\","
+                + "\"state\": \"Quit\"}");
+        EpisodeAggregator ea = new EpisodeAggregator();
+        List<Episode> episodes = ea.aggregateEvents(events, 30000, 1409579264000L, "", null, null, "B");
+        assertTrue(episodes.size()==1);
+        Episode ep = episodes.get(0);
+        assertEquals("A0C", ep.getStateCodes());
+        assertTrue(1409579263000L==ep.getFirstTagTime());
+        assertTrue(1409579263300L==ep.getLastTagTime());
+        assertTrue(1409579263000L==ep.getStartTime());
+        assertEquals("revsys-master-account", ep.getOwner());
+        assertEquals("user1", ep.getAgent());
+        assertEquals("e47877b6-4f17-4d2d-a6f3-3d35aa919be6", ep.getSeries());
+        assertTrue(1409579263300L==ep.getEndTime());
+        assertTrue(300L==ep.getDuration());
+        assertTrue(ep.isOpen());
+        System.out.println(ep.asMap());
+        List<Episode> episodes2 = ea.aggregateEvents(events, 30000, 1409589263988L, "", null, null, "B");
+        assertTrue(episodes2.size()==1);
+        Episode ep2 = episodes2.get(0);
+        assertEquals("A0CX", ep2.getStateCodes());
+        assertTrue(1409579263300L==ep2.getEndTime());
+        assertTrue(300L==ep2.getDuration());
+        assertFalse(ep2.isOpen());
+        System.out.println(ep2.asMap());
+        List<Episode> episodes3 = ea.aggregateEvents(events, 150, 1409589263988L, "", null, null, "B");
+        assertTrue(episodes3.size()==2);
+        Episode ep3a = episodes3.get(0);
+        assertEquals("AX", ep3a.getStateCodes());
+        Episode ep3b = episodes3.get(1);
+        assertEquals("CX", ep3b.getStateCodes());
+        
+       
+        
+    }
+    
+    
     @Test
     public void testAggregateEventsWatchList() throws EventNotCreatedException {
         HashSet<String> events = new HashSet<String>();
@@ -128,7 +193,7 @@ public class EpisodeAggregatorTest{
                 + "\"tagTime\": \"1409579263300\","
                 + "\"state\": \"Quit\"}");
         EpisodeAggregator ea = new EpisodeAggregator();
-        List<Episode> episodes = ea.aggregateEvents(events, 30000, 1409579264000L, "place", null, null);
+        List<Episode> episodes = ea.aggregateEvents(events, 30000, 1409579264000L, "place", null, null, "");
         assertTrue(episodes.size()==1);
         Episode ep = episodes.get(0);
         assertEquals("A0B0C", ep.getStateCodes());
@@ -142,7 +207,7 @@ public class EpisodeAggregatorTest{
         assertTrue(300L==ep.getDuration());
         assertTrue(ep.isOpen());
         System.out.println(ep.asMap());
-        List<Episode> episodes2 = ea.aggregateEvents(events, 30000, 1409589263988L,"place", "href", null);
+        List<Episode> episodes2 = ea.aggregateEvents(events, 30000, 1409589263988L,"place", "href", null, "");
         assertTrue(episodes2.size()==1);
         Episode ep2 = episodes2.get(0);
         assertEquals("A0B0CX", ep2.getStateCodes());
@@ -154,7 +219,7 @@ public class EpisodeAggregatorTest{
         assertEquals("[paris, lyon, lyon]",(new OddUtil().getDeepProperty(ep2.asMap(), "watches.place")).toString());
         assertEquals("lyon",(new OddUtil().getDeepProperty(ep2.asMap(), "watchValues.place")).toString());
         assertEquals("{valueChanged-place={1=paris,lyon}}",(new OddUtil().getDeepProperty(ep2.asMap(), "alerts")).toString());
-        List<Episode> episodes3 = ea.aggregateEvents(events, 150, 1409589263988L, "place", null, null);
+        List<Episode> episodes3 = ea.aggregateEvents(events, 150, 1409589263988L, "place", null, null, "");
         assertTrue(episodes3.size()==2);
         Episode ep3a = episodes3.get(0);
         assertEquals("A0BX", ep3a.getStateCodes());
@@ -203,7 +268,7 @@ public class EpisodeAggregatorTest{
                 + "\"customData\": {\"wotsit\":\"foo\", \"thingum\":\"B\"},"
                 + "\"state\": \"Quit\"}");
         EpisodeAggregator ea = new EpisodeAggregator();
-        List<Episode> episodes = ea.aggregateEvents(events, 30000, 1409579264000L, "place", null, "customData");
+        List<Episode> episodes = ea.aggregateEvents(events, 30000, 1409579264000L, "place", null, "customData", "");
         assertTrue(episodes.size()==1);
         Episode ep = episodes.get(0);
         assertEquals("A0B0C", ep.getStateCodes());
@@ -217,7 +282,7 @@ public class EpisodeAggregatorTest{
         assertTrue(300L==ep.getDuration());
         assertTrue(ep.isOpen());
         System.out.println(ep.asMap());
-        List<Episode> episodes2 = ea.aggregateEvents(events, 30000, 1409589263988L,"place", "href", "customData");
+        List<Episode> episodes2 = ea.aggregateEvents(events, 30000, 1409589263988L,"place", "href", "customData", "");
         assertTrue(episodes2.size()==1);
         Episode ep2 = episodes2.get(0);
         assertEquals("A0B0CX", ep2.getStateCodes());
@@ -229,7 +294,7 @@ public class EpisodeAggregatorTest{
         assertEquals("[paris, lyon, lyon]",(new OddUtil().getDeepProperty(ep2.asMap(), "watches.place")).toString());
         assertEquals("lyon",(new OddUtil().getDeepProperty(ep2.asMap(), "watchValues.place")).toString());
         assertEquals("{valueChanged-place={1=paris,lyon}}",(new OddUtil().getDeepProperty(ep2.asMap(), "alerts")).toString());
-        List<Episode> episodes3 = ea.aggregateEvents(events, 150, 1409589263988L, "place", null, null);
+        List<Episode> episodes3 = ea.aggregateEvents(events, 150, 1409589263988L, "place", null, null, "");
         assertEquals("foo",(new OddUtil().getDeepProperty(ep2.asMap(), "customDataWatchValues.wotsit")).toString());
         assertEquals("B",(new OddUtil().getDeepProperty(ep2.asMap(), "customDataWatchValues.thingum")).toString());
         assertTrue(episodes3.size()==2);

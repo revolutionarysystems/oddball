@@ -107,7 +107,9 @@ public class SummaryIdentifier implements CaseIdentifier{
                             }
                             if ((Integer)outcome.get("count")< (Integer)primaryOutcome.get("count")){
                                 comparePrimary = "MultipleLTPrimary";
-                                combiningQueries.add((String)outcome.get("query"));                        
+                                if ((Double) outcome.get("power")> 0.6){
+                                    combiningQueries.add((String)outcome.get("query"));                        
+                                }
                             }
                         }
                         outcome.put("compareToPrimary",comparePrimary);
