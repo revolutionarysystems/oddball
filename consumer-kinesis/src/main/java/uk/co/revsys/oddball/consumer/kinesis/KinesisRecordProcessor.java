@@ -55,6 +55,9 @@ public class KinesisRecordProcessor extends uk.co.revsys.kinesis.KinesisRecordPr
             LOG.error("Blank data");
         } else {
             String partitionKey = record.getPartitionKey();
+            if(partitionKey.contains("::")){
+                partitionKey = partitionKey.substring(partitionKey.indexOf("::")+2);
+            }
             LOG.info(record.getSequenceNumber() + ", " + partitionKey + ", " + data);
             List<String> recordRuleSets = ruleSets.get(partitionKey);
             if (recordRuleSets == null) {
