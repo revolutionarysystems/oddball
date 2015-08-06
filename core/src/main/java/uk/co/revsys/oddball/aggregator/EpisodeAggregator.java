@@ -10,8 +10,14 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.util.InvalidTimePeriodException;
+import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.oddball.util.OddUtil;
 import uk.co.revsys.resource.repository.ResourceRepository;
 
@@ -115,5 +121,67 @@ public class EpisodeAggregator implements Aggregator {
         }
         return episodes;
     }
+    
+
+    public ArrayList<Map> incrementAggregation(String itemString, Map<String, Object> aggregationMap, Map<String, String> options) throws IOException, ParseException {
+        ArrayList<Map> results = new ArrayList<Map>();
+        boolean tagWrap = false;
+        if (options.containsKey("tagWrap")&& options.get("tagWrap").equals("true")){
+            tagWrap = true;
+        }
+        Map<String, Object> episodeMap = aggregationMap;
+        boolean arrivedWrapped = false;
+        if (aggregationMap!=null && aggregationMap.containsKey("case")){
+            episodeMap = (Map<String, Object>) aggregationMap.get("case");
+            arrivedWrapped = true;
+        }
+        Map<String, Object> episodeCase = incrementEpisode(itemString, episodeMap, options).asMap();
+        if (arrivedWrapped){
+            aggregationMap.put("case", episodeCase);
+            results.add(aggregationMap);
+        } else if (tagWrap){
+            Map<String, Object> wrappedCase = new HashMap<String, Object>();
+            wrappedCase.put("tags", new ArrayList<String>());
+            wrappedCase.put("derived", new HashMap<String, Object>());
+            wrappedCase.put("owner", (String) episodeCase.get("owner"));
+            wrappedCase.put("case", episodeCase);
+            results.add(wrappedCase);
+        } else {
+            results.add(episodeCase);
+        }
+        return results;
+    }
+
+    public Episode incrementEpisode(String eventString, Map<String, Object> episodeMap, Map<String, String> options) throws IOException, ParseException {
+        Event event = new Event(eventString);
+        Episode currentEpisode = null;
+        String customDataTag = null;
+        if (options.containsKey("customDataTag")){
+            customDataTag = options.get("customDataTag");
+        }
+        String watchList = null;
+        if (options.containsKey("watchList")){
+            watchList = options.get("watchList");
+        }
+        String descriptionProperty = null;
+        if (options.containsKey("descriptionProperty")){
+            descriptionProperty = options.get("descriptionProperty");
+        }
+        if (episodeMap==null){
+            currentEpisode = new Episode(event.getOwner(), event.getAgent(), event.getSeries(), event.getEventTime(), event.getTagTime(), watchList, customDataTag);
+        } else {
+            if (episodeMap!=null){
+                currentEpisode = new Episode(episodeMap, customDataTag);
+            }
+            currentEpisode.recordInterval(currentEpisode.getEndTime(), event.getEventTime(), event.getTagTime());
+        }
+        currentEpisode.recordState(event.getState(), event.getCode(), event.getEventTime(), event.getTagTime(), event.getCaseMap(), descriptionProperty);
+        
+                
+        return currentEpisode;
+    }
+
+    static final Logger LOGGER = LoggerFactory.getLogger("oddball");
+
 
 }

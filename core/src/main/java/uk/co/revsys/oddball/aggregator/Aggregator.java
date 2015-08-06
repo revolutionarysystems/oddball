@@ -6,6 +6,8 @@
 
 package uk.co.revsys.oddball.aggregator;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Map;
 import uk.co.revsys.oddball.util.InvalidTimePeriodException;
@@ -17,6 +19,7 @@ import uk.co.revsys.resource.repository.ResourceRepository;
  */
 public interface Aggregator {
 
-    ArrayList<Map> aggregateCases(Iterable<String> caseStrings, Map<String, String> options, ResourceRepository resourceRepository) throws AggregationException, InvalidTimePeriodException;
+    public ArrayList<Map> aggregateCases(Iterable<String> caseStrings, Map<String, String> options, ResourceRepository resourceRepository) throws AggregationException, InvalidTimePeriodException;
+    public ArrayList<Map> incrementAggregation(String itemString, Map<String, Object> aggregationMap, Map<String, String> options) throws IOException, ParseException ;
     
 }

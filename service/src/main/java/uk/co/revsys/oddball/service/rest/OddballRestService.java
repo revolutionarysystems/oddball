@@ -1,7 +1,9 @@
 package uk.co.revsys.oddball.service.rest;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -188,6 +190,8 @@ public class OddballRestService extends AbstractRestService {
                 assessment = oddball.assessCase(ruleSet, inboundTransformer, new StringCase(caseStr), persistOption, duplicateRule, null, options);
             } catch (RuleSetNotLoadedException ex) {
                 return buildErrorResponse(ex);
+            } catch (ParseException ex) {
+                return buildErrorResponse(ex);
             } catch (TransformerNotLoadedException ex) {
                 return buildErrorResponse(ex);
             } catch (InvalidCaseException ex) {
@@ -249,6 +253,8 @@ public class OddballRestService extends AbstractRestService {
             try {
                 assessment = oddball.assessCase(ownerDir+"/"+ruleSet, inboundTransformer, new StringCase(caseStr), persistOption, duplicateRule, null, options);
             } catch (RuleSetNotLoadedException ex) {
+                return buildErrorResponse(ex);
+            } catch (ParseException ex) {
                 return buildErrorResponse(ex);
             } catch (TransformerNotLoadedException ex) {
                 return buildErrorResponse(ex);
@@ -408,7 +414,7 @@ public class OddballRestService extends AbstractRestService {
         return findCasesService(ruleSet, options, ownerDir+"/");
     }
 
-    public Response findCasesService(String ruleSets, HashMap<String, String> options, String ruleOwnerPrefix){
+    public Response findCasesService(String ruleSets, HashMap<String, String> options, String ruleOwnerPrefix) {
         String owner = getOwner(null,options);
         if (owner == null) {
             return Response.status(Response.Status.FORBIDDEN).build();
@@ -444,6 +450,10 @@ public class OddballRestService extends AbstractRestService {
                 }
             }
         } catch (InvalidTimePeriodException ex) {
+            return buildErrorResponse(ex);
+        } catch (ParseException ex) {
+            return buildErrorResponse(ex);
+        } catch (JsonParseException ex) {
             return buildErrorResponse(ex);
         } catch (RuleSetNotLoadedException ex) {
             return buildErrorResponse(ex);

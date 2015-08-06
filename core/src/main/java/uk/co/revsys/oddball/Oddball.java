@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import uk.co.revsys.oddball.aggregator.AggregatorMap;
 import uk.co.revsys.oddball.aggregator.CaseComparator;
 import uk.co.revsys.oddball.aggregator.ComparatorMap;
 import uk.co.revsys.oddball.aggregator.ComparisonException;
+import uk.co.revsys.oddball.aggregator.Episode;
 import uk.co.revsys.oddball.bins.BinSet;
 import uk.co.revsys.oddball.bins.BinSetImpl;
 import uk.co.revsys.oddball.bins.BinSetNotLoadedException;
@@ -83,7 +85,7 @@ public class Oddball {
         return ruleSet;
     }
 
-    public Collection<String> assessCase(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery, String avoidQuery, Map<String, String> options) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException, JsonParseException {
+    public Collection<String> assessCase(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery, String avoidQuery, Map<String, String> options) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException, JsonParseException, IOException, ParseException {
         if (inboundTransformer != null) {
             LOGGER.debug("Applying transformation:" + inboundTransformer);
             aCase.setContent(this.transformCase(aCase.getContent(), inboundTransformer));
@@ -103,7 +105,7 @@ public class Oddball {
         return results;
     }
 
-    public Collection<String> assessCase(String ruleSetName, String inboundTransformer, String processor, Case aCase) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, IOException, ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException {
+    public Collection<String> assessCase(String ruleSetName, String inboundTransformer, String processor, Case aCase) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, IOException, ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException, JsonParseException, ParseException {
         aCase = new MapCase(aCase.getContent());
         HashMap<String, String> options = new HashMap<String, String>();
         String caseOwner = aCase.getOwner();
@@ -394,17 +396,21 @@ public class Oddball {
     }
 
     public Collection<String> transformResults(Iterable<String> results, String transformerName) throws TransformerNotLoadedException {
+        LOGGER.debug("transformer:" + transformerName);
         ArrayList<String> transformed = new ArrayList<String>();
         String transformStr = getTransformer(transformerName, resourceRepository);
         Map evalFunctions = new HashMap();
         evalFunctions.put("math", new MathUtil());
         evalFunctions.put("odd", new OddUtil());
         evalFunctions.put("util", new CoreUtil());
+//        LOGGER.debug("init transformer:" + transformerName);
         JSONTransformer transformer = new JSONTransformer(new JEXLJSONPathEvaluator(evalFunctions));
         HashMap params = new HashMap();
         for (String caseStr : results) {
             transformed.add(transformer.transform(caseStr, transformStr, params));
         }
+//        LOGGER.debug("signals to be transformed:" + Integer.toString(transformed.size()));
+//        LOGGER.debug("done for transformer:" + transformerName);
         return transformed;
     }
 
@@ -459,67 +465,136 @@ public class Oddball {
         }
     }
 
+    private Collection<String> incrementResults(Iterable<String> results, Collection<String> episodes, Map<String, String> options) throws AggregationException, InvalidTimePeriodException, IOException, ParseException {
+        ArrayList<String> incrementedResults = new ArrayList<String>();
+        Class aggregatorClass = new AggregatorMap().get(options.get("incrementor"));
+        Map<String, Object> episodeMap = null;
+        if (episodes.iterator().hasNext()) {
+            String episode = null;
+            episode = episodes.iterator().next();
+            episodeMap = JSONUtil.json2map(episode);
+//            LOGGER.debug("Episode:" + episode);
+        }
+        try {
+            for (String result : results) {
+                Aggregator ag = (Aggregator) aggregatorClass.newInstance();
+                if (episodeMap != null && episodeMap.containsKey("case")) { // case is decorated with other data
+                    Map<String, Object> episodeCase = (Map<String, Object>) episodeMap.get("case");
+                    ArrayList<Map> incremented = ag.incrementAggregation(result, episodeMap, options);
+                    for (Object inc : incremented) {
+//                        LOGGER.debug("EpisodeMap:"+episodeMap.toString());
+//                        episodeMap.put("case", (Map<String, Object>) inc);
+//                        LOGGER.debug("EpisodeMap:" + episodeMap.toString());
+                        String incString = JSONUtil.map2json((Map) inc);
+                        incrementedResults.add(incString);
+                    }
+                } else {
+//                    LOGGER.debug("New Episode:");
+                    ArrayList<Map> incremented = ag.incrementAggregation(result, episodeMap, options);
+                    for (Object inc : incremented) {
+                        String incString = JSONUtil.map2json((Map) inc);
+//                        LOGGER.debug("EpisodeMap:" + inc.toString());
+                        incrementedResults.add(incString);
+                    }
+                }
+            }
+            return incrementedResults;
+        } catch (InstantiationException e) {
+            throw new AggregationException("Could not instantiate aggregator: " + options.get("aggregator"), e);
+        } catch (IllegalAccessException e) {
+            throw new AggregationException("Could not instantiate aggregator: " + options.get("aggregator"), e);
+        }
+    }
+
     private Collection<String> compareResults(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, TransformerNotLoadedException, JsonParseException {
         options.put("owner", owner);
-        Collection<String> comparisonResults = comparisonResults(ruleSet, query, options);
-//        LOGGER.debug("comparison cases");
-//        LOGGER.debug(ruleSet.getName());
-//        LOGGER.debug(options.toString());
-//        LOGGER.debug(Integer.toString(comparisonResults.size()));
-
-        ArrayList<String> comparedResults = new ArrayList<String>();
-        Class comparatorClass = new ComparatorMap().get(options.get("comparator"));
-        options.put("periodDivision", "1Y");
-
-        try {
-            CaseComparator comp = (CaseComparator) comparatorClass.newInstance();
+        boolean compareRequired = true;   // default - we will do the compare on the batch of results
+//        LOGGER.debug("id required:" + Boolean.toString(idRequired));
+        if (options.containsKey("redo") && options.get("redo").equals("false")) {
+            compareRequired = false;     // if the redo:false option is set, assume compare NOT required
+//            LOGGER.debug("id required:"+ Boolean.toString(idRequired));
             for (String result : results) {
-                Map compared = comp.compare(result, comparisonResults, options, resourceRepository);
-                String compString = JSONUtil.map2json((Map) compared);
-                compString = compString.replace(":  }", ":{ }");
-                comparedResults.add(compString);
+                if (!result.contains("comparison")) { // if one or more cases is missing the id, in which case it IS needed
+                    compareRequired = true;
+                }
             }
-            return comparedResults;
-        } catch (IOException e) {
-            throw new ComparisonException("IOException: " + options.get("comparator"), e);
-        } catch (InstantiationException e) {
-            throw new ComparisonException("Could not instantiate aggregator: " + options.get("comparator"), e);
-        } catch (IllegalAccessException e) {
-            throw new ComparisonException("Could not instantiate aggregator: " + options.get("comparator"), e);
         }
+//        LOGGER.debug("id required:"+ Boolean.toString(idRequired));
+        ArrayList<String> comparedResults = new ArrayList<String>();
+    
+        if (compareRequired) {
+            Collection<String> comparisonResults = comparisonResults(ruleSet, query, options);
+
+            Class comparatorClass = new ComparatorMap().get(options.get("comparator"));
+            options.put("periodDivision", "1Y");
+
+            try {
+                CaseComparator comp = (CaseComparator) comparatorClass.newInstance();
+                for (String result : results) {
+                    Map compared = comp.compare(result, comparisonResults, options, resourceRepository);
+                    String compString = JSONUtil.map2json((Map) compared);
+                    compString = compString.replace(":  }", ":{ }");
+                    comparedResults.add(compString);
+                }
+            } catch (IOException e) {
+                throw new ComparisonException("IOException: " + options.get("comparator"), e);
+            } catch (InstantiationException e) {
+                throw new ComparisonException("Could not instantiate aggregator: " + options.get("comparator"), e);
+            } catch (IllegalAccessException e) {
+                throw new ComparisonException("Could not instantiate aggregator: " + options.get("comparator"), e);
+            }
+        } else { // compare NOT required
+            for (String result : results) {
+                comparedResults.add(result);
+            }
+        }
+        return comparedResults;
     }
 
     private Collection<String> identifyResults(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, TransformerNotLoadedException, IdentificationSchemeNotLoadedException, AggregationException, JsonParseException {
         options.put("owner", owner);
-//        LOGGER.debug("identify query and options");
-//        LOGGER.debug(query);
-//        LOGGER.debug(options.toString());
-//        LOGGER.debug(ruleSet.getName());
-        Collection<String> comparisonResults = comparisonResults(ruleSet, query, options);
-//        LOGGER.debug(Integer.toString(comparisonResults.size()));
-
-        ArrayList<String> identifiedResults = new ArrayList<String>();
-        Class identifierClass = new IdentifierMap().get(options.get("identifier"));
-        options.put("periodDivision", "1Y");
-
-        try {
-            CaseIdentifier ider = (CaseIdentifier) identifierClass.newInstance();
+        boolean idRequired = true;   // default - we will do the id on the batch of results
+//        LOGGER.debug("id required:" + Boolean.toString(idRequired));
+        if (options.containsKey("redo") && options.get("redo").equals("false")) {
+            idRequired = false;     // if the redo:false option is set, assume id NOT required
+//            LOGGER.debug("id required:"+ Boolean.toString(idRequired));
             for (String result : results) {
-                Map identified = ider.identify(ruleSet, result, comparisonResults, options, this, resourceRepository);
-//                LOGGER.debug(identified.toString());
-                String idString = JSONUtil.map2json((Map) identified);
-//                LOGGER.debug(idString);
-                idString = idString.replace(":  }", ":{ }");
-                identifiedResults.add(idString);
+                if (!result.contains("identification")) { // if one or more cases is missing the id, in which case it IS needed
+                    idRequired = true;
+                }
             }
-            return identifiedResults;
-        } catch (IOException e) {
-            throw new ComparisonException("IOException: " + options.get("comparator"), e);
-        } catch (InstantiationException e) {
-            throw new ComparisonException("Could not instantiate aggregator: " + options.get("comparator"), e);
-        } catch (IllegalAccessException e) {
-            throw new ComparisonException("Could not instantiate aggregator: " + options.get("comparator"), e);
         }
+//        LOGGER.debug("id required:"+ Boolean.toString(idRequired));
+        ArrayList<String> identifiedResults = new ArrayList<String>();
+        if (idRequired) {
+            Collection<String> comparisonResults = comparisonResults(ruleSet, query, options);
+
+            Class identifierClass = new IdentifierMap().get(options.get("identifier"));
+            options.put("periodDivision", "1Y");
+
+            try {
+                CaseIdentifier ider = (CaseIdentifier) identifierClass.newInstance();
+                for (String result : results) {
+                    Map identified = ider.identify(ruleSet, result, comparisonResults, options, this, resourceRepository);
+                    //                LOGGER.debug(identified.toString());
+                    String idString = JSONUtil.map2json((Map) identified);
+                    //                LOGGER.debug(idString);
+                    idString = idString.replace(":  }", ":{ }");
+                    identifiedResults.add(idString);
+                }
+            } catch (IOException e) {
+                throw new ComparisonException("IOException: " + options.get("comparator"), e);
+            } catch (InstantiationException e) {
+                throw new ComparisonException("Could not instantiate aggregator: " + options.get("comparator"), e);
+            } catch (IllegalAccessException e) {
+                throw new ComparisonException("Could not instantiate aggregator: " + options.get("comparator"), e);
+            }
+        } else { // id NOT required
+            for (String result : results) {
+                identifiedResults.add(result);
+            }
+        }
+        return identifiedResults;
     }
 
     public Collection<String> comparisonResults(RuleSet ruleSet, String query, Map<String, String> options) throws UnknownBinException, DaoException, InvalidTimePeriodException, TransformerNotLoadedException, JsonParseException {
@@ -552,7 +627,7 @@ public class Oddball {
         return result;
     }
 
-    private Collection<String> tagResults(Iterable<String> results, Map<String, String> options) throws RuleSetNotLoadedException, InvalidCaseException, TransformerNotLoadedException, ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException, JsonParseException {
+    private Collection<String> tagResults(Iterable<String> results, Map<String, String> options) throws RuleSetNotLoadedException, InvalidCaseException, TransformerNotLoadedException, ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException, JsonParseException, IOException, ParseException {
         ArrayList<String> taggedResults = new ArrayList<String>();
         String ruleSetName = options.get("tagger");
         String incomingXform = null;
@@ -596,25 +671,21 @@ public class Oddball {
             if (options.containsKey("query")) {
                 query = options.get("query").replace("'", "\"");
                 OddUtil ou = new OddUtil();
-//                if (caseMap!=null){
-//                    LOGGER.debug(caseMap.toString());
-//                }
-//                LOGGER.debug(input);
                 if (caseMap == null) {
                     caseMap = (Map<String, Object>) JSONUtil.json2map(input).get("case");
                 }
-                if (caseMap!=null){
+                if (caseMap != null) {
                     query = ou.replacePlaceholders(query, caseMap);
                 }
             }
-            if (!(input.equals("{}"))&&options.containsKey("results")&& options.get("results").equals("addLink")){
+            if (!(input.equals("{}")) && options.containsKey("results") && options.get("results").equals("addLink")) {
                 Collection<String> retrieved = initialQuery(owner, options.get("ruleSet"), query, options);
-                String first = "none retrieved from "+options.get("ruleSet")+" using "+query;
-                if (retrieved.iterator().hasNext()){
-                    first = (String)retrieved.iterator().next();
-                } 
+                String first = "none retrieved from " + options.get("ruleSet") + " using " + query;
+                if (retrieved.iterator().hasNext()) {
+                    first = (String) retrieved.iterator().next();
+                }
                 String linkName = "link";
-                if (options.containsKey("resultName")){
+                if (options.containsKey("resultName")) {
                     linkName = (String) options.get("resultName");
                 }
                 String linkedInput = addLink(input, first, linkName);
@@ -622,12 +693,12 @@ public class Oddball {
             } else {
                 retrievedResults.addAll(initialQuery(owner, options.get("ruleSet"), query, options));
             }
-            
+
         }
         return retrievedResults;
     }
 
-    private Collection<String> applyProcessor(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner, Map<String, Object> caseMap) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, TransformerNotLoadedException, AggregationException, RuleSetNotLoadedException, InvalidCaseException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException, JsonParseException {
+    private Collection<String> applyProcessor(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner, Map<String, Object> caseMap) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, TransformerNotLoadedException, AggregationException, RuleSetNotLoadedException, InvalidCaseException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException, JsonParseException, IOException, ParseException {
         String processor = options.get("processor");
 //        String processorChain = loadProcessor(processor, resourceRepository);
         String processorChain = getProcessor(processor, resourceRepository);
@@ -635,9 +706,10 @@ public class Oddball {
         return applyProcessorChain(results, options, ruleSet, query, owner, caseMap);
     }
 
-    private Collection<String> applyProcessorChain(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner, Map<String, Object> caseMap) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, TransformerNotLoadedException, AggregationException, RuleSetNotLoadedException, InvalidCaseException, FilterException, IdentificationSchemeNotLoadedException, ProcessorNotLoadedException, OwnerMissingException, JsonParseException {
+    private Collection<String> applyProcessorChain(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner, Map<String, Object> caseMap) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, TransformerNotLoadedException, AggregationException, RuleSetNotLoadedException, InvalidCaseException, FilterException, IdentificationSchemeNotLoadedException, ProcessorNotLoadedException, OwnerMissingException, JsonParseException, IOException, ParseException {
         ArrayList<String> processedResults = new ArrayList<String>();
         ArrayList<String> interimResults = new ArrayList<String>();
+        Map<String, ArrayList<String>> storedResults = new HashMap<String, ArrayList<String>>();
         String processorChain = options.get("processorChain");
         String ownerDir = "";
         if (options.containsKey("ownerDir")) {
@@ -656,8 +728,8 @@ public class Oddball {
         for (Object step : chainSteps) {
             interimResults = new ArrayList<String>();
             Map<String, String> stepMap = (Map<String, String>) step;
-//            LOGGER.debug("Processor Step");
-//            LOGGER.debug(stepMap.toString());
+            LOGGER.debug("Processor Step");
+            LOGGER.debug(stepMap.toString());
             for (String key : stepMap.keySet()) {
                 stepMap.put(key, stepMap.get(key).replace("{owner}", ownerDir + "/").replace("{account}", ownerDir + "/"));
             }
@@ -678,6 +750,19 @@ public class Oddball {
                     subOptions.put("owner", owner);
                 }
                 interimResults.addAll(aggregateResults(results, subOptions));
+            }
+            if (stepMap.get("incrementor") != null) {
+                Map<String, String> subOptions = (Map<String, String>) stepMap;
+                if (options.get("recent") != null && subOptions.get("recent") == null) {
+                    subOptions.put("recent", options.get("recent"));
+                }
+                if (owner != null && subOptions.get("owner") == null) {
+                    subOptions.put("owner", owner);
+                }
+                if (subOptions.get("episode") == null) {
+                    subOptions.put("episode", "store:episode");
+                }
+                interimResults.addAll(incrementResults(results, storedResults.get(subOptions.get("episode")), subOptions));
             }
             if (stepMap.get("comparator") != null) {
                 Map<String, String> subOptions = (Map<String, String>) stepMap;
@@ -779,8 +864,10 @@ public class Oddball {
             }
             if (stepMap.get("results") == null || stepMap.get("results").equals("retain") || stepMap.get("results").equals("addLink")) {
                 results = interimResults;
-            }
-            else { //revert
+            } else if (stepMap.get("results").contains("store:")) {
+                storedResults.put(stepMap.get("results"), interimResults);
+                interimResults = (ArrayList<String>) results;
+            } else { //revert
                 interimResults = (ArrayList<String>) results;
             }
             //LOGGER.debug(step.toString());
@@ -791,12 +878,12 @@ public class Oddball {
         processedResults.addAll(interimResults);
         return processedResults;
     }
-    
-    private  String addLink(String baseResult, String linkResult, String resultName) throws JsonParseException{
-        Map<String, Object>baseMap=JSONUtil.json2map(baseResult);
-        Map<String, Object>linkMap=JSONUtil.json2map(linkResult);
+
+    private String addLink(String baseResult, String linkResult, String resultName) throws JsonParseException {
+        Map<String, Object> baseMap = JSONUtil.json2map(baseResult);
+        Map<String, Object> linkMap = JSONUtil.json2map(linkResult);
 //            baseMap.put(resultName, "test");
-        String linkId = (String)linkMap.get("_id");
+        String linkId = (String) linkMap.get("_id");
         baseMap.put(resultName, linkId);
         return JSONUtil.map2json(baseMap);
     }
@@ -847,7 +934,7 @@ public class Oddball {
         }
     }
 
-    public Collection<String> findQueryCasesForEach(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException, InvalidTimePeriodException, ProcessorNotLoadedException, ComparisonException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException {
+    public Collection<String> findQueryCasesForEach(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException, InvalidTimePeriodException, ProcessorNotLoadedException, ComparisonException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException, JsonParseException, ParseException {
         ArrayList<String> cases = new ArrayList<String>();
         String forEach = options.get("forEach");
         HashMap<String, String> distinctOptions = new HashMap<String, String>();
@@ -926,7 +1013,7 @@ public class Oddball {
         return result;
     }
 
-    public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException, InvalidTimePeriodException, ProcessorNotLoadedException, ComparisonException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException {
+    public Collection<String> findQueryCases(String ruleSetName, String query, Map<String, String> options) throws IOException, RuleSetNotLoadedException, DaoException, TransformerNotLoadedException, AggregationException, UnknownBinException, InvalidCaseException, InvalidTimePeriodException, ProcessorNotLoadedException, ComparisonException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException, JsonParseException, ParseException {
         String owner = Oddball.NONE;
         if (options.get("owner") != null) {
             owner = options.get("owner");

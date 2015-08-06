@@ -7,6 +7,7 @@
 package uk.co.revsys.oddball.aggregator;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
@@ -165,6 +166,12 @@ public class SummaryAggregator implements Aggregator{
         return toReturn;
     }
 
+    public ArrayList<Map> incrementAggregation(String itemString, Map<String, Object> aggregationMap, Map<String, String> options) throws IOException, ParseException {
+        ArrayList<Map> results = new ArrayList<Map>();
+        return results;
+    }
+    
+    
     private ArrayList<Summary> summaries;
     private SummaryDefinition summaryDefinition;     
 

@@ -6,19 +6,30 @@
 
 package uk.co.revsys.oddball.aggregator;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import uk.co.revsys.oddball.util.JSONUtil;
 import uk.co.revsys.oddball.util.OddUtil;
 
 /**
@@ -308,5 +319,202 @@ public class EpisodeAggregatorTest{
     }
 
     
+    @Test
+    public void testAggregateEventsRecreateEpisode() throws EventNotCreatedException {
+        HashSet<String> events = new HashSet<String>();
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"A\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6c\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263000\","
+                + "\"tagTime\": \"1409579263000\","
+                + "\"state\": \"Home\"}");
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"B\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6d\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263100\","
+                + "\"tagTime\": \"1409579263100\","
+                + "\"state\": \"Info\"}");
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"C\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6e\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263300\","
+                + "\"tagTime\": \"1409579263300\","
+                + "\"state\": \"Quit\"}");
+        EpisodeAggregator ea = new EpisodeAggregator();
+        List<Episode> episodes = ea.aggregateEvents(events, 30000, 1409579264000L, "", null, null, "");
+        assertTrue(episodes.size()==1);
+        Episode ep = episodes.get(0);
+        assertEquals("A0B0C", ep.getStateCodes());
+        assertTrue(1409579263000L==ep.getFirstTagTime());
+        assertTrue(1409579263300L==ep.getLastTagTime());
+        assertTrue(1409579263000L==ep.getStartTime());
+        assertEquals("revsys-master-account", ep.getOwner());
+        assertEquals("user1", ep.getAgent());
+        assertEquals("e47877b6-4f17-4d2d-a6f3-3d35aa919be6", ep.getSeries());
+        assertTrue(1409579263300L==ep.getEndTime());
+        assertTrue(300L==ep.getDuration());
+        assertTrue(ep.isOpen());
+        System.out.println(ep.asMap());
+        Episode ep2 = new Episode(ep.asMap(), "");
+        assertEquals("A0B0C", ep2.getStateCodes());
+        assertTrue(1409579263000L==ep2.getFirstTagTime());
+        assertTrue(1409579263300L==ep2.getLastTagTime());
+        assertTrue(1409579263000L==ep2.getStartTime());
+        assertEquals("revsys-master-account", ep2.getOwner());
+        assertEquals("user1", ep2.getAgent());
+        assertEquals("e47877b6-4f17-4d2d-a6f3-3d35aa919be6", ep2.getSeries());
+        assertTrue(1409579263300L==ep2.getEndTime());
+        assertTrue(300L==ep2.getDuration());
+        assertTrue(ep2.isOpen());
+        System.out.println(ep2.asMap());
+    }
+    
+
+    @Test
+    public void testAggregateEventsIncrementally() throws EventNotCreatedException, IOException, ParseException {
+        ArrayList<String> events = new ArrayList<String>();
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"A\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6c\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263000\","
+                + "\"tagTime\": \"1409579263000\","
+                + "\"state\": \"Home\"}");
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"B\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6d\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263100\","
+                + "\"tagTime\": \"1409579263100\","
+                + "\"state\": \"Info\"}");
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"C\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6e\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263300\","
+                + "\"tagTime\": \"1409579263300\","
+                + "\"state\": \"Quit\"}");
+        EpisodeAggregator ea = new EpisodeAggregator();
+        Map<String, Object> episodeMap = null;
+        Episode ep = null;
+        for (String event: events){
+            ep = ea.incrementEpisode(event, episodeMap, new HashMap());
+            episodeMap = ep.asMap();
+        }
+        assertEquals("A0B0C", ep.getStateCodes());
+        assertTrue(1409579263000L==ep.getFirstTagTime());
+        assertTrue(1409579263300L==ep.getLastTagTime());
+        assertTrue(1409579263000L==ep.getStartTime());
+        assertEquals("revsys-master-account", ep.getOwner());
+        assertEquals("user1", ep.getAgent());
+        assertEquals("e47877b6-4f17-4d2d-a6f3-3d35aa919be6", ep.getSeries());
+        assertTrue(1409579263300L==ep.getEndTime());
+        assertTrue(300L==ep.getDuration());
+        assertTrue(ep.isOpen());
+        System.out.println(ep.asMap());
+    }
+    
+    @Test
+    public void testAggregateEventsIncrementallyAsMapTagWrapFalse() throws EventNotCreatedException, IOException, ParseException {
+        ArrayList<String> events = new ArrayList<String>();
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"A\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6c\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263000\","
+                + "\"tagTime\": \"1409579263000\","
+                + "\"state\": \"Home\"}");
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"B\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6d\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263100\","
+                + "\"tagTime\": \"1409579263100\","
+                + "\"state\": \"Info\"}");
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"C\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6e\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263300\","
+                + "\"tagTime\": \"1409579263300\","
+                + "\"state\": \"Quit\"}");
+        EpisodeAggregator ea = new EpisodeAggregator();
+        Map<String, Object> episodeMap = null;
+        ArrayList<Map> episodeMaps = null;
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("tagWrap", "false");
+        for (String event: events){
+            episodeMaps = ea.incrementAggregation(event, episodeMap, options);
+            episodeMap = (Map<String, Object>) episodeMaps.get(0);
+        }
+        System.out.println(episodeMap);
+        assertEquals("A0B0C", episodeMap.get("stateCodes"));
+        assertTrue(1409579263000L==(Long)episodeMap.get("firstTagTime"));
+    }
+    
+    @Test
+    public void testAggregateEventsIncrementallyAsMapTagWrapTrue() throws EventNotCreatedException, IOException, ParseException {
+        ArrayList<String> events = new ArrayList<String>();
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"A\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6c\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263000\","
+                + "\"tagTime\": \"1409579263000\","
+                + "\"state\": \"Home\"}");
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"B\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6d\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263100\","
+                + "\"tagTime\": \"1409579263100\","
+                + "\"state\": \"Info\"}");
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"C\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6e\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263300\","
+                + "\"tagTime\": \"1409579263300\","
+                + "\"state\": \"Quit\"}");
+        EpisodeAggregator ea = new EpisodeAggregator();
+        Map<String, Object> episodeMap = null;
+        ArrayList<Map> episodeMaps = null;
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("tagWrap", "true");
+        for (String event: events){
+            episodeMaps = ea.incrementAggregation(event, episodeMap, options);
+            episodeMap = (Map<String, Object>) episodeMaps.get(0).get("case");
+        }
+        System.out.println(episodeMap);
+        assertEquals("A0B0C", episodeMap.get("stateCodes"));
+        assertTrue(1409579263000L==(Long)episodeMap.get("firstTagTime"));
+    }
     
 }

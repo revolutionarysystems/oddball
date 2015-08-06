@@ -169,6 +169,9 @@ public class MongoDBHelper {
         if (options.get("recent") != null) {
             addRecentQuery(query, options.get("recent"));
         }
+        if (options.get("endRecent") != null) {
+            addEndRecentQuery(query, options.get("endRecent"));
+        }
         if (options.get("ago") != null) {
             addAgoQuery(query, options.get("ago"));
         }
@@ -213,7 +216,6 @@ public class MongoDBHelper {
 
     public Collection<String> findCasesForOwner(String owner, String queryString, Map<String, String> options) throws DaoException, InvalidTimePeriodException, JsonParseException {
         BasicDBObject query = buildQuery(owner, queryString, options);
-        LOGGER.debug(query.toString());
         ArrayList<String> caseList = new ArrayList<String>();
         if (options.get("count") != null && ((String)options.get("count")).equals("true")) {
             long foundCount = cases.getDBCollection().count(query);
@@ -376,6 +378,18 @@ public class MongoDBHelper {
         }
     }
 
+    private void addEndRecentQuery(BasicDBObject query, String recent) throws InvalidTimePeriodException {
+        long millis = new OddUtil().parseTimePeriod(recent, "m");
+        long now = Calendar.getInstance().getTimeInMillis();
+        long cutoff = now - millis;
+        BasicDBObject subQuery = new BasicDBObject("$gt", cutoff);
+        if (query.containsField("case.endTime")) {
+            ((BasicDBObject) query.get("case.endTime")).append("$gt", cutoff);
+        } else {
+            query.append("case.endTime", subQuery);
+        }
+    }
+
     private void addCaseRecentQuery(BasicDBObject query, String recent) throws InvalidTimePeriodException {
         long millis = new OddUtil().parseTimePeriod(recent, "m");
         long now = Calendar.getInstance().getTimeInMillis();
@@ -492,8 +506,8 @@ public class MongoDBHelper {
     }
 
     private void addForEachQuery(BasicDBObject query, String forEach, String forEachValue) {
-        String[] forEachProps = forEach.split(",");
-        String[] forEachVals = forEachValue.split(",");
+        String[] forEachProps = forEach.split(";");
+        String[] forEachVals = forEachValue.split(";");
         for (int i =0 ; i<forEachProps.length; i++){
             query.append(forEachProps[i], forEachVals[i]);
         }

@@ -6,8 +6,10 @@
 
 package uk.co.revsys.oddball.identifier;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,7 +50,7 @@ public class SummaryIdentifierTest{
 
     
     @Test
-    public void testIdentifySignals() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException, InvalidCaseException, BinSetNotLoadedException, TransformerNotLoadedException, RuleSetNotLoadedException, IdentificationSchemeNotLoadedException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, OwnerMissingException {
+    public void testIdentifySignals() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException, InvalidCaseException, BinSetNotLoadedException, TransformerNotLoadedException, RuleSetNotLoadedException, IdentificationSchemeNotLoadedException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, OwnerMissingException, JsonParseException, ParseException {
         HashSet<String> signals = new HashSet<String>();
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         signals.add("{\"accountId\": \"revsys-master-account\","
@@ -146,7 +148,7 @@ public class SummaryIdentifierTest{
     }
 
     @Test
-    public void testIdentifySignalsDataMissing() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException, InvalidCaseException, BinSetNotLoadedException, TransformerNotLoadedException, RuleSetNotLoadedException, IdentificationSchemeNotLoadedException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, OwnerMissingException {
+    public void testIdentifySignalsDataMissing() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException, InvalidCaseException, BinSetNotLoadedException, TransformerNotLoadedException, RuleSetNotLoadedException, IdentificationSchemeNotLoadedException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, OwnerMissingException, JsonParseException, ParseException {
         HashSet<String> signals = new HashSet<String>();
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         signals.add("{\"accountId\": \"revsys-master-account\","
@@ -235,7 +237,7 @@ public class SummaryIdentifierTest{
     }
 
     @Test
-    public void testIdentifySignalsDataMissing2() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException, InvalidCaseException, BinSetNotLoadedException, TransformerNotLoadedException, RuleSetNotLoadedException, IdentificationSchemeNotLoadedException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, OwnerMissingException {
+    public void testIdentifySignalsDataMissing2() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException, InvalidCaseException, BinSetNotLoadedException, TransformerNotLoadedException, RuleSetNotLoadedException, IdentificationSchemeNotLoadedException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, OwnerMissingException, JsonParseException, ParseException {
         HashSet<String> signals = new HashSet<String>();
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         signals.add("{\"accountId\": \"revsys-master-account\","
@@ -321,7 +323,7 @@ public class SummaryIdentifierTest{
  
     
     @Test
-    public void testIdentifySignals2() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException, InvalidCaseException, BinSetNotLoadedException, TransformerNotLoadedException, RuleSetNotLoadedException, IdentificationSchemeNotLoadedException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, OwnerMissingException {
+    public void testIdentifySignals2() throws EventNotCreatedException, ComparisonException, IOException, InvalidTimePeriodException, InvalidCaseException, BinSetNotLoadedException, TransformerNotLoadedException, RuleSetNotLoadedException, IdentificationSchemeNotLoadedException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, OwnerMissingException, JsonParseException, ParseException {
         HashSet<String> signals = new HashSet<String>();
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         signals.add("{\"accountId\": \"revsys-master-account\","
@@ -420,5 +422,6 @@ public class SummaryIdentifierTest{
         assertEquals("{\"$or\":[{\"case.ref\":\"1234\"}]}", ((Map)((Map)identification.get("alternateId")).get("combined")).get("query"));
     }
 
-  
+
+   
 }

@@ -29,10 +29,10 @@ public class Episode {
         this.signals = new ArrayList<Map<String, Object>>();
         this.status = Episode.OPEN;
         this.stateCodes = new StringBuilder("");
-        watches = new HashMap<String, ArrayList<String>>();
-        customDataWatches = new HashMap<String, ArrayList<String>>();
-        watchValues = new HashMap<String, String>();
-        customDataWatchValues = new HashMap<String, String>();
+        this.watches = new HashMap<String, ArrayList<String>>();
+        this.customDataWatches = new HashMap<String, ArrayList<String>>();
+        this.watchValues = new HashMap<String, String>();
+        this.customDataWatchValues = new HashMap<String, String>();
         alerts = new HashMap<String, Object>();
         if (watchList!=null && !watchList.equals("")){
             String[]watchProperties = watchList.split(",");
@@ -41,6 +41,38 @@ public class Episode {
             } 
         }
     }
+
+    public Episode(Map episodeDetails, String customDataTag) {
+        System.out.println(episodeDetails);
+        this.owner = (String) episodeDetails.get("owner");
+        this.agent = (String) episodeDetails.get("agent");
+        this.series = (String) episodeDetails.get("series");
+        this.startTime = (Long) episodeDetails.get("startTime");
+        this.endTime = (Long) episodeDetails.get("endTime");
+        this.firstTagTime = (Long) episodeDetails.get("firstTagTime");
+        this.lastTagTime = (Long) episodeDetails.get("lastTagTime");
+        try {
+            this.duration =  new Long((Integer)episodeDetails.get("duration"));
+        } 
+        catch (ClassCastException e){
+            this.duration =  (Long)episodeDetails.get("duration");
+        }
+        this.customDataTag = customDataTag;
+        this.states = (ArrayList<String>) episodeDetails.get("states");
+        this.signals = (ArrayList<Map<String, Object>>) episodeDetails.get("signals");
+        this.status = Episode.OPEN;
+        if (((String)episodeDetails.get("status")).equals("closed")){
+            this.status = Episode.CLOSED;
+        }
+        this.stateCodes = new StringBuilder((String) episodeDetails.get("stateCodes"));
+        this.watches = (HashMap<String, ArrayList<String>>) episodeDetails.get("watches");
+        this.customDataWatches = (HashMap<String, ArrayList<String>>) episodeDetails.get("customDataWatches");
+        this.watchValues = (HashMap<String, String>) episodeDetails.get("watchValues");
+        this.customDataWatchValues = (HashMap<String, String>) episodeDetails.get("customDataWatchValues");;
+        this.alerts = (HashMap<String, Object>) episodeDetails.get("alerts");
+    }
+    
+    
     public void markTime(long thisTime, long thisTagTime) {
         this.endTime = thisTime;
         this.lastTagTime = thisTagTime;
