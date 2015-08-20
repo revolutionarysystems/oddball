@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -31,7 +30,6 @@ import uk.co.revsys.oddball.aggregator.AggregatorMap;
 import uk.co.revsys.oddball.aggregator.CaseComparator;
 import uk.co.revsys.oddball.aggregator.ComparatorMap;
 import uk.co.revsys.oddball.aggregator.ComparisonException;
-import uk.co.revsys.oddball.aggregator.Episode;
 import uk.co.revsys.oddball.bins.BinSet;
 import uk.co.revsys.oddball.bins.BinSetImpl;
 import uk.co.revsys.oddball.bins.BinSetNotLoadedException;
@@ -119,7 +117,7 @@ public class Oddball {
             options.put("processor", processor);
         }
         if (ruleSetName.contains("/")) {
-            String ownerPrefix = ruleSetName.substring(0, ruleSetName.indexOf("/") + 1);
+            String ownerPrefix = ruleSetName.substring(0, ruleSetName.indexOf('/') + 1);
             for (String key : options.keySet()) {
                 options.put(key, options.get(key).replace("{owner}", ownerPrefix).replace("{account}", ownerPrefix));
             }
@@ -132,8 +130,7 @@ public class Oddball {
     }
 
     public Opinion assessCaseOpinion(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery, String avoidQuery, Map<String, String> options) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, IOException, OwnerMissingException {
-        RuleSet ruleSet = ensureRuleSet(ruleSetName);
-        ArrayList<String> results = new ArrayList<String>();
+        ensureRuleSet(ruleSetName);
         if (inboundTransformer != null) {
             LOGGER.debug("Applying transformation:" + inboundTransformer);
             aCase.setContent(this.transformCase(aCase.getContent(), inboundTransformer));
@@ -470,10 +467,8 @@ public class Oddball {
         Class aggregatorClass = new AggregatorMap().get(options.get("incrementor"));
         Map<String, Object> episodeMap = null;
         if (episodes.iterator().hasNext()) {
-            String episode = null;
-            episode = episodes.iterator().next();
+            String episode = episodes.iterator().next();
             episodeMap = JSONUtil.json2map(episode);
-//            LOGGER.debug("Episode:" + episode);
         }
         try {
             for (String result : results) {
@@ -991,8 +986,8 @@ public class Oddball {
                 path = ruleSetNames.substring(0, ruleSetNames.lastIndexOf("/") + 1);
                 ruleSetNames = ruleSetNames.substring(ruleSetNames.lastIndexOf("/") + 1);
             }
-            String ruleSets[] = ruleSetNames.split("\\+");
-            for (String ruleSetName : ruleSets) {
+            String ruleSetNameArray[] = ruleSetNames.split("\\+");
+            for (String ruleSetName : ruleSetNameArray) {
                 RuleSet ruleSet = ensureRuleSet(path + ruleSetName);
                 if (options.get("binLabel") != null) {
                     String binLabel = options.get("binLabel");
@@ -1059,6 +1054,7 @@ public class Oddball {
         try {
             ruleSet = ensureRuleSet(ruleSetName);
         } catch (RuleSetNotLoadedException ex) {
+            // silent fail, return null
         };
         return ruleSet;
     }
@@ -1191,7 +1187,6 @@ public class Oddball {
     public List<String> showDatabaseList(String filter) {
         String path = ".";
         if (filter.contains("/")) {
-            path = path + "/" + filter.substring(0, filter.lastIndexOf("/"));
             filter = filter.substring(filter.lastIndexOf("/") + 1);
         }
         List<String> dbNames = MongoDBFactory.getDBNames();

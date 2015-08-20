@@ -68,7 +68,7 @@ public class Episode {
         this.watches = (HashMap<String, ArrayList<String>>) episodeDetails.get("watches");
         this.customDataWatches = (HashMap<String, ArrayList<String>>) episodeDetails.get("customDataWatches");
         this.watchValues = (HashMap<String, String>) episodeDetails.get("watchValues");
-        this.customDataWatchValues = (HashMap<String, String>) episodeDetails.get("customDataWatchValues");;
+        this.customDataWatchValues = (HashMap<String, String>) episodeDetails.get("customDataWatchValues");
         this.alerts = (HashMap<String, Object>) episodeDetails.get("alerts");
     }
     
@@ -97,10 +97,10 @@ public class Episode {
         for (String watchProperty : watches.keySet()){
             Object propertyValue = new OddUtil().getDeepProperty(caseMap, watchProperty.replace("~",".")); 
             if (propertyValue!=null){
-                ArrayList<String> watchValues = watches.get(watchProperty);
-                if (!watchValues.isEmpty()){
-                    String prevValue = watchValues.get(watchValues.size()-1);
-                    String step= Integer.toString(watchValues.size());
+                ArrayList<String> watchValuesList = watches.get(watchProperty);
+                if (!watchValuesList.isEmpty()){
+                    String prevValue = watchValuesList.get(watchValuesList.size()-1);
+                    String step= Integer.toString(watchValuesList.size());
                     if (!propertyValue.toString().equals(prevValue)){
                         Map<String, Object> change = new HashMap<String, Object>();
                         if (alerts.containsKey("valueChanged-"+watchProperty)){
@@ -167,14 +167,14 @@ public class Episode {
     private long lastTagTime;
     private long duration;
     private ArrayList<String> states;
-    private ArrayList<Map<String, Object>> signals;
+    final private ArrayList<Map<String, Object>> signals;
     private int status;
     private StringBuilder stateCodes;
-    private Map<String, ArrayList<String>> watches;
-    private Map<String, ArrayList<String>> customDataWatches;
-    private Map<String, String> watchValues;
-    private Map<String, String> customDataWatchValues;
-    private Map<String, Object> alerts;
+    final private Map<String, ArrayList<String>> watches;
+    final private Map<String, ArrayList<String>> customDataWatches;
+    final private Map<String, String> watchValues;
+    final private Map<String, String> customDataWatchValues;
+    final private Map<String, Object> alerts;
 
     /**
      * @return the owner

@@ -6,16 +6,15 @@
 
 package uk.co.revsys.oddball.aggregator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @author Andrew
  */
 public class CollationEntry {
 
+    
     public CollationEntry() {
         this.count = 0;
         this.subCollations = new HashMap<String, CollationEntry>();
@@ -27,7 +26,7 @@ public class CollationEntry {
     }
     
     private int count;
-    private Map<String, CollationEntry> subCollations;
+    final private Map<String, CollationEntry> subCollations;
 
     public void incrementCount(){
         this.count++;
