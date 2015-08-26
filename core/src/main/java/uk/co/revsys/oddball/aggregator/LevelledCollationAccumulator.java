@@ -92,7 +92,7 @@ public class LevelledCollationAccumulator implements PropertyAccumulator, Compar
     public Map assessProperty(Object property){
         Map<Object, Object> results = new HashMap<Object, Object>();
         int total = 0;
-        for (Object item:collation.keySet()){
+        for (String item : collation.keySet()) {
             total+=(Integer)collation.get(item).getCount();
         }
         for (Entry item : collation.entrySet()){
@@ -139,7 +139,7 @@ public class LevelledCollationAccumulator implements PropertyAccumulator, Compar
         int total= 0;
         double totalInfo = 0;
         
-        for (Object item:collation.keySet()){
+        for (String item:collation.keySet()){
             Map<String, Object> cell = new HashMap<String, Object>();
             cell.put("value", item);
             cell.put("count", collation.get(item).getCount());

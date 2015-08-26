@@ -79,7 +79,7 @@ public class CollationAccumulator implements PropertyAccumulator, Comparator {
             accumulateProperty(property); // for info measurement purposes
         }
         computeInfo();
-        results.put("info", itemInfo.get(property));
+        results.put("info", itemInfo.get(property.toString()));
         results.put("relInfo", itemInfo.get(property.toString()) - itemInfo.get("total"));
         if (novel) {
             removeProperty(property); // for info measurement purposes

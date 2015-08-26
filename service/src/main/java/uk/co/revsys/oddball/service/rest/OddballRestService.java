@@ -74,12 +74,12 @@ public class OddballRestService extends AbstractRestService {
     }
 
     private String getOwner(String ownerParam, HashMap<String, String> options) {
-        if (ownerParam==null){
-            if (options.get("owner")!=null){
-                ownerParam= options.get("owner");
+        if (ownerParam == null) {
+            if (options.get("owner") != null) {
+                ownerParam = options.get("owner");
             } else {
-                if (options.get("account")!=null){
-                    ownerParam= options.get("account");
+                if (options.get("account") != null) {
+                    ownerParam = options.get("account");
                 }
             }
         }
@@ -109,8 +109,7 @@ public class OddballRestService extends AbstractRestService {
     /**
      * ********************
      */
-
-    private HashMap<String, String> decodeOptions(UriInfo ui) throws UnsupportedEncodingException{
+    private HashMap<String, String> decodeOptions(UriInfo ui) throws UnsupportedEncodingException {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
@@ -119,7 +118,7 @@ public class OddballRestService extends AbstractRestService {
         return options;
     }
 
-    private String assembleFromList(Collection<String> cases){
+    private String assembleFromList(Collection<String> cases) {
         StringBuilder out = new StringBuilder("[ ");
         for (String aCase : cases) {
             out.append(aCase);
@@ -146,11 +145,11 @@ public class OddballRestService extends AbstractRestService {
     public Response announce() {
         return Response.ok("Welcome to odDball").build();
     }
-    
+
     @POST
     @Path("/login")
     public Response login() {
-        if(SecurityUtils.getSubject().isAuthenticated()){
+        if (SecurityUtils.getSubject().isAuthenticated()) {
             SecurityUtils.getSubject().getSession(true);
         }
         return Response.ok().build();
@@ -164,13 +163,13 @@ public class OddballRestService extends AbstractRestService {
         if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = altRuleSet;
         }
-        if (ruleSet.contains("/")){
-            String ownerPrefix=ruleSet.substring(0, ruleSet.indexOf("/")+1);
-            ruleSet = ruleSet.substring(ruleSet.indexOf("/")+1);
+        if (ruleSet.contains("/")) {
+            String ownerPrefix = ruleSet.substring(0, ruleSet.indexOf("/") + 1);
+            ruleSet = ruleSet.substring(ruleSet.indexOf("/") + 1);
             for (String key : options.keySet()) {
-                options.put(key, options.get(key).replace("{owner}",ownerPrefix).replace("{account}",ownerPrefix));
+                options.put(key, options.get(key).replace("{owner}", ownerPrefix).replace("{account}", ownerPrefix));
             }
-            options.put("ownerDir", ownerPrefix.substring(0, ownerPrefix.length()-1));
+            options.put("ownerDir", ownerPrefix.substring(0, ownerPrefix.length() - 1));
         }
         int persistOption = RuleSet.ALWAYSPERSIST;
         if (persist != null) {
@@ -215,7 +214,7 @@ public class OddballRestService extends AbstractRestService {
             } catch (OwnerMissingException ex) {
                 return buildErrorResponse(ex);
             }
-            if (assessment.size()==1&&!options.containsKey("processor")){
+            if (assessment.size() == 1 && !options.containsKey("processor")) {
                 RESULTSLOGGER.info(assessment.iterator().next());
                 return buildResponse(assessment.iterator().next());
             } else {
@@ -230,7 +229,7 @@ public class OddballRestService extends AbstractRestService {
     public Response applyOwnerRuleSet(@PathParam("ownerDir") String ownerDir, @PathParam("ruleSet") String ruleSet, @QueryParam("ruleSet") String altRuleSet, @QueryParam("case") String caseStr, @QueryParam("inboundTransformer") String inboundTransformer, @QueryParam("persist") String persist, @QueryParam("duplicateRule") String duplicateRule, @QueryParam("avoidRule") String avoidRule, @QueryParam("ensureIndexes") String ensureIndexes, @Context UriInfo ui) throws IOException {
         HashMap<String, String> options = decodeOptions(ui);
         for (String key : options.keySet()) {
-            options.put(key, options.get(key).replace("{owner}",ownerDir+"/").replace("{account}",ownerDir+"/"));
+            options.put(key, options.get(key).replace("{owner}", ownerDir + "/").replace("{account}", ownerDir + "/"));
         }
         options.put("ownerDir", ownerDir);
         if (ruleSet == null || ruleSet.equals("null")) {
@@ -251,7 +250,7 @@ public class OddballRestService extends AbstractRestService {
         } else {
             Collection<String> assessment;
             try {
-                assessment = oddball.assessCase(ownerDir+"/"+ruleSet, inboundTransformer, new StringCase(caseStr), persistOption, duplicateRule, null, options);
+                assessment = oddball.assessCase(ownerDir + "/" + ruleSet, inboundTransformer, new StringCase(caseStr), persistOption, duplicateRule, null, options);
             } catch (RuleSetNotLoadedException ex) {
                 return buildErrorResponse(ex);
             } catch (ParseException ex) {
@@ -279,7 +278,7 @@ public class OddballRestService extends AbstractRestService {
             } catch (OwnerMissingException ex) {
                 return buildErrorResponse(ex);
             }
-            if (assessment.size()==1&&!options.containsKey("processor")){
+            if (assessment.size() == 1 && !options.containsKey("processor")) {
                 RESULTSLOGGER.info(assessment.iterator().next());
                 return buildResponse(assessment.iterator().next());
             } else {
@@ -347,11 +346,11 @@ public class OddballRestService extends AbstractRestService {
             String[] ruleSetNames = ruleSets.split(",");
             if (action != null && action.equals("delete")) {
                 for (String ruleSet : ruleSetNames) {
-                    oddball.deleteCaseById(ownerDir+"/"+ruleSet, id, options);
+                    oddball.deleteCaseById(ownerDir + "/" + ruleSet, id, options);
                 }
             } else {
                 for (String ruleSet : ruleSetNames) {
-                    cases.addAll(oddball.findCaseById(ownerDir+"/"+ruleSet, id, options));
+                    cases.addAll(oddball.findCaseById(ownerDir + "/" + ruleSet, id, options));
                 }
             }
         } catch (RuleSetNotLoadedException ex) {
@@ -381,15 +380,15 @@ public class OddballRestService extends AbstractRestService {
         if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = options.get("ruleSet");
         }
-        ruleSet=ruleSet.replace(" ", "+");
+        ruleSet = ruleSet.replace(" ", "+");
         String ownerPrefix = "";
-        if (ruleSet.contains("/")){
-            ownerPrefix=ruleSet.substring(0, ruleSet.indexOf("/")+1);
-            ruleSet = ruleSet.substring(ruleSet.indexOf("/")+1);
+        if (ruleSet.contains("/")) {
+            ownerPrefix = ruleSet.substring(0, ruleSet.indexOf("/") + 1);
+            ruleSet = ruleSet.substring(ruleSet.indexOf("/") + 1);
             for (String key : options.keySet()) {
-                options.put(key, options.get(key).replace("{owner}",ownerPrefix).replace("{account}",ownerPrefix));
+                options.put(key, options.get(key).replace("{owner}", ownerPrefix).replace("{account}", ownerPrefix));
             }
-            options.put("ownerDir", ownerPrefix.substring(0, ownerPrefix.length()-1));
+            options.put("ownerDir", ownerPrefix.substring(0, ownerPrefix.length() - 1));
         }
         return findCasesService(ruleSet, options, ownerPrefix);
     }
@@ -397,7 +396,7 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/{ownerDir}/{ruleSet}/case/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findCases2(@PathParam("ruleSet") String ruleSet,@PathParam("ownerDir") String ownerDir, @Context UriInfo ui) throws UnsupportedEncodingException {
+    public Response findCases2(@PathParam("ruleSet") String ruleSet, @PathParam("ownerDir") String ownerDir, @Context UriInfo ui) throws UnsupportedEncodingException {
         MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
         HashMap<String, String> options = new HashMap<String, String>();
         for (String key : queryParams.keySet()) {
@@ -408,14 +407,14 @@ public class OddballRestService extends AbstractRestService {
             ruleSet = options.get("ruleSet");
         }
         for (String key : options.keySet()) {
-            options.put(key, options.get(key).replace("{owner}",ownerDir+"/").replace("{account}",ownerDir+"/"));
+            options.put(key, options.get(key).replace("{owner}", ownerDir + "/").replace("{account}", ownerDir + "/"));
         }
         options.put("ownerDir", ownerDir);
-        return findCasesService(ruleSet, options, ownerDir+"/");
+        return findCasesService(ruleSet, options, ownerDir + "/");
     }
 
     public Response findCasesService(String ruleSets, HashMap<String, String> options, String ruleOwnerPrefix) {
-        String owner = getOwner(null,options);
+        String owner = getOwner(null, options);
         if (owner == null) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
@@ -427,24 +426,24 @@ public class OddballRestService extends AbstractRestService {
             String[] ruleSetNames = ruleSets.split(",");
             for (String ruleSet : ruleSetNames) {
                 if (options.get("action") != null && options.get("action").equals("delete")) {
-                    oddball.deleteQueryCases(ruleOwnerPrefix+ruleSet.trim(), query, options);
+                    oddball.deleteQueryCases(ruleOwnerPrefix + ruleSet.trim(), query, options);
                 } else {
                     if (options.get("forEach") != null) {
-                        cases.addAll(oddball.findQueryCasesForEach(ruleOwnerPrefix+ruleSet.trim(), query, options));
+                        cases.addAll(oddball.findQueryCasesForEach(ruleOwnerPrefix + ruleSet.trim(), query, options));
                     } else {
-                        cases.addAll(oddball.findQueryCases(ruleOwnerPrefix+ruleSet.trim(), query, options));
+                        cases.addAll(oddball.findQueryCases(ruleOwnerPrefix + ruleSet.trim(), query, options));
                     }
                 }
             }
             String format = "json";
-            if (options.get("format")!=null){
-                format=options.get("format");
+            if (options.get("format") != null) {
+                format = options.get("format");
             }
-            if (format.equals("json")){
-                output=new JSONUtil().jsonWrap(cases);
+            if (format.equals("json")) {
+                output = new JSONUtil().jsonWrap(cases);
             } else {
-                if (format.equals("csv")){
-                    output=new JSONUtil().json2csv(cases);
+                if (format.equals("csv")) {
+                    output = new JSONUtil().json2csv(cases);
                 } else {
                     throw new BadFormatException(format);
                 }
@@ -485,7 +484,6 @@ public class OddballRestService extends AbstractRestService {
 
         return Response.ok(output).build();
 
-        
 //        StringBuilder out = new StringBuilder("[ ");
 //        for (String aCase : cases) {
 //            out.append(aCase);
@@ -511,7 +509,7 @@ public class OddballRestService extends AbstractRestService {
         if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = options.get("ruleSet");
         }
-        return findCasesService(ruleSet, options,"");
+        return findCasesService(ruleSet, options, "");
     }
 
     /**
@@ -545,7 +543,7 @@ public class OddballRestService extends AbstractRestService {
         if (ruleSets == null || ruleSets.equals("null")) {
             ruleSets = options.get("ruleSet");
         }
-        return findCasesService(ruleSets, options,"");
+        return findCasesService(ruleSets, options, "");
 
     }
 
@@ -562,7 +560,7 @@ public class OddballRestService extends AbstractRestService {
             ruleSet = options.get("ruleSet");
         }
         options.put("sessionId", sessionId);
-        return findCasesService(ruleSet, options,"");
+        return findCasesService(ruleSet, options, "");
     }
 
     @GET
@@ -578,7 +576,7 @@ public class OddballRestService extends AbstractRestService {
             ruleSet = options.get("ruleSet");
         }
         options.put("series", series);
-        return findCasesService(ruleSet, options,"");
+        return findCasesService(ruleSet, options, "");
     }
 
     @GET
@@ -612,7 +610,7 @@ public class OddballRestService extends AbstractRestService {
         if (series == null || series.equals("null")) {
             series = options.get("sessionId");
         }
-        return findCasesService(ruleSets, options,"");
+        return findCasesService(ruleSets, options, "");
 
     }
 
@@ -647,7 +645,7 @@ public class OddballRestService extends AbstractRestService {
         if (ruleSets == null || ruleSets.equals("null")) {
             ruleSets = options.get("ruleSet");
         }
-        return findCasesService(ruleSets, options,"");
+        return findCasesService(ruleSets, options, "");
     }
 
     @GET
@@ -660,7 +658,7 @@ public class OddballRestService extends AbstractRestService {
             options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
         options.put("userId", userId);
-        return findCasesService(ruleSets, options,"");
+        return findCasesService(ruleSets, options, "");
     }
 
     @GET
@@ -673,7 +671,7 @@ public class OddballRestService extends AbstractRestService {
             options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
         options.put("agent", agent);
-        return findCasesService(ruleSets, options,"");
+        return findCasesService(ruleSets, options, "");
     }
 
     @GET
@@ -707,7 +705,7 @@ public class OddballRestService extends AbstractRestService {
         if (agent == null || agent.equals("null")) {
             agent = options.get("userId");
         }
-        return findCasesService(ruleSets, options,"");
+        return findCasesService(ruleSets, options, "");
     }
 
     /**
@@ -732,7 +730,7 @@ public class OddballRestService extends AbstractRestService {
         for (String key : queryParams.keySet()) {
             options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
-        return findCasesService(ruleSet, options,"");
+        return findCasesService(ruleSet, options, "");
     }
 
     @GET
@@ -751,7 +749,7 @@ public class OddballRestService extends AbstractRestService {
         for (String key : queryParams.keySet()) {
             options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
-        return findCasesService(ruleSet, options,"");
+        return findCasesService(ruleSet, options, "");
     }
 
     /**
@@ -798,7 +796,7 @@ public class OddballRestService extends AbstractRestService {
             options.put(key, queryParams.getFirst(key).replace("+", " "));
         }
         options.put("binLabel", binLabel);
-        return findCasesService(ruleSets, options,"");
+        return findCasesService(ruleSets, options, "");
     }
 
     @GET
@@ -814,7 +812,7 @@ public class OddballRestService extends AbstractRestService {
         if (options.get("property") != null) {
             options.put("distinct", options.get("property"));
         }
-        return findCasesService(ruleSets, options,"");
+        return findCasesService(ruleSets, options, "");
 
     }
 
@@ -829,8 +827,8 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/clear")
     @Produces(MediaType.TEXT_PLAIN)
     public Response clearRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner) {
-        if (owner!=null){
-            ruleSet=ruleSet.replaceAll("\\{owner\\}", owner+"/").replaceAll("\\{account\\}", owner+"/");
+        if (owner != null) {
+            ruleSet = ruleSet.replaceAll("\\{owner\\}", owner + "/").replaceAll("\\{account\\}", owner + "/");
         }
         if (!authorisationHandler.isAdministrator()) {
             return Response.status(Response.Status.FORBIDDEN).build();
@@ -843,8 +841,8 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{owner}/{ruleSet}/clear")
     @Produces(MediaType.TEXT_PLAIN)
     public Response clearRuleSet2(@PathParam("ruleSet") String ruleSet, @PathParam("owner") String owner) {
-        if (owner!=null){
-            ruleSet=owner+"/"+ruleSet;
+        if (owner != null) {
+            ruleSet = owner + "/" + ruleSet;
         }
         if (!authorisationHandler.isAdministrator()) {
             return Response.status(Response.Status.FORBIDDEN).build();
@@ -857,8 +855,8 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{ruleSet}/reload")
     @Produces(MediaType.TEXT_PLAIN)
     public Response reloadRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("account") String owner) {
-        if (owner!=null){
-            ruleSet=ruleSet.replaceAll("\\{owner\\}", owner+"/").replaceAll("\\{account\\}", owner+"/");
+        if (owner != null) {
+            ruleSet = ruleSet.replaceAll("\\{owner\\}", owner + "/").replaceAll("\\{account\\}", owner + "/");
         }
         if (!authorisationHandler.isAdministrator()) {
             return Response.status(Response.Status.FORBIDDEN).build();
@@ -875,8 +873,8 @@ public class OddballRestService extends AbstractRestService {
     @Path("/{owner}/{ruleSet}/reload")
     @Produces(MediaType.TEXT_PLAIN)
     public Response reloadRuleSet2(@PathParam("ruleSet") String ruleSet, @PathParam("owner") String owner) {
-        if (owner!=null){
-            ruleSet=owner+"/"+ruleSet;
+        if (owner != null) {
+            ruleSet = owner + "/" + ruleSet;
         }
         if (!authorisationHandler.isAdministrator() && !authorisationHandler.isAccountOwner(owner)) {
             return Response.status(Response.Status.FORBIDDEN).build();
@@ -997,8 +995,8 @@ public class OddballRestService extends AbstractRestService {
         if (!authorisationHandler.isAdministrator()) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
-        if (owner!=null){
-            ruleSet=owner+"/"+ruleSet;
+        if (owner != null) {
+            ruleSet = owner + "/" + ruleSet;
         }
         Iterable<String> rules;
         HashMap<String, String> options = new HashMap<String, String>();
@@ -1036,7 +1034,7 @@ public class OddballRestService extends AbstractRestService {
         String rules;
         HashMap<String, String> options = new HashMap<String, String>();
         try {
-            rules = oddball.showRules(owner+"/"+ruleSet, options);
+            rules = oddball.showRules(owner + "/" + ruleSet, options);
         } catch (RuleSetNotLoadedException ex) {
             return buildErrorResponse(ex);
         } catch (IOException ex) {
@@ -1054,8 +1052,8 @@ public class OddballRestService extends AbstractRestService {
         if (!authorisationHandler.isAdministrator()) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
-        if (owner!=null){
-            ruleSet=owner+"/"+ruleSet;
+        if (owner != null) {
+            ruleSet = owner + "/" + ruleSet;
         }
         Iterable<String> rules;
         HashMap<String, String> options = new HashMap<String, String>();
@@ -1146,7 +1144,7 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/resources/{resourceName}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response showConfigList(@PathParam("resourceName") String resourceName ){
+    public Response showConfigList(@PathParam("resourceName") String resourceName) {
         if (!authorisationHandler.isAdministrator()) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
@@ -1162,12 +1160,10 @@ public class OddballRestService extends AbstractRestService {
         return Response.ok(resources.toString()).build();
     }
 
-
-    
     @GET
     @Path("/resource/{resourceName}/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response showConfig(@PathParam("resourceName") String resourceName ){
+    public Response showConfig(@PathParam("resourceName") String resourceName) {
         if (!authorisationHandler.isAdministrator()) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
@@ -1183,11 +1179,10 @@ public class OddballRestService extends AbstractRestService {
         return Response.ok(doc.toString()).build();
     }
 
-
     @POST
     @Path("/resource/{resourceName}/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response uploadConfig(@PathParam("resourceName") String resourceName, @QueryParam("resource") String resourceString ){
+    public Response uploadConfig(@PathParam("resourceName") String resourceName, @QueryParam("resource") String resourceString) {
         if (!authorisationHandler.isAdministrator()) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
@@ -1202,19 +1197,17 @@ public class OddballRestService extends AbstractRestService {
         return Response.ok("Resource loaded").build();
     }
 
-    
-
     @GET
     @Path("/{owner}/resource/{resourceName}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response showConfig(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName ){
+    public Response showConfig(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName) {
         if (!authorisationHandler.isAdministrator() && !authorisationHandler.isAccountOwner(owner)) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         HashMap<String, String> options = new HashMap<String, String>();
         String doc = "";
         try {
-            doc = oddball.showResource(owner+"/"+resourceName);
+            doc = oddball.showResource(owner + "/" + resourceName);
 //        } catch (TransformerNotLoadedException ex) {
 //            return buildErrorResponse(ex);
         } catch (ResourceNotLoadedException ex) {
@@ -1223,18 +1216,17 @@ public class OddballRestService extends AbstractRestService {
         return Response.ok(doc.toString()).build();
     }
 
-
     @GET
     @Path("/{owner}/resources/{resourceName}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response showConfigList(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName ){
+    public Response showConfigList(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName) {
         if (!authorisationHandler.isAdministrator() && !authorisationHandler.isAccountOwner(owner)) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         HashMap<String, String> options = new HashMap<String, String>();
         List<String> resources = new ArrayList<String>();
         try {
-            resources = oddball.showResourceList(owner+"/"+resourceName);
+            resources = oddball.showResourceList(owner + "/" + resourceName);
 //        } catch (TransformerNotLoadedException ex) {
 //            return buildErrorResponse(ex);
         } catch (ResourceNotLoadedException ex) {
@@ -1246,13 +1238,13 @@ public class OddballRestService extends AbstractRestService {
     @POST
     @Path("/{owner}/resource/{resourceName}/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response uploadOwnerConfig(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName, @QueryParam("resource") String resourceString ){
+    public Response uploadOwnerConfig(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName, @QueryParam("resource") String resourceString) {
         if (!authorisationHandler.isAdministrator() && !authorisationHandler.isAccountOwner(owner)) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         HashMap<String, String> options = new HashMap<String, String>();
         try {
-            oddball.uploadResource(owner+"/"+resourceName, resourceString);
+            oddball.uploadResource(owner + "/" + resourceName, resourceString);
 //        } catch (TransformerNotLoadedException ex) {
 //            return buildErrorResponse(ex);
         } catch (ResourceNotUploadedException ex) {
@@ -1261,8 +1253,6 @@ public class OddballRestService extends AbstractRestService {
         return Response.ok("Resource loaded").build();
     }
 
-    
-    
     /*
      **********************
      * Cache Management
@@ -1278,7 +1268,6 @@ public class OddballRestService extends AbstractRestService {
         oddball.clearTransformers();
         return Response.ok("Transformers cleared.").build();
     }
-
 
     @GET
     @Path("/processor/clear")
@@ -1326,7 +1315,7 @@ public class OddballRestService extends AbstractRestService {
         }
         String stats = "";
         try {
-            stats = oddball.getDbStats(owner+"/"+ruleSet);
+            stats = oddball.getDbStats(owner + "/" + ruleSet);
         } catch (RuleSetNotLoadedException ex) {
             return buildErrorResponse(ex);
         }
@@ -1336,20 +1325,20 @@ public class OddballRestService extends AbstractRestService {
     @GET
     @Path("/dataSources/{resourceName}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response showDataBaseList(@PathParam("resourceName") String resourceName ){
+    public Response showDataBaseList(@PathParam("resourceName") String resourceName) {
         if (!authorisationHandler.isAdministrator()) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         HashMap<String, String> options = new HashMap<String, String>();
         List<String> resources = new ArrayList<String>();
-        resources = oddball.showDatabaseList(resourceName+"-persist");
+        resources = oddball.showDatabaseList(resourceName + "-persist");
         return Response.ok(resources.toString()).build();
     }
-    
+
     @GET
     @Path("/{owner}/dataSources/{resourceName}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response showOwnerDataBaseList(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName ){
+    public Response showOwnerDataBaseList(@PathParam("owner") String owner, @PathParam("resourceName") String resourceName) {
 //        HashMap<String, String> options = decodeOptions(ui);
         owner = getOwner(owner, new HashMap<String, String>());
         if (owner == null && !authorisationHandler.isAdministrator()) {
@@ -1357,9 +1346,8 @@ public class OddballRestService extends AbstractRestService {
         }
         HashMap<String, String> options = new HashMap<String, String>();
         List<String> resources = new ArrayList<String>();
-        resources = oddball.showDatabaseList(owner+"-"+resourceName+"-persist");
+        resources = oddball.showDatabaseList(owner + "-" + resourceName + "-persist");
         return Response.ok(resources.toString()).build();
     }
-    
-    
+
 }

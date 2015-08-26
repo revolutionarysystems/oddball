@@ -13,8 +13,7 @@ import uk.co.revsys.resource.repository.ResourceRepository;
  * @author Andrew
  */
 public interface Bin {
-    
-    
+      
     /**
      * @return the binString
      */

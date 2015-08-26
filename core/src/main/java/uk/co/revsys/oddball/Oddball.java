@@ -45,6 +45,7 @@ import uk.co.revsys.oddball.rules.MongoDBFactory;
 import uk.co.revsys.oddball.rules.MongoDBHelper;
 import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.rules.Rule;
+import uk.co.revsys.oddball.rules.RuleNotLoadedException;
 import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.rules.RuleSetImpl;
 import uk.co.revsys.oddball.rules.RuleSetNotLoadedException;
@@ -126,7 +127,8 @@ public class Oddball {
         if (caseOwner != null && (!options.containsKey("ownerDir"))) {
             options.put("ownerDir", caseOwner);
         }
-        return this.assessCase(ruleSetName, inboundTransformer, aCase, RuleSet.ALWAYSPERSIST, null, null, options);
+        String avoidQuery = "{'case.time':<time>,'case.series':'<series>'}";  // do not persist a signal that duplicates series and millisecond time
+        return this.assessCase(ruleSetName, inboundTransformer, aCase, RuleSet.ALWAYSPERSIST, null, avoidQuery, options);
     }
 
     public Opinion assessCaseOpinion(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery, String avoidQuery, Map<String, String> options) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, IOException, OwnerMissingException {
@@ -167,10 +169,10 @@ public class Oddball {
     private RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException {
         if (ruleSetName.contains(".rules")) {
             try {
-                System.out.println("Looks like JSON");
+        //        System.out.println("Looks like JSON");
                 return RuleSetImpl.loadJSONRuleSet(ruleSetName, resourceRepository);
             } catch (RuleSetNotLoadedException e) {   // not a json file
-                System.out.println("Failed to parse JSON");
+        //        System.out.println("Failed to parse JSON");
                 return RuleSetImpl.loadRuleSet(ruleSetName, resourceRepository);
             }
         } else {
@@ -245,7 +247,7 @@ public class Oddball {
             if (label.contains(".")) {
                 String[] labelParts = label.split("\\.");
                 prefix = labelParts[0];
-                label = labelParts[1];
+//                label = labelParts[1];
             }
             if (!prefixes.containsKey(prefix)) {
                 prefixes.put(prefix, new ArrayList<Map<String, Object>>());
@@ -381,13 +383,23 @@ public class Oddball {
             Rule ruleInstance = (Rule) ruleClass.newInstance();
             ruleInstance.setRuleString(filterQuery, resourceRepository);
             for (String caseStr : results) {
+                System.out.println("case");
+                System.out.println(caseStr);
                 boolean hit = ruleInstance.testOneOffRule(new MapCase(caseStr), new MongoDBHelper("filter", true));
                 if (hit) {
                     filtered.add(caseStr);
                 }
             }
-        } catch (Exception e) {
-            throw new FilterException("failed applying filter:" + filterQuery);
+        } catch (RuleNotLoadedException e) {
+            throw new FilterException("Rule not loaded applying filter:" + filterQuery);
+        } catch (InvalidCaseException e) {
+            throw new FilterException("Invalid Case applying filter:" + filterQuery);
+        } catch (InstantiationException e) {
+            throw new FilterException("Instantiation Exception applying filter:" + filterQuery);
+        } catch (IllegalAccessException e) {
+            throw new FilterException("Illegal Access Exception applying filter:" + filterQuery);
+        } catch (IOException e) {
+           throw new FilterException("IOException applying filter:" + filterQuery);
         }
         return filtered;
     }
@@ -717,7 +729,7 @@ public class Oddball {
                 options.put("owner", ownerDir);
             }
         }
-        ArrayList<Object> chainSteps = new ArrayList<Object>();
+        ArrayList<Object> chainSteps;
         Map chain = JSONUtil.json2map("{\"chain\":" + processorChain + "}");
         chainSteps = (ArrayList<Object>) chain.get("chain");
         for (Object step : chainSteps) {
@@ -1055,7 +1067,7 @@ public class Oddball {
             ruleSet = ensureRuleSet(ruleSetName);
         } catch (RuleSetNotLoadedException ex) {
             // silent fail, return null
-        };
+        }
         return ruleSet;
     }
 
@@ -1203,10 +1215,10 @@ public class Oddball {
         }
         List<String> dataSources = new ArrayList<String>();
         for (String name : matchedNames) {
-            String ruleSetName = "";
+            String ruleSetName;
             String[] fragments = name.split("-");
             int fragmentCount = fragments.length;
-            int ownerFragments = 0;
+            int ownerFragments;
             String owner = "";
             if (name.contains("-rules-")) {
                 ruleSetName = fragments[fragmentCount - 3] + ".rules";

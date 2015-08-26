@@ -117,7 +117,7 @@ public class JSONUtil {
         List<String> sortedNames = new ArrayList<String>();
         for (String aCase : cases){
             array = new JSONArray();
-            array.put(ou.flatten(json2map(aCase)));
+            array.put(ou.flatten4csv(json2map(aCase)));
             String headerPlus1 =CDL.toString(array);
             String[] lines = headerPlus1.split("\n");
             String[]names=lines[0].split(",");
@@ -137,11 +137,24 @@ public class JSONUtil {
             s.append(name+",");
         }
         array = new JSONArray();
+//        for (String aCase : cases){
+//            array.put(ou.flatten4csv(json2map(aCase)));
+//        }
         for (String aCase : cases){
-            array.put(ou.flatten(json2map(aCase)));
+            Map<String, String> rowMap = ou.flatten4csv(json2map(aCase));
+            s.append("\n");
+            for (String name : sortedNames){
+                System.out.println("name="+name);
+                String value = rowMap.get(name);
+                System.out.println("value="+value);
+                s.append(ou.protect(value));
+                s.append(",");
+            }
         }
-        JSONArray names2 = new JSONArray(sortedNames);
-        return s.append("\n").append(CDL.toString(names2, array)).toString();
+        s.append("\n");
+        System.out.println("s=");
+        System.out.println(s.toString());
+        return s.toString();
     }
     
     

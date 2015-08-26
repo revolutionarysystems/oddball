@@ -43,7 +43,6 @@ public class Episode {
     }
 
     public Episode(Map episodeDetails, String customDataTag) {
-        System.out.println(episodeDetails);
         this.owner = (String) episodeDetails.get("owner");
         this.agent = (String) episodeDetails.get("agent");
         this.series = (String) episodeDetails.get("series");
