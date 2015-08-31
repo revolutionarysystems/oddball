@@ -215,6 +215,10 @@ public class RuleSetImpl implements RuleSet {
                         }
                         localPersist.insertCase(persistCase);
                     }
+                    if (caseAvoidQuery != null && localPersist.checkAlreadyExists(caseAvoidQuery) != null) {
+                        LOGGER.debug("duplicate: avoiding persist");
+                        return null;
+                    }
                     //LOGGER.debug("inserting:"+duplicateQuery);
                 }
 //                System.out.println("persistCase");

@@ -144,16 +144,12 @@ public class JSONUtil {
             Map<String, String> rowMap = ou.flatten4csv(json2map(aCase));
             s.append("\n");
             for (String name : sortedNames){
-                System.out.println("name="+name);
                 String value = rowMap.get(name);
-                System.out.println("value="+value);
                 s.append(ou.protect(value));
                 s.append(",");
             }
         }
         s.append("\n");
-        System.out.println("s=");
-        System.out.println(s.toString());
         return s.toString();
     }
     

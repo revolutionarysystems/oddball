@@ -219,11 +219,7 @@ public class OddUtil {
     public String protect(String value) {
 //        if (value.contains("\"") || value.contains(",")){
         if (value.contains(",")&&value.indexOf("\"")!=0){
-            System.out.println("before");
-            System.out.println(value);
             value= "\""+value.replace("\\", "\\\\").replace("\"", "\\\"")+"\"";
-            System.out.println("after");
-            System.out.println(value);
         }
         return value;
     }

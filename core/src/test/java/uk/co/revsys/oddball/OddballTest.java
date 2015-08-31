@@ -70,7 +70,6 @@ public class OddballTest {
      */
     @Test
     public void testAssessCaseMatch() throws Exception {
-        System.out.println("assessCase");
         String ruleSetName = "Test1.txt";
         Case aCase = new StringCase("abc123");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
@@ -83,7 +82,6 @@ public class OddballTest {
 
     @Test
     public void testAssessCaseSubdirectoryRuleFile() throws Exception {
-        System.out.println("assessCase");
         String ruleSetName = "testCo/Test1.txt";
         Case aCase = new StringCase("abc123");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
@@ -120,8 +118,6 @@ public class OddballTest {
         Case aCase = new StringCase("b-side");
         Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
         Opinion result = instance.assessCaseOpinion(ruleSetName, null, aCase);
-        System.out.println(result.getLabel());
-        System.out.println(result.getEnrichedCase(ruleSetName, aCase, false, null));
         assertTrue(result.getLabel().contains("*odDball*"));
         assertFalse(result.getLabel().contains("string"));
         assertFalse(result.getLabel().contains("null"));

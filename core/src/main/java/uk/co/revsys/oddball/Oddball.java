@@ -85,6 +85,7 @@ public class Oddball {
     }
 
     public Collection<String> assessCase(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery, String avoidQuery, Map<String, String> options) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException, JsonParseException, IOException, ParseException {
+        Collection<String> results = new ArrayList<String>();
         if (inboundTransformer != null) {
             LOGGER.debug("Applying transformation:" + inboundTransformer);
             aCase.setContent(this.transformCase(aCase.getContent(), inboundTransformer));
@@ -95,11 +96,14 @@ public class Oddball {
             saveRuleSet = ensureRuleSet(options.get("saveInto"));
         }
         String taggedCase = tagger.tagCase(aCase, options, persistOption, duplicateQuery, avoidQuery, saveRuleSet);
-        Collection<String> results = new ArrayList<String>();
-        results.add(taggedCase);
-        if (options.containsKey("processor")) {
-            LOGGER.debug("Applying processor:" + options.get("processor"));
-            results = applyProcessor(results, options, tagger.getRuleSet(), "{}", options.get("ownerDir"), JSONUtil.json2map(aCase.toString()));
+        if (taggedCase!=null){
+            results.add(taggedCase);
+            if (options.containsKey("processor")) {
+                LOGGER.debug("Applying processor:" + options.get("processor"));
+                results = applyProcessor(results, options, tagger.getRuleSet(), "{}", options.get("ownerDir"), JSONUtil.json2map(aCase.toString()));
+            }
+        } else {
+            LOGGER.debug("Null result");
         }
         return results;
     }
@@ -383,8 +387,6 @@ public class Oddball {
             Rule ruleInstance = (Rule) ruleClass.newInstance();
             ruleInstance.setRuleString(filterQuery, resourceRepository);
             for (String caseStr : results) {
-                System.out.println("case");
-                System.out.println(caseStr);
                 boolean hit = ruleInstance.testOneOffRule(new MapCase(caseStr), new MongoDBHelper("filter", true));
                 if (hit) {
                     filtered.add(caseStr);
