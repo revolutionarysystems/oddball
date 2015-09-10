@@ -63,7 +63,12 @@ public class JSONUtil {
                                     out.append(map2json((Map)item));
                                 } else {
 //                            out.append("\"");
-                                out.append(item.toString());
+                                try{
+                                    out.append(item.toString());
+                                }
+                                catch (NullPointerException npe){
+                                    out.append("null");
+                                }
 //                            out.append("\"");
                                 }
                             }

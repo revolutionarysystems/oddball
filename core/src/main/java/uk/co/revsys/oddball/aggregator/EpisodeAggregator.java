@@ -103,7 +103,7 @@ public class EpisodeAggregator implements Aggregator {
             if (excludeCodes.contains(event.getCode())){
                 currentEpisode.markTime(event.getEventTime(), event.getTagTime());
             } else {
-                currentEpisode.recordState(event.getState(), event.getCode(), event.getEventTime(), event.getTagTime(), event.getCaseMap(), descriptionProperty);
+                currentEpisode.recordState(event.getState(), event.getCode(), event.getEventTime(), event.getTagTime(), event.getEventTime()+timeOutPeriod, event.getCaseMap(), descriptionProperty);
             }
             previousEventTime = event.getEventTime();
             previousTagTime = event.getTagTime();
@@ -151,6 +151,7 @@ public class EpisodeAggregator implements Aggregator {
 
     public Episode incrementEpisode(String eventString, Map<String, Object> episodeMap, Map<String, String> options) throws IOException, ParseException {
         Event event = new Event(eventString);
+        long timeOutPeriod = 600000L;
         Episode currentEpisode;
         String customDataTag = null;
         if (options.containsKey("customDataTag")){
@@ -164,13 +165,20 @@ public class EpisodeAggregator implements Aggregator {
         if (options.containsKey("descriptionProperty")){
             descriptionProperty = options.get("descriptionProperty");
         }
+        if (options.containsKey("timeOutPeriod")) {
+            try {
+                timeOutPeriod = new OddUtil().parseTimePeriod((String) options.get("timeOutPeriod"), "~");
+            } catch (InvalidTimePeriodException e) {
+                timeOutPeriod = Long.parseLong((String) options.get("timeOutPeriod"));
+            }
+        }
         if (episodeMap==null){
             currentEpisode = new Episode(event.getOwner(), event.getAgent(), event.getSeries(), event.getEventTime(), event.getTagTime(), watchList, customDataTag);
         } else {
             currentEpisode = new Episode(episodeMap, customDataTag);
             currentEpisode.recordInterval(currentEpisode.getEndTime(), event.getEventTime(), event.getTagTime());
         }
-        currentEpisode.recordState(event.getState(), event.getCode(), event.getEventTime(), event.getTagTime(), event.getCaseMap(), descriptionProperty);
+        currentEpisode.recordState(event.getState(), event.getCode(), event.getEventTime(), event.getTagTime(), event.getEventTime()+timeOutPeriod, event.getCaseMap(), descriptionProperty);
         
                 
         return currentEpisode;

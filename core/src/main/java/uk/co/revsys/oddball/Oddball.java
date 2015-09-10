@@ -109,6 +109,7 @@ public class Oddball {
     }
 
     public Collection<String> assessCase(String ruleSetName, String inboundTransformer, String processor, Case aCase) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, IOException, ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException, JsonParseException, ParseException {
+        System.out.println("Assessing case");
         aCase = new MapCase(aCase.getContent());
         HashMap<String, String> options = new HashMap<String, String>();
         String caseOwner = aCase.getOwner();
@@ -494,6 +495,7 @@ public class Oddball {
 //                        LOGGER.debug("EpisodeMap:"+episodeMap.toString());
 //                        episodeMap.put("case", (Map<String, Object>) inc);
 //                        LOGGER.debug("EpisodeMap:" + episodeMap.toString());
+                        LOGGER.debug("inc:" + inc.toString());
                         String incString = JSONUtil.map2json((Map) inc);
                         incrementedResults.add(incString);
                     }
@@ -501,17 +503,20 @@ public class Oddball {
 //                    LOGGER.debug("New Episode:");
                     ArrayList<Map> incremented = ag.incrementAggregation(result, episodeMap, options);
                     for (Object inc : incremented) {
+                        LOGGER.debug("EpisodeMap:" + inc.toString());
                         String incString = JSONUtil.map2json((Map) inc);
-//                        LOGGER.debug("EpisodeMap:" + inc.toString());
                         incrementedResults.add(incString);
                     }
                 }
             }
             return incrementedResults;
         } catch (InstantiationException e) {
-            throw new AggregationException("Could not instantiate aggregator: " + options.get("aggregator"), e);
+            throw new AggregationException("Could not instantiate aggregator: " + options.get("incrementor"), e);
         } catch (IllegalAccessException e) {
-            throw new AggregationException("Could not instantiate aggregator: " + options.get("aggregator"), e);
+            throw new AggregationException("Could not instantiate aggregator: " + options.get("incrementor"), e);
+        } catch (NullPointerException e) {
+            LOGGER.debug("NPE", e);
+            throw new AggregationException("Problem with aggregator: " + options.get("incrementor"), e);
         }
     }
 

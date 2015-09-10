@@ -218,6 +218,9 @@ public class OddUtil {
 
     public String protect(String value) {
 //        if (value.contains("\"") || value.contains(",")){
+        if (value==null){
+            value="null";
+        }
         if (value.contains(",")&&value.indexOf("\"")!=0){
             value= "\""+value.replace("\\", "\\\\").replace("\"", "\\\"")+"\"";
         }
