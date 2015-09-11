@@ -7,11 +7,11 @@
 package uk.co.revsys.oddball.aggregator;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  *
@@ -64,11 +64,11 @@ public class LevelledCollationAccumulator implements PropertyAccumulator, Compar
     public void accumulateProperty(Object property){
         if (property!=null){
             property=(property.toString()).replace("\"","");
-            String separator = ".";
+            String sep = ".";
             if (options.containsKey("separator")){
-                separator = options.get("separator");
+                sep = options.get("separator");
             }
-            incorporate((String) property, collation, separator, options.containsKey("order")&&options.get("order").equals("reverse"));
+            incorporate((String) property, collation, sep, options.containsKey("order")&&options.get("order").equals("reverse"));
         }
 //        System.out.println("collation");
 //        System.out.println(collation.toString());
@@ -92,15 +92,18 @@ public class LevelledCollationAccumulator implements PropertyAccumulator, Compar
     public Map assessProperty(Object property){
         Map<Object, Object> results = new HashMap<Object, Object>();
         int total = 0;
-        for (Object item:collation.keySet()){
+        for (String item : collation.keySet()) {
             total+=(Integer)collation.get(item).getCount();
         }
-        results.put("value", property);
-        String separator = ".";
-        if (options.containsKey("separator")){
-            separator = options.get("separator");
+        for (Entry item : collation.entrySet()){
+            total+=(Integer)((CollationEntry)item.getValue()).getCount();
         }
-        String[] propParts = ((String)property).split(separator.replace(".", "\\."));
+        results.put("value", property);
+        String sep = ".";
+        if (options.containsKey("separator")){
+            sep = options.get("separator");
+        }
+        String[] propParts = ((String)property).split(sep.replace(".", "\\."));
         
         Map<String, CollationEntry> subColl = collation;
         String prefix = "";
@@ -136,7 +139,7 @@ public class LevelledCollationAccumulator implements PropertyAccumulator, Compar
         int total= 0;
         double totalInfo = 0;
         
-        for (Object item:collation.keySet()){
+        for (String item:collation.keySet()){
             Map<String, Object> cell = new HashMap<String, Object>();
             cell.put("value", item);
             cell.put("count", collation.get(item).getCount());

@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -31,7 +30,6 @@ import uk.co.revsys.oddball.aggregator.AggregatorMap;
 import uk.co.revsys.oddball.aggregator.CaseComparator;
 import uk.co.revsys.oddball.aggregator.ComparatorMap;
 import uk.co.revsys.oddball.aggregator.ComparisonException;
-import uk.co.revsys.oddball.aggregator.Episode;
 import uk.co.revsys.oddball.bins.BinSet;
 import uk.co.revsys.oddball.bins.BinSetImpl;
 import uk.co.revsys.oddball.bins.BinSetNotLoadedException;
@@ -47,6 +45,7 @@ import uk.co.revsys.oddball.rules.MongoDBFactory;
 import uk.co.revsys.oddball.rules.MongoDBHelper;
 import uk.co.revsys.oddball.rules.Opinion;
 import uk.co.revsys.oddball.rules.Rule;
+import uk.co.revsys.oddball.rules.RuleNotLoadedException;
 import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.rules.RuleSetImpl;
 import uk.co.revsys.oddball.rules.RuleSetNotLoadedException;
@@ -86,6 +85,7 @@ public class Oddball {
     }
 
     public Collection<String> assessCase(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery, String avoidQuery, Map<String, String> options) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException, JsonParseException, IOException, ParseException {
+        Collection<String> results = new ArrayList<String>();
         if (inboundTransformer != null) {
             LOGGER.debug("Applying transformation:" + inboundTransformer);
             aCase.setContent(this.transformCase(aCase.getContent(), inboundTransformer));
@@ -96,16 +96,20 @@ public class Oddball {
             saveRuleSet = ensureRuleSet(options.get("saveInto"));
         }
         String taggedCase = tagger.tagCase(aCase, options, persistOption, duplicateQuery, avoidQuery, saveRuleSet);
-        Collection<String> results = new ArrayList<String>();
-        results.add(taggedCase);
-        if (options.containsKey("processor")) {
-            LOGGER.debug("Applying processor:" + options.get("processor"));
-            results = applyProcessor(results, options, tagger.getRuleSet(), "{}", options.get("ownerDir"), JSONUtil.json2map(aCase.toString()));
+        if (taggedCase!=null){
+            results.add(taggedCase);
+            if (options.containsKey("processor")) {
+                LOGGER.debug("Applying processor:" + options.get("processor"));
+                results = applyProcessor(results, options, tagger.getRuleSet(), "{}", options.get("ownerDir"), JSONUtil.json2map(aCase.toString()));
+            }
+        } else {
+            LOGGER.debug("Null result");
         }
         return results;
     }
 
     public Collection<String> assessCase(String ruleSetName, String inboundTransformer, String processor, Case aCase) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, IOException, ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, AggregationException, ProcessorNotLoadedException, FilterException, IdentificationSchemeNotLoadedException, OwnerMissingException, JsonParseException, ParseException {
+        System.out.println("Assessing case");
         aCase = new MapCase(aCase.getContent());
         HashMap<String, String> options = new HashMap<String, String>();
         String caseOwner = aCase.getOwner();
@@ -119,7 +123,7 @@ public class Oddball {
             options.put("processor", processor);
         }
         if (ruleSetName.contains("/")) {
-            String ownerPrefix = ruleSetName.substring(0, ruleSetName.indexOf("/") + 1);
+            String ownerPrefix = ruleSetName.substring(0, ruleSetName.indexOf('/') + 1);
             for (String key : options.keySet()) {
                 options.put(key, options.get(key).replace("{owner}", ownerPrefix).replace("{account}", ownerPrefix));
             }
@@ -128,12 +132,12 @@ public class Oddball {
         if (caseOwner != null && (!options.containsKey("ownerDir"))) {
             options.put("ownerDir", caseOwner);
         }
-        return this.assessCase(ruleSetName, inboundTransformer, aCase, RuleSet.ALWAYSPERSIST, null, null, options);
+        String avoidQuery = "{'case.time':<time>,'case.series':'<series>'}";  // do not persist a signal that duplicates series and millisecond time
+        return this.assessCase(ruleSetName, inboundTransformer, aCase, RuleSet.ALWAYSPERSIST, null, avoidQuery, options);
     }
 
     public Opinion assessCaseOpinion(String ruleSetName, String inboundTransformer, Case aCase, int persistOption, String duplicateQuery, String avoidQuery, Map<String, String> options) throws TransformerNotLoadedException, RuleSetNotLoadedException, InvalidCaseException, IOException, OwnerMissingException {
-        RuleSet ruleSet = ensureRuleSet(ruleSetName);
-        ArrayList<String> results = new ArrayList<String>();
+        ensureRuleSet(ruleSetName);
         if (inboundTransformer != null) {
             LOGGER.debug("Applying transformation:" + inboundTransformer);
             aCase.setContent(this.transformCase(aCase.getContent(), inboundTransformer));
@@ -170,10 +174,10 @@ public class Oddball {
     private RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException {
         if (ruleSetName.contains(".rules")) {
             try {
-                System.out.println("Looks like JSON");
+        //        System.out.println("Looks like JSON");
                 return RuleSetImpl.loadJSONRuleSet(ruleSetName, resourceRepository);
             } catch (RuleSetNotLoadedException e) {   // not a json file
-                System.out.println("Failed to parse JSON");
+        //        System.out.println("Failed to parse JSON");
                 return RuleSetImpl.loadRuleSet(ruleSetName, resourceRepository);
             }
         } else {
@@ -248,7 +252,7 @@ public class Oddball {
             if (label.contains(".")) {
                 String[] labelParts = label.split("\\.");
                 prefix = labelParts[0];
-                label = labelParts[1];
+//                label = labelParts[1];
             }
             if (!prefixes.containsKey(prefix)) {
                 prefixes.put(prefix, new ArrayList<Map<String, Object>>());
@@ -389,8 +393,16 @@ public class Oddball {
                     filtered.add(caseStr);
                 }
             }
-        } catch (Exception e) {
-            throw new FilterException("failed applying filter:" + filterQuery);
+        } catch (RuleNotLoadedException e) {
+            throw new FilterException("Rule not loaded applying filter:" + filterQuery);
+        } catch (InvalidCaseException e) {
+            throw new FilterException("Invalid Case applying filter:" + filterQuery);
+        } catch (InstantiationException e) {
+            throw new FilterException("Instantiation Exception applying filter:" + filterQuery);
+        } catch (IllegalAccessException e) {
+            throw new FilterException("Illegal Access Exception applying filter:" + filterQuery);
+        } catch (IOException e) {
+           throw new FilterException("IOException applying filter:" + filterQuery);
         }
         return filtered;
     }
@@ -470,10 +482,8 @@ public class Oddball {
         Class aggregatorClass = new AggregatorMap().get(options.get("incrementor"));
         Map<String, Object> episodeMap = null;
         if (episodes.iterator().hasNext()) {
-            String episode = null;
-            episode = episodes.iterator().next();
+            String episode = episodes.iterator().next();
             episodeMap = JSONUtil.json2map(episode);
-//            LOGGER.debug("Episode:" + episode);
         }
         try {
             for (String result : results) {
@@ -485,6 +495,7 @@ public class Oddball {
 //                        LOGGER.debug("EpisodeMap:"+episodeMap.toString());
 //                        episodeMap.put("case", (Map<String, Object>) inc);
 //                        LOGGER.debug("EpisodeMap:" + episodeMap.toString());
+                        LOGGER.debug("inc:" + inc.toString());
                         String incString = JSONUtil.map2json((Map) inc);
                         incrementedResults.add(incString);
                     }
@@ -492,17 +503,20 @@ public class Oddball {
 //                    LOGGER.debug("New Episode:");
                     ArrayList<Map> incremented = ag.incrementAggregation(result, episodeMap, options);
                     for (Object inc : incremented) {
+                        LOGGER.debug("EpisodeMap:" + inc.toString());
                         String incString = JSONUtil.map2json((Map) inc);
-//                        LOGGER.debug("EpisodeMap:" + inc.toString());
                         incrementedResults.add(incString);
                     }
                 }
             }
             return incrementedResults;
         } catch (InstantiationException e) {
-            throw new AggregationException("Could not instantiate aggregator: " + options.get("aggregator"), e);
+            throw new AggregationException("Could not instantiate aggregator: " + options.get("incrementor"), e);
         } catch (IllegalAccessException e) {
-            throw new AggregationException("Could not instantiate aggregator: " + options.get("aggregator"), e);
+            throw new AggregationException("Could not instantiate aggregator: " + options.get("incrementor"), e);
+        } catch (NullPointerException e) {
+            LOGGER.debug("NPE", e);
+            throw new AggregationException("Problem with aggregator: " + options.get("incrementor"), e);
         }
     }
 
@@ -722,7 +736,7 @@ public class Oddball {
                 options.put("owner", ownerDir);
             }
         }
-        ArrayList<Object> chainSteps = new ArrayList<Object>();
+        ArrayList<Object> chainSteps;
         Map chain = JSONUtil.json2map("{\"chain\":" + processorChain + "}");
         chainSteps = (ArrayList<Object>) chain.get("chain");
         for (Object step : chainSteps) {
@@ -991,8 +1005,8 @@ public class Oddball {
                 path = ruleSetNames.substring(0, ruleSetNames.lastIndexOf("/") + 1);
                 ruleSetNames = ruleSetNames.substring(ruleSetNames.lastIndexOf("/") + 1);
             }
-            String ruleSets[] = ruleSetNames.split("\\+");
-            for (String ruleSetName : ruleSets) {
+            String ruleSetNameArray[] = ruleSetNames.split("\\+");
+            for (String ruleSetName : ruleSetNameArray) {
                 RuleSet ruleSet = ensureRuleSet(path + ruleSetName);
                 if (options.get("binLabel") != null) {
                     String binLabel = options.get("binLabel");
@@ -1059,7 +1073,8 @@ public class Oddball {
         try {
             ruleSet = ensureRuleSet(ruleSetName);
         } catch (RuleSetNotLoadedException ex) {
-        };
+            // silent fail, return null
+        }
         return ruleSet;
     }
 
@@ -1191,7 +1206,6 @@ public class Oddball {
     public List<String> showDatabaseList(String filter) {
         String path = ".";
         if (filter.contains("/")) {
-            path = path + "/" + filter.substring(0, filter.lastIndexOf("/"));
             filter = filter.substring(filter.lastIndexOf("/") + 1);
         }
         List<String> dbNames = MongoDBFactory.getDBNames();
@@ -1208,10 +1222,10 @@ public class Oddball {
         }
         List<String> dataSources = new ArrayList<String>();
         for (String name : matchedNames) {
-            String ruleSetName = "";
+            String ruleSetName;
             String[] fragments = name.split("-");
             int fragmentCount = fragments.length;
-            int ownerFragments = 0;
+            int ownerFragments;
             String owner = "";
             if (name.contains("-rules-")) {
                 ruleSetName = fragments[fragmentCount - 3] + ".rules";

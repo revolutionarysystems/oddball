@@ -78,7 +78,7 @@ public class OddUtil {
     }
     
     public String replacePlaceholders(String templateString, Map<String, Object> aCase){
-        while (templateString.substring(1).indexOf("<")>=0){
+        while (templateString.substring(1).contains("<")){
             templateString=replacePlaceholder(templateString, aCase);
         }
         return templateString;
@@ -129,23 +129,35 @@ public class OddUtil {
 
     
     public Map<String, String> flatten (Map<String, Object> aMap){
+        return flatten(aMap, false);
+    }
+
+    public Map<String, String> flatten4csv (Map<String, Object> aMap){
+        return flatten(aMap, true);
+    }
+
+    public Map<String, String> flatten (Map<String, Object> aMap, boolean forCsv){
         Map<String, String> flatMap = new HashMap<String, String>();
         for(String key : aMap.keySet()){
             if (aMap.get(key) instanceof Map){
-                Map<String, String> flatSubMap = flatten((Map)aMap.get(key));
+                Map<String, String> flatSubMap = flatten((Map)aMap.get(key), forCsv);
                 for(String innerKey : flatSubMap.keySet()){
                     flatMap.put(key+"."+innerKey.replace(",","-"), flatSubMap.get(innerKey));
                 }
             } else {
                 if (aMap.get(key) instanceof List){
                     if (isDeep((List)aMap.get(key))){
-                        Map<String, String> flatSubMap = flatten(list2map((List)aMap.get(key)));
+                        Map<String, String> flatSubMap = flatten(list2map((List)aMap.get(key)), forCsv);
                         for(String innerKey : flatSubMap.keySet()){
                             flatMap.put(key+"."+innerKey.replace(",","-"), flatSubMap.get(innerKey));
                         }
                     } else {
                         try {
-                            flatMap.put(key, aMap.get(key).toString());
+                            if (forCsv){
+                                flatMap.put(key, doubleupQuotes(aMap.get(key).toString()));
+                            } else {
+                                flatMap.put(key, quoteEscapeQuotes(aMap.get(key).toString()));
+                            }
                         }
                         catch (NullPointerException ex){
                             flatMap.put(key, "null");
@@ -153,7 +165,11 @@ public class OddUtil {
                     }
                 } else {
                     try {
-                        flatMap.put(key, aMap.get(key).toString());
+                            if (forCsv){
+                                flatMap.put(key, doubleupQuotes(aMap.get(key).toString()));
+                            } else {
+                                flatMap.put(key, quoteEscapeQuotes(aMap.get(key).toString()));
+                            }
                     }
                     catch (NullPointerException ex){
                         flatMap.put(key, "null");
@@ -178,6 +194,39 @@ public class OddUtil {
         value = value.replace("\"", "\\\"");
         return value;
     }
+
+    public String quoteEscapeQuotes(String value) {
+        if (value.contains("\"")){
+            value= "\""+value.replace("\"", "\\\"")+"\"";
+        }
+        return value;
+    }
+
+    public String doubleupQuotes(String value) {
+        if (value.contains("\"")){
+            value= "\""+value.replace("\"", "\"\"")+"\"";
+        }
+        return value;
+    }
+
+    public String quoteQuotes(String value) {
+        if (value.contains("\"")){
+            value= "\""+value+"\"";
+        }
+        return value;
+    }
+
+    public String protect(String value) {
+//        if (value.contains("\"") || value.contains(",")){
+        if (value==null){
+            value="null";
+        }
+        if (value.contains(",")&&value.indexOf("\"")!=0){
+            value= "\""+value.replace("\\", "\\\\").replace("\"", "\\\"")+"\"";
+        }
+        return value;
+    }
+
 
     public String ipRange(String ip, int length) {
         int version = 4;

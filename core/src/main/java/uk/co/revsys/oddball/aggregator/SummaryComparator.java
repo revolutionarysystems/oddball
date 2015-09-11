@@ -7,21 +7,12 @@
 package uk.co.revsys.oddball.aggregator;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.co.revsys.oddball.TransformerNotLoadedException;
-import uk.co.revsys.oddball.bins.UnknownBinException;
-import uk.co.revsys.oddball.rules.DaoException;
-import uk.co.revsys.oddball.rules.RuleSet;
 import uk.co.revsys.oddball.util.InvalidTimePeriodException;
 import uk.co.revsys.oddball.util.JSONUtil;
-import uk.co.revsys.oddball.util.OddUtil;
 import uk.co.revsys.resource.repository.ResourceRepository;
 
 /**

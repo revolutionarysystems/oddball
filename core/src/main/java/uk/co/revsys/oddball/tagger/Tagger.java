@@ -38,6 +38,9 @@ public class Tagger {
             throw new OwnerMissingException(getRuleSetName());
         }
         Opinion opinion = tagCaseOpinion(aCase, options, persistOption, duplicateQuery, avoidQuery, overridePersistRuleSet);
+        if (opinion==null){
+            return null;
+        }
         String enrichedCase = "";
         boolean retag = false;
         if (options.containsKey("retag")&&options.get("retag").equals("true")){

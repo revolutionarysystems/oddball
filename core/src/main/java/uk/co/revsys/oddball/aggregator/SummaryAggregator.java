@@ -29,8 +29,8 @@ public class SummaryAggregator implements Aggregator{
     @Override
     public ArrayList<Map> aggregateCases(Iterable<String> caseStrings, Map<String, String> options, ResourceRepository resourceRepository) throws AggregationException, InvalidTimePeriodException{
         ArrayList<Map> response = new ArrayList<Map>();
-        ArrayList<Summary> summaries = summariseCases(caseStrings, options, resourceRepository);
-        for (Summary summary: summaries){
+        ArrayList<Summary> summaryList = summariseCases(caseStrings, options, resourceRepository);
+        for (Summary summary: summaryList){
             response.add(summary.asMap());
         }
         return response;
@@ -46,7 +46,7 @@ public class SummaryAggregator implements Aggregator{
         catch (SummaryDefinitionNotLoadedException e){
             throw new AggregationException("Summary Definition could not be loaded", e);
         }
-        ArrayList<Summary> summaries= new ArrayList<Summary>();
+        ArrayList<Summary> summaryList= new ArrayList<Summary>();
         // set up time window parameters
         String align = "now";
         if (options.get("align")!=null){
@@ -75,7 +75,8 @@ public class SummaryAggregator implements Aggregator{
         if (options.get("periodStart")!=null){
             reportStart = Long.parseLong((String) options.get("periodStart"));
         }
-        int periods = (int) Math.round(0.4999+(reportEnd-reportStart)/(1.0*periodms));  //round up number of periods to ensure coverage
+        int periods;
+//        int periods = (int) Math.round(0.4999+(reportEnd-reportStart)/(1.0*periodms));  //round up number of periods to ensure coverage
         if (options.get("periods")!=null){
             periods = (int) Long.parseLong(options.get("periods"));
             if (options.get("periodStart")==null){
@@ -120,7 +121,7 @@ public class SummaryAggregator implements Aggregator{
 //        LOGGER.debug(Long.toString(reportEnd));
         for (int i=periods-1 ; i>=endIteration; i--){
             try {
-                summaries.add(new Summary(options.get("owner"), reportStart+i*periodms, periodms, summaryDefinition));
+                summaryList.add(new Summary(options.get("owner"), reportStart+i*periodms, periodms, summaryDefinition));
                 } catch (AccumulationException e){
                 throw new AggregationException("Problem in Accumulation", e);
             }
@@ -134,7 +135,7 @@ public class SummaryAggregator implements Aggregator{
                     time = new OddUtil().getDeepProperty(caseMap, "timestamp");
                 }
                 long caseTime = Long.parseLong(time.toString());
-                for (Summary summary: summaries){
+                for (Summary summary: summaryList){
                 // if case belongs in Summary, incorporate it
                     if (caseTime > summary.getStartTime() && caseTime <= summary.getEndTime()){
                         summary.incorporate(caseMap, caseTime);
@@ -154,15 +155,11 @@ public class SummaryAggregator implements Aggregator{
         if (options.containsKey("summarySmallest")){
             summarySmallest = Integer.parseInt(options.get("summarySmallest"));
         }
-        for (Summary summary : summaries){
+        for (Summary summary : summaryList){
             if (summary.getCount()>=summarySmallest){
                 toReturn.add(summary);
             }
         }
-//        System.out.println("summaries");
-//        System.out.println(summaries.size());
-//        System.out.println(summaries.get(0).asMap().toString());
-//        System.out.println(toReturn.size());
         return toReturn;
     }
 

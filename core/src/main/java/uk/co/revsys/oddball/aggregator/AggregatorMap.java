@@ -7,8 +7,6 @@
 package uk.co.revsys.oddball.aggregator;
 
 import java.util.HashMap;
-import uk.co.revsys.oddball.aggregator.EpisodeAggregator;
-import uk.co.revsys.oddball.aggregator.SummaryAggregator;
 
 /**
  *

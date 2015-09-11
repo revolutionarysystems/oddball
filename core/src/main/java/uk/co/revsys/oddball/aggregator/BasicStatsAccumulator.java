@@ -68,6 +68,8 @@ public class BasicStatsAccumulator implements PropertyAccumulator{
     }
 
     private Map<String,String> options;
+    
+    @Override
     public void setOptions(Map<String, String> options){
         this.options = options;
     }

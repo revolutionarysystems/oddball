@@ -9,6 +9,7 @@ package uk.co.revsys.oddball.aggregator;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -90,6 +91,7 @@ public class EpisodeAggregatorTest{
         assertTrue(episodes2.size()==1);
         Episode ep2 = episodes2.get(0);
         assertEquals("A0B0CX", ep2.getStateCodes());
+        System.out.println(ep2.asMap());
         assertTrue(1409579263300L==ep2.getEndTime());
         assertTrue(300L==ep2.getDuration());
         assertFalse(ep2.isOpen());
@@ -100,6 +102,8 @@ public class EpisodeAggregatorTest{
         assertEquals("A0BX", ep3a.getStateCodes());
         Episode ep3b = episodes3.get(1);
         assertEquals("CX", ep3b.getStateCodes());
+        System.out.println(ep3b.getTimeoutLimit()-ep3b.getEndTime());
+        assertTrue(ep3b.getTimeoutLimit()-ep3b.getEndTime()==150L);
         
        
         
@@ -297,6 +301,7 @@ public class EpisodeAggregatorTest{
         assertTrue(episodes2.size()==1);
         Episode ep2 = episodes2.get(0);
         assertEquals("A0B0CX", ep2.getStateCodes());
+        System.out.println(ep2.asMap());
         assertTrue(1409579263300L==ep2.getEndTime());
         assertTrue(300L==ep2.getDuration());
         assertFalse(ep2.isOpen());
@@ -428,6 +433,59 @@ public class EpisodeAggregatorTest{
         assertTrue(ep.isOpen());
         System.out.println(ep.asMap());
     }
+    
+
+    @Test
+    public void testAggregateEventsIncrementallyOutOfOrder() throws EventNotCreatedException, IOException, ParseException {
+        ArrayList<String> events = new ArrayList<String>();
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"B\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6d\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263100\","
+                + "\"tagTime\": \"1409579263100\","
+                + "\"state\": \"Info\"}");
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"C\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6e\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263300\","
+                + "\"tagTime\": \"1409579263300\","
+                + "\"state\": \"Quit\"}");
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"A\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6c\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263000\","
+                + "\"tagTime\": \"1409579263500\","
+                + "\"state\": \"Home\"}");
+        EpisodeAggregator ea = new EpisodeAggregator();
+        Map<String, Object> episodeMap = null;
+        Episode ep = null;
+        for (String event: events){
+            ep = ea.incrementEpisode(event, episodeMap, new HashMap());
+            episodeMap = ep.asMap();
+        }
+        System.out.println(episodeMap);
+        assertEquals("A0B0C", ep.getStateCodes());
+        assertTrue(1409579263100L==ep.getFirstTagTime());
+        assertTrue(1409579263500L==ep.getLastTagTime());
+        assertTrue(1409579263000L==ep.getStartTime());
+        assertEquals("revsys-master-account", ep.getOwner());
+        assertEquals("user1", ep.getAgent());
+        assertEquals("e47877b6-4f17-4d2d-a6f3-3d35aa919be6", ep.getSeries());
+        assertTrue(1409579263300L==ep.getEndTime());
+        assertTrue(300L==ep.getDuration());
+        assertTrue(ep.isOpen());
+        System.out.println(ep.asMap());
+    }
+    
     
     @Test
     public void testAggregateEventsIncrementallyAsMapTagWrapFalse() throws EventNotCreatedException, IOException, ParseException {
