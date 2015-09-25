@@ -1777,6 +1777,63 @@ public class OddballTest {
     }
 
     @Test
+    public void testFindCasesQueryWithRetrieverProcessor2() throws Exception {
+        System.out.println("findCases");
+        String ruleSetName = "TestMongoEvent";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, anotherCase);
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        options.put("retriever", "none");
+        long future = new Date().getTime() + 1000000;
+        options.put("processor", "processor_2.script");
+        Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        assertTrue(cases0.size() == 0);
+    }
+
+
+    @Test
+    public void testFindCasesQueryWithRetrieverProcessor3() throws Exception {
+        System.out.println("findCases");
+        String ruleSetName = "TestMongoEvent";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, anotherCase);
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        options.put("retriever", "none");
+        long future = new Date().getTime() + 1000000;
+        options.put("processor", "processor_3.script");
+        Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        assertTrue(cases0.size() == 0);
+    }
+
+    @Test
+    public void testFindCasesQueryWithRetrieverProcessor4() throws Exception {
+        System.out.println("findCases");
+        String ruleSetName = "TestMongoEvent";
+        Case theCase = new MapCase("{\"browser\":\"firefox\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Case anotherCase = new MapCase("{\"browser\":\"chrome\", \"platform\":\"android\", \"sessionId\":\"AA11\"}");
+        Oddball instance = new Oddball(resourceRepository, "TestBins.txt");
+        Opinion result = instance.assessCaseOpinion(ruleSetName, null, theCase);
+        instance.assessCaseOpinion(ruleSetName, null, anotherCase);
+        HashMap<String, String> options = new HashMap<String, String>();
+        options.put("owner", "_all");
+        long future = new Date().getTime() + 1000000;
+        options.put("processor", "processor_4.script");
+        Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
+        System.out.println(cases0.iterator().next().toString());
+        assertTrue(cases0.size() > 0);
+    }
+
+
+    
+    @Test
     public void testFindCasesQueryWithNestedProcessor() throws Exception {
         System.out.println("findCases");
         String ruleSetName = "TestMongoEvent";

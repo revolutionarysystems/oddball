@@ -14,8 +14,11 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -408,7 +411,6 @@ public class Oddball {
     }
 
     public Collection<String> transformResults(Iterable<String> results, String transformerName) throws TransformerNotLoadedException {
-        LOGGER.debug("transformer:" + transformerName);
         ArrayList<String> transformed = new ArrayList<String>();
         String transformStr = getTransformer(transformerName, resourceRepository);
         Map evalFunctions = new HashMap();
@@ -481,7 +483,7 @@ public class Oddball {
         ArrayList<String> incrementedResults = new ArrayList<String>();
         Class aggregatorClass = new AggregatorMap().get(options.get("incrementor"));
         Map<String, Object> episodeMap = null;
-        if (episodes.iterator().hasNext()) {
+        if (episodes!=null && episodes.iterator().hasNext()) {
             String episode = episodes.iterator().next();
             episodeMap = JSONUtil.json2map(episode);
         }
@@ -692,22 +694,32 @@ public class Oddball {
                     query = ou.replacePlaceholders(query, caseMap);
                 }
             }
-            if (!(input.equals("{}")) && options.containsKey("results") && options.get("results").equals("addLink")) {
-                Collection<String> retrieved = initialQuery(owner, options.get("ruleSet"), query, options);
-                String first = "none retrieved from " + options.get("ruleSet") + " using " + query;
-                if (retrieved.iterator().hasNext()) {
-                    first = (String) retrieved.iterator().next();
+            Collection<String> retrieved = initialQuery(owner, options.get("ruleSet"), query, options);
+            if (options.containsKey("results")){
+                if (options.get("results").equals("addLink") && !input.equals("{}")){
+                    String first = "{\"_id\":\"null\"}";
+                    if (retrieved.iterator().hasNext()) {
+                        first = (String) retrieved.iterator().next();
+                    }
+                    String linkName = "link";
+                    if (options.containsKey("resultName")) {
+                        linkName = (String) options.get("resultName");
+                    }
+                    String linkedInput = addLink(input, first, linkName);
+                    retrievedResults.add(linkedInput);
+                } else if (options.get("results").equals("delete")){
+                    for (String retrievedCase : retrieved){
+                        deleteCase(options.get("ruleSet"), retrievedCase);
+                    }
+                } else if (options.get("results").equals("merge")){
+                    for (String retrievedCase : retrieved){
+                        String mergedInput = mergeCases(retrievedCase, input);
+                        retrievedResults.add(mergedInput);
+                    }
                 }
-                String linkName = "link";
-                if (options.containsKey("resultName")) {
-                    linkName = (String) options.get("resultName");
-                }
-                String linkedInput = addLink(input, first, linkName);
-                retrievedResults.add(linkedInput);
             } else {
-                retrievedResults.addAll(initialQuery(owner, options.get("ruleSet"), query, options));
+               retrievedResults.addAll(retrieved);
             }
-
         }
         return retrievedResults;
     }
@@ -876,7 +888,7 @@ public class Oddball {
                     LOGGER.warn("Processor not loaded:" + stepMap.get("processor"), ex);
                 }
             }
-            if (stepMap.get("results") == null || stepMap.get("results").equals("retain") || stepMap.get("results").equals("addLink")) {
+            if (stepMap.get("results") == null || stepMap.get("results").equals("retain") || stepMap.get("results").equals("addLink")|| stepMap.get("results").equals("merge")) {
                 results = interimResults;
             } else if (stepMap.get("results").contains("store:")) {
                 storedResults.put(stepMap.get("results"), interimResults);
@@ -901,6 +913,25 @@ public class Oddball {
         baseMap.put(resultName, linkId);
         return JSONUtil.map2json(baseMap);
     }
+
+    private void deleteCase(String ruleSetName, String caseString) throws JsonParseException, RuleSetNotLoadedException {
+        Map<String, Object> caseMap = JSONUtil.json2map(caseString);
+//            baseMap.put(resultName, "test");
+        String caseId = (String) caseMap.get("_id");
+        deleteCaseById(ruleSetName, caseString, null);
+    }
+
+    private String mergeCases(String caseA, String caseB) throws JsonParseException{
+        Map<String, Object> caseMapA = JSONUtil.json2map(caseA);
+        LOGGER.debug(caseMapA.toString());
+        Map<String, Object> caseMapB = JSONUtil.json2map(caseB);
+        LOGGER.debug(caseMapB.toString());
+        caseMapB = new OddUtil().mergeMaps(caseMapA, caseMapB);
+        LOGGER.debug(caseMapB.toString());
+        //caseMapB.putAll(caseMapA);
+        return JSONUtil.map2json(caseMapB);
+    }
+
 
     private String getDefaultedTransformer(String ruleSetName, Map<String, String> options) {
         String transformerStr = options.get("transformer");
@@ -1103,10 +1134,15 @@ public class Oddball {
         }
     }
 
-    public Collection<String> deleteCaseById(String ruleSetName, String id, Map<String, String> options) throws RuleSetNotLoadedException, DaoException, TransformerNotLoadedException {
+    public Collection<String> deleteCaseById(String ruleSetName, String id, Map<String, String> options) throws RuleSetNotLoadedException{
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.ALL;
-        Collection<String> result = ruleSet.getPersist().deleteCaseById(owner, id);
+        Collection<String> result = new HashSet<String>();
+        try {
+            result = ruleSet.getPersist().deleteCaseById(owner, id);
+        } catch (DaoException ex) {
+            java.util.logging.Logger.getLogger(Oddball.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return result;
     }
 

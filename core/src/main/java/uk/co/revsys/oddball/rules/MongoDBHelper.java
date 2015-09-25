@@ -281,6 +281,7 @@ public class MongoDBHelper {
             }
             List<DBObject> foundCases;
             long time = new Date().getTime();
+            LOGGER.debug(query.toString());
             if (skipCount <= 0) {
                 foundCases = cases.getDBCollection().find(query).sort(sort).limit(retrieveCount).toArray();
             } else {
@@ -349,10 +350,14 @@ public class MongoDBHelper {
     }
 
     public Collection<String> deleteCaseById(String owner, String id) throws DaoException {
-        cases.remove("{_id: #}", new ObjectId(id));
-        String response = "case removed";
         ArrayList<String> caseList = new ArrayList<String>();
-        caseList.add(response);
+        try {
+            cases.remove("{_id: #}", new ObjectId(id));
+            String response = "case removed";
+            caseList.add(response);
+        } catch (Exception e) {
+            LOGGER.debug(id+"not found for delete");
+        }
         return caseList;
     }
 

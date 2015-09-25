@@ -113,8 +113,9 @@ public class Episode {
                 if (!customDataWatchMaps.containsKey(key)) {
                     customDataWatchMaps.put(key, new HashMap<Long, String>());
                 }
-                if ((String) customData.get(key) != null) {
-                    (customDataWatchMaps.get(key)).put(thisTime, (String) customData.get(key));
+//                if ((String) customData.get(key) != null) {
+                if (customData.get(key).toString() != null) {
+                    (customDataWatchMaps.get(key)).put(thisTime, customData.get(key).toString());
                 } else {
                     (customDataWatchMaps.get(key)).put(thisTime, "null");
                 }

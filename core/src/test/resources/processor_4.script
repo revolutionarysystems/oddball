@@ -1,0 +1,5 @@
+[
+    {"retriever":"caseRetriever", "ruleSet":"TestMongoEvent", "results":"merge"},
+    {"transformer":"event.json"},
+    {"aggregator":"episode", "timeOutReference":"2291972376643"}
+]

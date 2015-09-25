@@ -10,6 +10,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +80,8 @@ public class OddUtil {
     }
     
     public String replacePlaceholders(String templateString, Map<String, Object> aCase){
+        LOGGER.debug(templateString);
+        LOGGER.debug(aCase.toString());
         while (templateString.substring(1).contains("<")){
             templateString=replacePlaceholder(templateString, aCase);
         }
@@ -127,6 +131,16 @@ public class OddUtil {
         return false;
     }
 
+    public Map mergeMaps(Map mapA, Map mapB){
+        for (Entry eA : (Set<Entry>)mapA.entrySet()){
+            if (eA.getValue() instanceof Map && mapB.containsKey(eA.getKey())){
+                mapB.put(eA.getKey(), mergeMaps((Map)mapA.get(eA.getKey()), (Map)mapB.get(eA.getKey())));
+            } else {
+                mapB.put(eA.getKey(), eA.getValue());
+            }
+        }
+        return mapB;
+    }
     
     public Map<String, String> flatten (Map<String, Object> aMap){
         return flatten(aMap, false);
