@@ -200,6 +200,7 @@ public class RuleSetImpl implements RuleSet {
                             if (duplicateQuery != null) {
                                 caseDuplicateQuery = new OddUtil().replacePlaceholders(duplicateQuery, (Map<String, Object>) aCase.getContentObject());
                             }
+                            
                             String id = localPersist.checkAlreadyExists(caseDuplicateQuery);
                             if (id!=null){
                                 persistCase=op.getEnrichedCase(ruleSetStr, aCase, false, id, retag);
@@ -216,7 +217,7 @@ public class RuleSetImpl implements RuleSet {
                         localPersist.insertCase(persistCase);
                     }
                     if (caseAvoidQuery != null && localPersist.checkAlreadyExists(caseAvoidQuery) != null) {
-                        LOGGER.debug("duplicate: avoiding persist");
+//                        LOGGER.debug("duplicate: avoiding persist");
                         return null;
                     }
                     //LOGGER.debug("inserting:"+duplicateQuery);

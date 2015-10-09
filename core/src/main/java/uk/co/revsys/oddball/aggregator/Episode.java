@@ -36,6 +36,7 @@ public class Episode {
 //        this.customDataWatches = new HashMap<String, ArrayList<String>>();
         this.customDataWatchMaps = new HashMap<String, Map<Long, String>>();
         this.watchValues = new HashMap<String, String>();
+        this.parametersMap = new HashMap<String, String>();
         this.customDataWatchValues = new HashMap<String, String>();
         //alerts = new HashMap<String, Object>();
         if (watchList != null && !watchList.equals("")) {
@@ -72,6 +73,7 @@ public class Episode {
 //        this.customDataWatches = (HashMap<String, ArrayList<String>>) episodeDetails.get("customDataWatches");
         this.customDataWatchMaps = buildWatchMaps((HashMap<String, ArrayList<String>>) episodeDetails.get("customDataWatches"), signals);
         this.watchValues = (HashMap<String, String>) episodeDetails.get("watchValues");
+        this.parametersMap = (HashMap<String, String>) episodeDetails.get("parameters");
         this.customDataWatchValues = (HashMap<String, String>) episodeDetails.get("customDataWatchValues");
         //this.alerts = (HashMap<String, Object>) episodeDetails.get("alerts");
     }
@@ -547,6 +549,7 @@ public class Episode {
         }
         episodeMap.put("watches", watches);
         episodeMap.put("watchValues", watchValues);
+        episodeMap.put("parameters", parametersMap);
         episodeMap.put("alerts", getAlerts(watches));
         episodeMap.put("customDataWatches", customDataWatches);
         episodeMap.put("customDataWatchValues", customDataWatchValues);
@@ -579,6 +582,7 @@ public class Episode {
 //    final private Map<String, ArrayList<String>> customDataWatches;
     final private Map<String, Map<Long, String>> customDataWatchMaps;
     final private Map<String, String> watchValues;
+    final private Map<String, String> parametersMap;
     final private Map<String, String> customDataWatchValues;
 //    final private Map<String, Object> alerts;
 

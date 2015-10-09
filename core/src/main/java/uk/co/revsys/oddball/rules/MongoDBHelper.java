@@ -281,12 +281,14 @@ public class MongoDBHelper {
             }
             List<DBObject> foundCases;
             long time = new Date().getTime();
-            LOGGER.debug(query.toString());
+//            LOGGER.debug(cases.toString());
+//            LOGGER.debug(query.toString());
             if (skipCount <= 0) {
                 foundCases = cases.getDBCollection().find(query).sort(sort).limit(retrieveCount).toArray();
             } else {
                 foundCases = cases.getDBCollection().find(query).sort(sort).skip(skipCount).limit(retrieveCount).toArray();
             }
+//            LOGGER.debug(foundCases.toString());
             for (DBObject foundCase : foundCases) {
                 Map result = JSONUtil.json2map(foundCase.toString());
                 result.put("_id", foundCase.get("_id").toString());

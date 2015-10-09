@@ -6,6 +6,7 @@
 
 package uk.co.revsys.oddball.util;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -80,8 +81,8 @@ public class OddUtil {
     }
     
     public String replacePlaceholders(String templateString, Map<String, Object> aCase){
-        LOGGER.debug(templateString);
-        LOGGER.debug(aCase.toString());
+//        LOGGER.debug(templateString);
+//        LOGGER.debug(aCase.toString());
         while (templateString.substring(1).contains("<")){
             templateString=replacePlaceholder(templateString, aCase);
         }
@@ -134,7 +135,16 @@ public class OddUtil {
     public Map mergeMaps(Map mapA, Map mapB){
         for (Entry eA : (Set<Entry>)mapA.entrySet()){
             if (eA.getValue() instanceof Map && mapB.containsKey(eA.getKey())){
-                mapB.put(eA.getKey(), mergeMaps((Map)mapA.get(eA.getKey()), (Map)mapB.get(eA.getKey())));
+                if (mapB.get(eA.getKey()) instanceof Map){
+                    mapB.put(eA.getKey(), mergeMaps((Map)mapA.get(eA.getKey()), (Map)mapB.get(eA.getKey())));
+                } else {
+                    try {
+                        mapB.put(eA.getKey(), mergeMaps((Map)mapA.get(eA.getKey()), JSONUtil.json2map(mapB.get(eA.getKey()).toString())));
+                    } 
+                    catch (JsonParseException ex){
+                        LOGGER.warn("Could not parse string for map:"+eA.getKey().toString());
+                    }
+                }
             } else {
                 mapB.put(eA.getKey(), eA.getValue());
             }

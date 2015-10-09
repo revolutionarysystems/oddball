@@ -40,6 +40,7 @@ public class SummaryIdentifier implements CaseIdentifier{
         Map<String, Object> identification = new HashMap<String, Object>();
         try {
             List<Summary> comparisons = sa.summariseCases(comparisonCases, options, resourceRepository);
+//            LOGGER.debug(options.toString());
             if (comparisons.size()==0){
                 throw new InvalidTimePeriodException("No valid time periods for Summary Identifier");
             }
@@ -140,6 +141,11 @@ public class SummaryIdentifier implements CaseIdentifier{
         catch (AggregationException ex){
             throw new ComparisonException(ex.getMessage());
         }
+        catch (InvalidTimePeriodException ex){
+            Map<String, Object> caseMap = JSONUtil.json2map(caseString);
+            caseMap.put("identification", "insufficient history");
+            return caseMap;
+        }
 //        String summaryDefinitionName = options.get("summaryDefinition");
 //        try {
 //            this.summaryDefinition = new SummaryDefinition(summaryDefinitionName, resourceRepository);
@@ -154,6 +160,7 @@ public class SummaryIdentifier implements CaseIdentifier{
     private Map<String, Object> tryIndicator(RuleSet ruleSet, SummaryAggregator sa, Map<String, Object> caseMap, Map<String, Object> indicator, String identificationPeriod, Map<String, Map<String, Object>> assessment, Map<String, String> options,  Oddball ob, ResourceRepository resourceRepository) throws UnknownBinException, IOException, DaoException, InvalidTimePeriodException, TransformerNotLoadedException, AggregationException{
         int candidateCount = assessment.size();
 //        LOGGER.debug("Trying identification:"+indicator.toString());
+//        LOGGER.debug(assessment.toString());
         ArrayList<String> includeFields = (ArrayList<String>) indicator.get("include-fields");
         ArrayList<String> queryFields = (ArrayList<String>) indicator.get("query-fields");
         int totalPowers = 0;
@@ -166,6 +173,7 @@ public class SummaryIdentifier implements CaseIdentifier{
 
         Double totalInfo1 = 0.0;
         int infoFactors1 = 0;
+        
         for (String field : assessment.keySet()){
             try {
                 Map<String, Object> fieldAssessment = assessment.get(field);
@@ -189,6 +197,7 @@ public class SummaryIdentifier implements CaseIdentifier{
             }
             catch (NullPointerException e){
                 LOGGER.warn("Identity indicator failed:"+indicator.get("name"), e);
+                LOGGER.debug("failed", e);
             }
                     
                     
@@ -267,6 +276,7 @@ public class SummaryIdentifier implements CaseIdentifier{
                 outcome.put("strength", relInfo);
                 outcome.put("rank", indicator.get("rank"));
                 outcome.put("support", comparison.asMap());
+                outcome.put("assessment", assessment);
                 return outcome;
             }
         } else {

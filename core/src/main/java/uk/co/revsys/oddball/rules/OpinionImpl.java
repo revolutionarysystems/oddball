@@ -189,7 +189,7 @@ public class OpinionImpl implements Opinion{
 
 
     @Override
-    public String enrichTaggedCase(String ruleSet, Case aCase, boolean generateUid, String forcedUid) {
+    public String enrichTaggedCase(String ruleSet, Case aCase, boolean generateUid, String forcedUid){
         String caseStr = aCase.getJSONisedContent();
         Map caseMap = new HashMap();
         caseMap.putAll((HashMap)aCase.getContentObject());
@@ -199,7 +199,20 @@ public class OpinionImpl implements Opinion{
         String timeStr = Long.toString(assessTime);
         String caseTimeStr = null;
         Map<String, String>  caseTimeMap = new HashMap<String, String>();
-        Map<String, Object> subCaseMap = (Map<String, Object>)caseMap.get("case");
+        Map<String, Object> subCaseMap = null;
+        try {
+            subCaseMap = (Map<String, Object>)caseMap.get("case");
+        } 
+        catch (ClassCastException e){
+            try {
+                subCaseMap = JSONUtil.json2map((String)caseMap.get("case"));
+            }
+            catch (JsonParseException ex){
+                LOGGER.warn("Could not parse case string");
+                subCaseMap = new HashMap<String, Object>();
+            }
+        }
+            
         try{
             if (subCaseMap.containsKey("time")&& subCaseMap.get("time")!=null){
                 caseTimeStr = subCaseMap.get("time").toString();

@@ -78,6 +78,9 @@ public class Summary {
         for (String accName : accumulators.keySet()){
             Object propertyValue = null;
             String propertyPath = properties.get(accName);
+//            SummaryAggregator.LOGGER.debug("assessing");
+//            SummaryAggregator.LOGGER.debug(propertyPath);
+//            SummaryAggregator.LOGGER.debug(caseMap.toString());
             Map subMap = caseMap;
             while (propertyPath.contains(".")&& subMap!=null){
 //                System.out.println(subMap);

@@ -119,6 +119,8 @@ public class SummaryAggregator implements Aggregator{
 //        LOGGER.debug(Long.toString(periodms));
 //        LOGGER.debug(Long.toString(reportStart));
 //        LOGGER.debug(Long.toString(reportEnd));
+//        LOGGER.debug("summary");
+//        LOGGER.debug(summaryDefinition.getDefinition().toString());
         for (int i=periods-1 ; i>=endIteration; i--){
             try {
                 summaryList.add(new Summary(options.get("owner"), reportStart+i*periodms, periodms, summaryDefinition));

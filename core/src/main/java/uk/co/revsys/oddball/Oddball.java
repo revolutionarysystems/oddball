@@ -497,7 +497,7 @@ public class Oddball {
 //                        LOGGER.debug("EpisodeMap:"+episodeMap.toString());
 //                        episodeMap.put("case", (Map<String, Object>) inc);
 //                        LOGGER.debug("EpisodeMap:" + episodeMap.toString());
-                        LOGGER.debug("inc:" + inc.toString());
+//                        LOGGER.debug("inc:" + inc.toString());
                         String incString = JSONUtil.map2json((Map) inc);
                         incrementedResults.add(incString);
                     }
@@ -505,7 +505,7 @@ public class Oddball {
 //                    LOGGER.debug("New Episode:");
                     ArrayList<Map> incremented = ag.incrementAggregation(result, episodeMap, options);
                     for (Object inc : incremented) {
-                        LOGGER.debug("EpisodeMap:" + inc.toString());
+//                        LOGGER.debug("Incremented:" + inc.toString());
                         String incString = JSONUtil.map2json((Map) inc);
                         incrementedResults.add(incString);
                     }
@@ -694,8 +694,12 @@ public class Oddball {
                     query = ou.replacePlaceholders(query, caseMap);
                 }
             }
+//            LOGGER.debug(options.get("ruleSet"));
+//            LOGGER.debug(query);
             Collection<String> retrieved = initialQuery(owner, options.get("ruleSet"), query, options);
+//            LOGGER.debug(retrieved.toString());
             if (options.containsKey("results")){
+//                LOGGER.debug(options.get("results"));
                 if (options.get("results").equals("addLink") && !input.equals("{}")){
                     String first = "{\"_id\":\"null\"}";
                     if (retrieved.iterator().hasNext()) {
@@ -716,11 +720,15 @@ public class Oddball {
                         String mergedInput = mergeCases(retrievedCase, input);
                         retrievedResults.add(mergedInput);
                     }
+                } else {
+                   retrievedResults.addAll(retrieved);
                 }
             } else {
                retrievedResults.addAll(retrieved);
             }
         }
+//        LOGGER.debug("retriever found");
+//        LOGGER.debug(Integer.toString(retrievedResults.size()));
         return retrievedResults;
     }
 
@@ -923,11 +931,11 @@ public class Oddball {
 
     private String mergeCases(String caseA, String caseB) throws JsonParseException{
         Map<String, Object> caseMapA = JSONUtil.json2map(caseA);
-        LOGGER.debug(caseMapA.toString());
+//        LOGGER.debug(caseMapA.toString());
         Map<String, Object> caseMapB = JSONUtil.json2map(caseB);
-        LOGGER.debug(caseMapB.toString());
+//        LOGGER.debug(caseMapB.toString());
         caseMapB = new OddUtil().mergeMaps(caseMapA, caseMapB);
-        LOGGER.debug(caseMapB.toString());
+//        LOGGER.debug(caseMapB.toString());
         //caseMapB.putAll(caseMapA);
         return JSONUtil.map2json(caseMapB);
     }
@@ -1049,12 +1057,15 @@ public class Oddball {
                     if (options.get("transformer") != null) {
                         interimResult = transformResults(interimResult, getDefaultedTransformer(path + ruleSetName, options));
                     }
+//                    LOGGER.debug("Initial Query");
+//                    LOGGER.debug(interimResult.toString());
                     result.addAll(interimResult);
                 } catch (IOException ex) {
                     LOGGER.error("Can't find cases for query:" + query, ex);
                 }
             }
         }
+        LOGGER.debug(result.toString());
         return result;
     }
 
