@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -155,10 +156,20 @@ public class OddballRestService extends AbstractRestService {
         return Response.ok().build();
     }
 
+    @POST
+    @Path("/{ruleSet}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response applyRuleSetPost(@PathParam("ruleSet") String ruleSet, @FormParam("ruleSet") String altRuleSet, @FormParam("case") String caseStr, @FormParam("inboundTransformer") String inboundTransformer, @FormParam("persist") String persist, @FormParam("duplicateRule") String duplicateRule, @FormParam("avoidRule") String avoidRule, @FormParam("ensureIndexes") String ensureIndexes, @Context UriInfo ui) throws IOException {
+        return applyRuleSet(ruleSet, altRuleSet, caseStr, inboundTransformer, persist, duplicateRule, avoidRule, ensureIndexes, ui);
+    }
+    
     @GET
     @Path("/{ruleSet}")
     @Produces(MediaType.TEXT_PLAIN)
     public Response applyRuleSet(@PathParam("ruleSet") String ruleSet, @QueryParam("ruleSet") String altRuleSet, @QueryParam("case") String caseStr, @QueryParam("inboundTransformer") String inboundTransformer, @QueryParam("persist") String persist, @QueryParam("duplicateRule") String duplicateRule, @QueryParam("avoidRule") String avoidRule, @QueryParam("ensureIndexes") String ensureIndexes, @Context UriInfo ui) throws IOException {
+        System.out.println("applyRuleSet");
+        System.out.println("ruleSet = " + ruleSet);
+        System.out.println("case = " + caseStr);
         HashMap<String, String> options = decodeOptions(ui);
         if (ruleSet == null || ruleSet.equals("null")) {
             ruleSet = altRuleSet;
