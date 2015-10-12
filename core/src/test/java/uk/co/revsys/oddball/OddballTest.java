@@ -1550,6 +1550,7 @@ public class OddballTest {
         options.put("processorChain", "[{\"transformer\":\"event.json\"},{\"aggregator\":\"episode\", \"timeOutReference\":\"" + Long.toString(future) + "\"}, {\"tagger\":\"TestMongoEpisode\"}]");
         Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
         assertTrue(cases0.size() > 0);
+        System.out.println(cases0.size());
         for (String aCase : cases0) {
             System.out.println(aCase);
             Map episodeMap = JSONUtil.json2map(aCase);
@@ -1701,6 +1702,7 @@ public class OddballTest {
         options.put("processorChain", "[{\"retriever\":\"caseRetriever\"},{\"transformer\":\"event.json\"},{\"aggregator\":\"episode\", \"timeOutReference\":\"" + Long.toString(future) + "\"}]");
         Collection<String> cases0 = instance.findQueryCases(ruleSetName, "{}", options);
         assertTrue(cases0.size() > 0);
+        System.out.println(cases0.size());
         for (String aCase : cases0) {
             System.out.println(aCase);
             Map episodeMap = JSONUtil.json2map(aCase);

@@ -517,7 +517,7 @@ public class Oddball {
         } catch (IllegalAccessException e) {
             throw new AggregationException("Could not instantiate aggregator: " + options.get("incrementor"), e);
         } catch (NullPointerException e) {
-            LOGGER.debug("NPE", e);
+            LOGGER.trace("NPE", e);
             throw new AggregationException("Problem with aggregator: " + options.get("incrementor"), e);
         }
     }

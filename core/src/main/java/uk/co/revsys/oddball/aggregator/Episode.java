@@ -389,6 +389,7 @@ public class Episode {
         ArrayList timings = new ArrayList<Integer>();
         HashMap<String, Map<Long, String>> watchMaps = new HashMap<String, Map<Long, String>>();
         int i = 0;
+        int n = signals.size();
         for (Object signal : signals) {
             Long time = (Long) ((Map<String, Object>) signal).get("time");
             for (String property : watches.keySet()){
@@ -400,7 +401,7 @@ public class Episode {
                 } else if (watches.get(property).size()==1){
                     watchMaps.get(property).put(time, watches.get(property).get(0));
                 } else {
-                    watchMaps.get(property).put(time, watches.get(property).get(i));
+                    watchMaps.get(property).put(time, watches.get(property).get(Math.min(i, n-1)));
                 }
             }
             i++;
