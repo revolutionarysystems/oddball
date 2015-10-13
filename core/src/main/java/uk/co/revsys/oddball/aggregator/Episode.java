@@ -323,7 +323,14 @@ public class Episode {
         int i = 0;
         for (Object signal : signals) {
             Long time = (Long) ((Map<String, Object>) signal).get("time");
-            stateMap.put(time, states.get(i * 2));
+            String state = "?";
+            try {
+                state = states.get(i * 2);
+            }
+            catch(ArrayIndexOutOfBoundsException e){
+                // use "?"
+            }
+            stateMap.put(time, state);
             i++;
         }
         return stateMap;
