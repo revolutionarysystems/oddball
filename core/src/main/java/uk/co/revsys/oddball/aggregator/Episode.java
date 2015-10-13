@@ -97,7 +97,7 @@ public class Episode {
         signal.put("time", thisTime);
         signals.add(signal);
 //        this.stateCodes.append(code);
-        this.stateCodeMap.put(thisTime, code);
+            this.stateCodeMap.put(thisTime, code);
         this.endTime = thisTime;
         this.lastTagTime = thisTagTime;
         this.timeoutLimit = timeoutLimit;

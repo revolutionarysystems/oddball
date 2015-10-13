@@ -1065,7 +1065,7 @@ public class Oddball {
                 }
             }
         }
-        LOGGER.debug(result.toString());
+        //LOGGER.debug(result.toString());
         return result;
     }
 
