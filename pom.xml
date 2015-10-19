@@ -15,6 +15,7 @@
             <module>consumer-kinesis</module>
             <module>worker</module>
             <module>service</module>        
+            <module>client-java</module>  
             <module>client-osgi</module>  
             <module>camel</module>  
             <module>enricher</module>  

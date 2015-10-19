@@ -14,3 +14,5 @@
 /worker/src/main/resources/oddball.properties
 /service/src/main/resources/oddball.properties
 /enricher/target
+/consumer-kinesis - Copy/target/
+/client-java/target/
