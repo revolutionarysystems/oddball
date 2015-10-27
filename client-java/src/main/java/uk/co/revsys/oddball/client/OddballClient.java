@@ -67,6 +67,7 @@ public class OddballClient {
         appendParameter(parameters, "selector", query.getSelector());
         appendParameter(parameters, "ownerProperty", query.getOwnerProperty());
         appendParameter(parameters, "query", query.getQuery());
+        appendParameter(parameters, "forEach", query.getForEach());
         httpRequest.setParameters(parameters);
         HttpResponse response = httpClient.invoke(httpRequest);
         String responseText = readResponse(response);
