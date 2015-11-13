@@ -697,7 +697,14 @@ public class Oddball {
                         caseMap = (Map<String, Object>) JSONUtil.json2map(input);
                         query = query.substring(1);
                     } else {
-                        caseMap = (Map<String, Object>) JSONUtil.json2map(input).get("case");
+                        LOGGER.debug(JSONUtil.json2map(input).get("case").toString());
+                        Object caseObj = JSONUtil.json2map(input).get("case");
+                        try {
+                            caseMap = (Map<String, Object>) caseObj;
+                        }
+                        catch (ClassCastException cce){
+                            caseMap = (Map<String, Object>) JSONUtil.json2map(caseObj.toString());
+                        }
                     }
                 }
                 if (caseMap != null) {
