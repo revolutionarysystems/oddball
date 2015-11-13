@@ -326,6 +326,8 @@ public class MongoDBHelper {
         WriteResult wr = cases.getDBCollection().remove(query);
     }
 
+
+    
     public Collection<String> findCaseById(String owner, String id) throws DaoException {
         ArrayList<String> caseList = new ArrayList<String>();
         Find found;

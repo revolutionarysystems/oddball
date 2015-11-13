@@ -99,7 +99,7 @@ public class Oddball {
             saveRuleSet = ensureRuleSet(options.get("saveInto"));
         }
         String taggedCase = tagger.tagCase(aCase, options, persistOption, duplicateQuery, avoidQuery, saveRuleSet);
-        if (taggedCase!=null){
+        if (taggedCase != null) {
             results.add(taggedCase);
             if (options.containsKey("processor")) {
                 LOGGER.debug("Applying processor:" + options.get("processor"));
@@ -177,10 +177,10 @@ public class Oddball {
     private RuleSet loadRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException {
         if (ruleSetName.contains(".rules")) {
             try {
-        //        System.out.println("Looks like JSON");
+                //        System.out.println("Looks like JSON");
                 return RuleSetImpl.loadJSONRuleSet(ruleSetName, resourceRepository);
             } catch (RuleSetNotLoadedException e) {   // not a json file
-        //        System.out.println("Failed to parse JSON");
+                //        System.out.println("Failed to parse JSON");
                 return RuleSetImpl.loadRuleSet(ruleSetName, resourceRepository);
             }
         } else {
@@ -405,7 +405,7 @@ public class Oddball {
         } catch (IllegalAccessException e) {
             throw new FilterException("Illegal Access Exception applying filter:" + filterQuery);
         } catch (IOException e) {
-           throw new FilterException("IOException applying filter:" + filterQuery);
+            throw new FilterException("IOException applying filter:" + filterQuery);
         }
         return filtered;
     }
@@ -483,7 +483,7 @@ public class Oddball {
         ArrayList<String> incrementedResults = new ArrayList<String>();
         Class aggregatorClass = new AggregatorMap().get(options.get("incrementor"));
         Map<String, Object> episodeMap = null;
-        if (episodes!=null && episodes.iterator().hasNext()) {
+        if (episodes != null && episodes.iterator().hasNext()) {
             String episode = episodes.iterator().next();
             episodeMap = JSONUtil.json2map(episode);
         }
@@ -537,7 +537,7 @@ public class Oddball {
         }
 //        LOGGER.debug("id required:"+ Boolean.toString(idRequired));
         ArrayList<String> comparedResults = new ArrayList<String>();
-    
+
         if (compareRequired) {
             Collection<String> comparisonResults = comparisonResults(ruleSet, query, options);
 
@@ -573,9 +573,13 @@ public class Oddball {
 //        LOGGER.debug("id required:" + Boolean.toString(idRequired));
         if (options.containsKey("redo") && options.get("redo").equals("false")) {
             idRequired = false;     // if the redo:false option is set, assume id NOT required
+            String identificationLabel = "identification";
+            if (options.containsKey("identificationLabel")) {
+                identificationLabel = options.get("identificationLabel");
+            }
 //            LOGGER.debug("id required:"+ Boolean.toString(idRequired));
             for (String result : results) {
-                if (!result.contains("identification")) { // if one or more cases is missing the id, in which case it IS needed
+                if (!result.contains(identificationLabel)) { // if one or more cases is missing the id, in which case it IS needed
                     idRequired = true;
                 }
             }
@@ -687,20 +691,25 @@ public class Oddball {
             if (options.containsKey("query")) {
                 query = options.get("query").replace("'", "\"");
                 OddUtil ou = new OddUtil();
-                if (caseMap == null) {
-                    caseMap = (Map<String, Object>) JSONUtil.json2map(input).get("case");
+//                if (caseMap == null) {
+                if (!input.equals("{}")) {
+                    if (query.indexOf("/") == 0) {
+                        caseMap = (Map<String, Object>) JSONUtil.json2map(input);
+                        query = query.substring(1);
+                    } else {
+                        caseMap = (Map<String, Object>) JSONUtil.json2map(input).get("case");
+                    }
                 }
                 if (caseMap != null) {
                     query = ou.replacePlaceholders(query, caseMap);
                 }
             }
-//            LOGGER.debug(options.get("ruleSet"));
-//            LOGGER.debug(query);
             Collection<String> retrieved = initialQuery(owner, options.get("ruleSet"), query, options);
-//            LOGGER.debug(retrieved.toString());
-            if (options.containsKey("results")){
+//            LOGGER.debug("query: " + query);
+//            LOGGER.debug("retriever found: " + Integer.toString(retrieved.size()));
+            if (options.containsKey("results")) {
 //                LOGGER.debug(options.get("results"));
-                if (options.get("results").equals("addLink") && !input.equals("{}")){
+                if (options.get("results").equals("addLink") && !input.equals("{}")) {
                     String first = "{\"_id\":\"null\"}";
                     if (retrieved.iterator().hasNext()) {
                         first = (String) retrieved.iterator().next();
@@ -711,20 +720,20 @@ public class Oddball {
                     }
                     String linkedInput = addLink(input, first, linkName);
                     retrievedResults.add(linkedInput);
-                } else if (options.get("results").equals("delete")){
-                    for (String retrievedCase : retrieved){
+                } else if (options.get("results").equals("delete")) {
+                    for (String retrievedCase : retrieved) {
                         deleteCase(options.get("ruleSet"), retrievedCase);
                     }
-                } else if (options.get("results").equals("merge")){
-                    for (String retrievedCase : retrieved){
-                        String mergedInput = mergeCases(retrievedCase, input);
+                } else if (options.get("results").equals("merge")) {
+                    for (String retrievedCase : retrieved) {
+                        String mergedInput = mergeCases(retrievedCase, input, true);
                         retrievedResults.add(mergedInput);
                     }
                 } else {
-                   retrievedResults.addAll(retrieved);
+                    retrievedResults.addAll(retrieved);
                 }
             } else {
-               retrievedResults.addAll(retrieved);
+                retrievedResults.addAll(retrieved);
             }
         }
 //        LOGGER.debug("retriever found");
@@ -743,6 +752,9 @@ public class Oddball {
     private Collection<String> applyProcessorChain(Iterable<String> results, Map<String, String> options, RuleSet ruleSet, String query, String owner, Map<String, Object> caseMap) throws ComparisonException, InvalidTimePeriodException, UnknownBinException, DaoException, TransformerNotLoadedException, AggregationException, RuleSetNotLoadedException, InvalidCaseException, FilterException, IdentificationSchemeNotLoadedException, ProcessorNotLoadedException, OwnerMissingException, JsonParseException, IOException, ParseException {
         ArrayList<String> processedResults = new ArrayList<String>();
         ArrayList<String> interimResults = new ArrayList<String>();
+//        LOGGER.debug("incoming results");
+//        LOGGER.debug(results.toString());
+
         Map<String, ArrayList<String>> storedResults = new HashMap<String, ArrayList<String>>();
         String processorChain = options.get("processorChain");
         String ownerDir = "";
@@ -879,6 +891,8 @@ public class Oddball {
                     interimResults.addAll((Collection) results);
                     LOGGER.warn("Retag ruleSet " + stepMap.get("retagger") + " not loaded - process continues", e);
                 }
+//                LOGGER.debug("interim results");
+//                LOGGER.debug(interimResults.toString());
             }
             if (stepMap.get("filter") != null) {
                 interimResults.addAll(filterResults(results, (Map<String, String>) stepMap));
@@ -896,7 +910,7 @@ public class Oddball {
                     LOGGER.warn("Processor not loaded:" + stepMap.get("processor"), ex);
                 }
             }
-            if (stepMap.get("results") == null || stepMap.get("results").equals("retain") || stepMap.get("results").equals("addLink")|| stepMap.get("results").equals("merge")) {
+            if (stepMap.get("results") == null || stepMap.get("results").equals("retain") || stepMap.get("results").equals("addLink") || stepMap.get("results").equals("merge")) {
                 results = interimResults;
             } else if (stepMap.get("results").contains("store:")) {
                 storedResults.put(stepMap.get("results"), interimResults);
@@ -904,6 +918,11 @@ public class Oddball {
             } else { //revert
                 interimResults = (ArrayList<String>) results;
             }
+//            LOGGER.debug("step results=");
+//            LOGGER.debug(interimResults.toString());
+//            LOGGER.debug(results.toString());
+            System.out.println("results=");
+            System.out.println(interimResults.toString());
             //LOGGER.debug(step.toString());
         }
 //        } catch (IOException ex) {
@@ -929,17 +948,22 @@ public class Oddball {
         deleteCaseById(ruleSetName, caseString, null);
     }
 
-    private String mergeCases(String caseA, String caseB) throws JsonParseException{
+    private String mergeCases(String caseA, String caseB, boolean keepId) throws JsonParseException {
         Map<String, Object> caseMapA = JSONUtil.json2map(caseA);
 //        LOGGER.debug(caseMapA.toString());
+//        System.out.println(caseMapA.toString());
         Map<String, Object> caseMapB = JSONUtil.json2map(caseB);
 //        LOGGER.debug(caseMapB.toString());
-        caseMapB = new OddUtil().mergeMaps(caseMapA, caseMapB);
-//        LOGGER.debug(caseMapB.toString());
+//        System.out.println(caseMapB.toString());
+        Map<String, Object> caseMapC = new OddUtil().mergeMaps(caseMapA, caseMapB);
+        if (keepId) {
+            caseMapC.put("_id", caseMapB.get("_id"));
+        }
+//        LOGGER.debug(caseMapC.toString());
+//        System.out.println(caseMapC.toString());
         //caseMapB.putAll(caseMapA);
-        return JSONUtil.map2json(caseMapB);
+        return JSONUtil.map2json(caseMapC);
     }
-
 
     private String getDefaultedTransformer(String ruleSetName, Map<String, String> options) {
         String transformerStr = options.get("transformer");
@@ -1145,7 +1169,7 @@ public class Oddball {
         }
     }
 
-    public Collection<String> deleteCaseById(String ruleSetName, String id, Map<String, String> options) throws RuleSetNotLoadedException{
+    public Collection<String> deleteCaseById(String ruleSetName, String id, Map<String, String> options) throws RuleSetNotLoadedException {
         RuleSet ruleSet = ensureRuleSet(ruleSetName);
         String owner = Oddball.ALL;
         Collection<String> result = new HashSet<String>();

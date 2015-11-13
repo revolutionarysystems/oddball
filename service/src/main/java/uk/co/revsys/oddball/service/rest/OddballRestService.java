@@ -436,8 +436,10 @@ public class OddballRestService extends AbstractRestService {
         try {
             String[] ruleSetNames = ruleSets.split(",");
             for (String ruleSet : ruleSetNames) {
-                if (options.get("action") != null && options.get("action").equals("delete")) {
-                    oddball.deleteQueryCases(ruleOwnerPrefix + ruleSet.trim(), query, options);
+                if (options.containsKey("action")){
+                    if (options.get("action").equals("delete")){
+                        oddball.deleteQueryCases(ruleOwnerPrefix + ruleSet.trim(), query, options);
+                    }
                 } else {
                     if (options.get("forEach") != null) {
                         cases.addAll(oddball.findQueryCasesForEach(ruleOwnerPrefix + ruleSet.trim(), query, options));

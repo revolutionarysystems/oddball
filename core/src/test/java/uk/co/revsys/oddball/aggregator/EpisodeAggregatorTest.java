@@ -369,7 +369,7 @@ public class EpisodeAggregatorTest{
         assertTrue(300L==ep.getDuration());
         assertTrue(ep.isOpen());
         System.out.println(ep.asMap());
-        Episode ep2 = new Episode(ep.asMap(), "");
+        Episode ep2 = new Episode(ep.asMap(), "", null);
         assertEquals("A0B0C", ep2.getStateCodes());
         assertTrue(1409579263000L==ep2.getFirstTagTime());
         assertTrue(1409579263300L==ep2.getLastTagTime());
@@ -421,6 +421,70 @@ public class EpisodeAggregatorTest{
             ep = ea.incrementEpisode(event, episodeMap, new HashMap());
             episodeMap = ep.asMap();
         }
+        assertEquals("A0B0C", ep.getStateCodes());
+        assertTrue(1409579263000L==ep.getFirstTagTime());
+        assertTrue(1409579263300L==ep.getLastTagTime());
+        assertTrue(1409579263000L==ep.getStartTime());
+        assertEquals("revsys-master-account", ep.getOwner());
+        assertEquals("user1", ep.getAgent());
+        assertEquals("e47877b6-4f17-4d2d-a6f3-3d35aa919be6", ep.getSeries());
+        assertTrue(1409579263300L==ep.getEndTime());
+        assertTrue(300L==ep.getDuration());
+        assertTrue(ep.isOpen());
+        System.out.println(ep.asMap());
+    }
+    
+    @Test
+    public void testAggregateEventsIncrementallyPlusBaggage() throws EventNotCreatedException, IOException, ParseException {
+        ArrayList<String> events = new ArrayList<String>();
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"A\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6c\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263000\","
+                + "\"tagTime\": \"1409579263000\","
+                + "\"state\": \"Home\"}");
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"B\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6d\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263100\","
+                + "\"tagTime\": \"1409579263100\","
+                + "\"state\": \"Info\"}");
+        events.add("{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"C\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6e\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263300\","
+                + "\"tagTime\": \"1409579263300\","
+                + "\"state\": \"Quit\"}");
+        String extraEvent = "{\"accountId\": \"revsys-master-account\","
+                + "\"code\": \"C\","
+                + "\"_id\": \"540478ff6d9f1cf545423e6e\","
+                + "\"sessionId\": \"e47877b6-4f17-4d2d-a6f3-3d35aa919be6\","
+                + "\"userId\": \"user1\","
+                + "\"href\": \"http://www.revolutionarysystems.co.uk/\","
+                + "\"time\": \"1409579263300\","
+                + "\"tagTime\": \"1409579263300\","
+                + "\"state\": \"Quit\"}";
+        EpisodeAggregator ea = new EpisodeAggregator();
+        Map<String, Object> episodeMap = null;
+        Episode ep = null;
+        for (String event: events){
+            ep = ea.incrementEpisode(event, episodeMap, new HashMap());
+            episodeMap = ep.asMap();
+        }
+        episodeMap.put("baggage", "Some extra data to be preserved");
+        ep = ea.incrementEpisode(extraEvent, episodeMap, new HashMap());
+        episodeMap = ep.asMap();
+        System.out.println(episodeMap.toString());
+        assertEquals("Some extra data to be preserved", episodeMap.get("baggage"));
         assertEquals("A0B0C", ep.getStateCodes());
         assertTrue(1409579263000L==ep.getFirstTagTime());
         assertTrue(1409579263300L==ep.getLastTagTime());

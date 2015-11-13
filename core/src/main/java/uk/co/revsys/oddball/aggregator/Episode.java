@@ -8,7 +8,10 @@ package uk.co.revsys.oddball.aggregator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.revsys.oddball.util.OddUtil;
@@ -40,27 +43,69 @@ public class Episode {
         this.customDataWatchValues = new HashMap<String, String>();
         //alerts = new HashMap<String, Object>();
         if (watchList != null && !watchList.equals("")) {
-            String[] watchProperties = watchList.split(",");
-            for (String watchProperty : watchProperties) {
-                watchMaps.put(watchProperty.replace(".", "~"), new HashMap<Long, String>());
+            String [] watchNames = watchList.split(",");
+            for (String watchName : watchNames) {
+                watchProperties.add(watchName);
+                watchMaps.put(watchName, new HashMap<Long, String>());
             }
         }
     }
 
-    public Episode(Map episodeDetails, String customDataTag) {
-        this.owner = (String) episodeDetails.get("owner");
-        this.agent = (String) episodeDetails.get("agent");
-        this.series = (String) episodeDetails.get("series");
-        this.startTime = (Long) episodeDetails.get("startTime");
-        this.endTime = (Long) episodeDetails.get("endTime");
-        this.firstTagTime = (Long) episodeDetails.get("firstTagTime");
-        this.lastTagTime = (Long) episodeDetails.get("lastTagTime");
+    public Episode(Map episodeDetails, String watchList, String customDataTag) {
+        if (watchList != null && !watchList.equals("")) {
+            String [] watchNames = watchList.split(",");
+            for (String watchName : watchNames) {
+                watchProperties.add(watchName);
+            }
+        }
+        for (Entry entry : (Set<Entry>) episodeDetails.entrySet()){
+            if (entry.getKey().equals("owner")){
+                this.owner = (String) entry.getValue();
+            } else if (entry.getKey().equals("agent")){
+                this.agent = (String) entry.getValue();
+            } else if (entry.getKey().equals("series")){
+                this.series = (String) entry.getValue();
+            } else if (entry.getKey().equals("startTime")){
+                this.startTime = (Long) entry.getValue();
+            } else if (entry.getKey().equals("endTime")){
+                this.endTime = (Long) entry.getValue();
+            } else if (entry.getKey().equals("firstTagTime")){
+                this.firstTagTime = (Long) entry.getValue();
+            } else if (entry.getKey().equals("lastTagTime")){
+                this.lastTagTime = (Long) entry.getValue();
+            } else if (entry.getKey().equals("duration")){
+            } else if (entry.getKey().equals("signals")){
+            } else if (entry.getKey().equals("states")){
+            } else if (entry.getKey().equals("status")){
+            } else if (entry.getKey().equals("stateCodes")){
+            } else if (entry.getKey().equals("parameters")){
+            } else if (entry.getKey().equals("watches")){
+            } else if (entry.getKey().equals("customDataWatches")){
+            } else if (entry.getKey().equals("watchValues")){
+            } else if (entry.getKey().equals("customDataWatchValues")){
+            } else if (entry.getKey().equals("timeoutLimit")){
+            } else if (entry.getKey().equals("length")){
+            } else if (entry.getKey().equals("alerts")){
+            } else if (entry.getKey().equals("time")){
+            } else if (entry.getKey().equals("avgWait")){
+            } else {
+//                LOGGER.debug("baggage"+entry.getKey().toString());
+                baggageMap.put((String)entry.getKey(), entry.getValue());
+            }
+        }
+        this.customDataTag = customDataTag;
+//        this.owner = (String) episodeDetails.get("owner");
+//        this.agent = (String) episodeDetails.get("agent");
+//        this.series = (String) episodeDetails.get("series");
+//        this.startTime = (Long) episodeDetails.get("startTime");
+//        this.endTime = (Long) episodeDetails.get("endTime");
+//        this.firstTagTime = (Long) episodeDetails.get("firstTagTime");
+//        this.lastTagTime = (Long) episodeDetails.get("lastTagTime");
         try {
             this.duration = new Long((Integer) episodeDetails.get("duration"));
         } catch (ClassCastException e) {
             this.duration = (Long) episodeDetails.get("duration");
         }
-        this.customDataTag = customDataTag;
         this.signals = (ArrayList<Map<String, Object>>) episodeDetails.get("signals");
         this.stateMap = buildStateMap((ArrayList<String>) episodeDetails.get("states"), signals);
         this.status = Episode.OPEN;
@@ -68,10 +113,10 @@ public class Episode {
             this.status = Episode.CLOSED;
         }
         this.stateCodeMap = buildStateCodeMap((String) episodeDetails.get("stateCodes"), signals);
-//        this.watches = (HashMap<String, ArrayList<String>>) episodeDetails.get("watches");
-        this.watchMaps = buildWatchMaps((HashMap<String, ArrayList<String>>) episodeDetails.get("watches"), signals);
-//        this.customDataWatches = (HashMap<String, ArrayList<String>>) episodeDetails.get("customDataWatches");
-        this.customDataWatchMaps = buildWatchMaps((HashMap<String, ArrayList<String>>) episodeDetails.get("customDataWatches"), signals);
+//        LOGGER.debug("init");
+//        LOGGER.debug(watchProperties.toString());
+        this.watchMaps = buildWatchMaps((HashMap<String, ArrayList<String>>) episodeDetails.get("watches"), signals, watchProperties);
+        this.customDataWatchMaps = buildWatchMaps((HashMap<String, ArrayList<String>>) episodeDetails.get("customDataWatches"), signals, null);
         this.watchValues = (HashMap<String, String>) episodeDetails.get("watchValues");
         this.parametersMap = (HashMap<String, String>) episodeDetails.get("parameters");
         this.customDataWatchValues = (HashMap<String, String>) episodeDetails.get("customDataWatchValues");
@@ -87,6 +132,7 @@ public class Episode {
     public void recordState(String state, String code, long thisTime, long thisTagTime, long timeoutLimit, Map<String, Object> caseMap, String descriptionProperty) {
 //    public void recordState(String state, String code, long thisTime, long thisTagTime) {
         //this.states.add(state);
+//        LOGGER.debug("Recording State");
         this.stateMap.put(thisTime, state);
         Map<String, Object> signal = new HashMap<String, Object>();
         if (descriptionProperty != null) {
@@ -103,10 +149,14 @@ public class Episode {
         this.timeoutLimit = timeoutLimit;
         this.duration = this.endTime - this.startTime;
         for (String watchProperty : watchMaps.keySet()) {
-            Object propertyValue = new OddUtil().getDeepProperty(caseMap, watchProperty.replace("~", "."));
+//            LOGGER.debug(watchProperty);
+//            Object propertyValue = new OddUtil().getDeepProperty(caseMap, watchProperty.replace("~", "."));
+            Object propertyValue = new OddUtil().getDeepProperty(caseMap, watchProperty);
             if (propertyValue != null) {
                 Map<Long, String> watchValuesMap = watchMaps.get(watchProperty);
+//                LOGGER.debug(watchValuesMap.toString());
                 watchMaps.get(watchProperty).put(thisTime, propertyValue.toString());
+//                LOGGER.debug(watchValuesMap.toString());
             }
         }
         if (caseMap.containsKey(customDataTag)) {
@@ -330,6 +380,9 @@ public class Episode {
             catch(ArrayIndexOutOfBoundsException e){
                 // use "?"
             }
+            catch(IndexOutOfBoundsException e){
+                // use "?"
+            }
             stateMap.put(time, state);
             i++;
         }
@@ -386,29 +439,41 @@ public class Episode {
         int i = 0;
         for (Object signal : signals) {
             Long time = (Long) ((Map<String, Object>) signal).get("time");
-            stateCodeMap.put(time, stateCodes.substring(i * 2, i * 2 + 1));
+            String stateCode = "?";
+            try{
+                stateCode = stateCodes.substring(i * 2, i * 2 + 1);
+            }
+            catch(StringIndexOutOfBoundsException e){
+                //just use "?"
+            }
+            stateCodeMap.put(time, stateCode);
             i++;
         }
         return stateCodeMap;
     }
 
-    public Map<String, Map<Long, String>> buildWatchMaps(HashMap<String, ArrayList<String>> watches, ArrayList<Map<String, Object>> signals) {
+    public Map<String, Map<Long, String>> buildWatchMaps(HashMap<String, ArrayList<String>> watches, ArrayList<Map<String, Object>> signals, Set<String> watchProperties) {
         ArrayList timings = new ArrayList<Integer>();
         HashMap<String, Map<Long, String>> watchMaps = new HashMap<String, Map<Long, String>>();
         int i = 0;
         int n = signals.size();
         for (Object signal : signals) {
             Long time = (Long) ((Map<String, Object>) signal).get("time");
-            for (String property : watches.keySet()){
+            if (watchProperties==null){
+                watchProperties = watches.keySet();
+            }
+            for (String property : watchProperties){
                 if (!watchMaps.containsKey(property)){
                     watchMaps.put(property, new HashMap<Long, String>());
                 }
-                if (watches.get(property).size()==0){
+//                LOGGER.debug(watches.toString());
+//                LOGGER.debug(property);
+                if (watches.get(property.replace(".","~")).size()==0){
                     watchMaps.get(property).put(time, null);
-                } else if (watches.get(property).size()==1){
-                    watchMaps.get(property).put(time, watches.get(property).get(0));
+                } else if (watches.get(property.replace(".","~")).size()==1){
+                    watchMaps.get(property).put(time, watches.get(property.replace(".","~")).get(0));
                 } else {
-                    watchMaps.get(property).put(time, watches.get(property).get(Math.min(i, n-1)));
+                    watchMaps.get(property).put(time, watches.get(property.replace(".","~")).get(Math.min(i, (watches.get(property.replace(".","~")).size())-1)));
                 }
             }
             i++;
@@ -416,6 +481,16 @@ public class Episode {
         return watchMaps;
     }
 
+    public boolean containsEvent(String id, Long time){
+        boolean found = false;
+        for (Map<String, Object> signal : getSignals()){
+            if (time==signal.get("time") || signal.get("id").equals(id)){
+                found = true;
+                break;
+            }
+        }
+        return found;
+    }
 
 //    /**
 //     * @param stateCodes the stateCodes to set
@@ -543,17 +618,17 @@ public class Episode {
         Map<String, ArrayList<String>> watches = new HashMap<String, ArrayList<String>> ();
         for (String watchProperty : watchMaps.keySet()) {
             ArrayList condensed = condense(watchMaps.get(watchProperty));
-            watches.put(watchProperty, condensed);
+            watches.put(watchProperty.replace(".", "~"), condensed);
         }
         for (String watchProperty : watchMaps.keySet()) {
-            watchValues.put(watchProperty, finalValue(watchMaps.get(watchProperty)));
+            watchValues.put(watchProperty.replace(".", "~"), finalValue(watchMaps.get(watchProperty)));
         }
         Map<String, ArrayList<String>> customDataWatches = new HashMap<String, ArrayList<String>> ();
         for (String watchProperty : customDataWatchMaps.keySet()) {
-            customDataWatches.put(watchProperty, condense(customDataWatchMaps.get(watchProperty)));
+            customDataWatches.put(watchProperty.replace(".", "~"), condense(customDataWatchMaps.get(watchProperty)));
         }
         for (String watchProperty : customDataWatches.keySet()) {
-            customDataWatchValues.put(watchProperty, finalValue(customDataWatchMaps.get(watchProperty)));
+            customDataWatchValues.put(watchProperty.replace(".", "~"), finalValue(customDataWatchMaps.get(watchProperty)));
         }
         episodeMap.put("watches", watches);
         episodeMap.put("watchValues", watchValues);
@@ -561,6 +636,9 @@ public class Episode {
         episodeMap.put("alerts", getAlerts(watches));
         episodeMap.put("customDataWatches", customDataWatches);
         episodeMap.put("customDataWatchValues", customDataWatchValues);
+        for (Entry entry :  baggageMap.entrySet()){
+            episodeMap.put((String)entry.getKey(), entry.getValue());
+        }
         return episodeMap;
 
     }
@@ -569,6 +647,7 @@ public class Episode {
     static int CLOSED = 0;
     static final Logger LOGGER = LoggerFactory.getLogger("oddball");
 
+    private Map<String, Object> baggageMap = new HashMap<String, Object>();
     private String owner;
     private String agent;
     private String series;
@@ -586,6 +665,7 @@ public class Episode {
 //    private StringBuilder stateCodes;
     private HashMap<Long, String> stateCodeMap;
 //    final private Map<String, ArrayList<String>> watches;
+    private Set<String> watchProperties = new HashSet<String>();
     final private Map<String, Map<Long, String>> watchMaps;
 //    final private Map<String, ArrayList<String>> customDataWatches;
     final private Map<String, Map<Long, String>> customDataWatchMaps;

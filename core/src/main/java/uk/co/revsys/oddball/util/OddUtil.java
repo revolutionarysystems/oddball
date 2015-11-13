@@ -83,7 +83,8 @@ public class OddUtil {
     public String replacePlaceholders(String templateString, Map<String, Object> aCase){
 //        LOGGER.debug(templateString);
 //        LOGGER.debug(aCase.toString());
-        while (templateString.substring(1).contains("<")){
+//        while (templateString.substring(1).contains("<")){
+        while (templateString.contains("<")){
             templateString=replacePlaceholder(templateString, aCase);
         }
         return templateString;
@@ -146,7 +147,9 @@ public class OddUtil {
                     }
                 }
             } else {
-                mapB.put(eA.getKey(), eA.getValue());
+                if (!mapB.containsKey(eA.getKey())){
+                    mapB.put(eA.getKey(), eA.getValue());
+                }
             }
         }
         return mapB;

@@ -173,12 +173,19 @@ public class EpisodeAggregator implements Aggregator {
             }
         }
         if (episodeMap==null){
+            LOGGER.debug("First event of episode");
             currentEpisode = new Episode(event.getOwner(), event.getAgent(), event.getSeries(), event.getEventTime(), event.getTagTime(), watchList, customDataTag);
+            currentEpisode.recordState(event.getState(), event.getCode(), event.getEventTime(), event.getTagTime(), event.getEventTime()+timeOutPeriod, event.getCaseMap(), descriptionProperty);
         } else {
-            currentEpisode = new Episode(episodeMap, customDataTag);
-            currentEpisode.recordInterval(currentEpisode.getEndTime(), event.getEventTime(), event.getTagTime());
+            currentEpisode = new Episode(episodeMap, watchList, customDataTag);
+            if(!currentEpisode.containsEvent((String)event.getCaseMap().get("_id"), event.getEventTime())){
+                LOGGER.debug("Event not yet processed");
+                currentEpisode.recordInterval(currentEpisode.getEndTime(), event.getEventTime(), event.getTagTime());
+                currentEpisode.recordState(event.getState(), event.getCode(), event.getEventTime(), event.getTagTime(), event.getEventTime()+timeOutPeriod, event.getCaseMap(), descriptionProperty);
+            } else {
+                LOGGER.debug("Event already processed");
+            }
         }
-        currentEpisode.recordState(event.getState(), event.getCode(), event.getEventTime(), event.getTagTime(), event.getEventTime()+timeOutPeriod, event.getCaseMap(), descriptionProperty);
         
                 
         return currentEpisode;

@@ -301,6 +301,7 @@ public class RuleSetImpl implements RuleSet {
     public Rule createRule(String prefix, String label, String ruleString, String description, String source, ResourceRepository resourceRepository) throws RuleSetNotLoadedException {
         try {
             Rule ruleInstance = (Rule) ruleClass.newInstance();
+//            LOGGER.debug("Creating Rule: "+ruleClass.toString());
             ruleInstance.setLabel(prefix + label);
             ruleInstance.setRuleString(ruleString, resourceRepository);
             ruleInstance.setSource(source);
@@ -518,13 +519,15 @@ public class RuleSetImpl implements RuleSet {
     
     public static RuleSet loadJSONRuleSet(String ruleSetName, ResourceRepository resourceRepository) throws RuleSetNotLoadedException {
         try {
+//            LOGGER.debug("Loading Rule Set: "+ruleSetName);
             Map<String, Object> ruleSetMap = loadJSONRuleFile(ruleSetName, resourceRepository);
+//            LOGGER.debug("Loading Rule Set 2: "+ruleSetName);
             String forEachIn = null;
-            String ruleType = "default";
+            String localRuleType = "default";
             String ruleHost = "inMemory";
             boolean inMemory = true;
             if (ruleSetMap.get("ruleType")!=null){
-                ruleType = (String) ruleSetMap.get("ruleType");
+                localRuleType = (String) ruleSetMap.get("ruleType");
             }
             if (ruleSetMap.get("persistence")!=null){
                 ruleHost = (String) ruleSetMap.get("persistence");
@@ -533,8 +536,10 @@ public class RuleSetImpl implements RuleSet {
             if (ruleSetMap.get("forEachIn")!=null){
                 forEachIn = (String) ruleSetMap.get("forEachIn");
             }
+//            LOGGER.debug("Loading Rule Set type: "+localRuleType);
             
-            Class<? extends RuleSetImpl> ruleSetClass = new RuleSetMap().get(ruleType);
+            Class<? extends RuleSetImpl> ruleSetClass = new RuleSetMap().get(localRuleType);
+//            LOGGER.debug("Loading Rule Set class: "+ruleSetClass.toString());
             RuleSet ruleSet = (RuleSet) ruleSetClass.newInstance();
             ruleSet.setPersist(new MongoDBHelper(ruleSetName.replace("/", "-") + "-persist", inMemory));
             ArrayList<Map<String, Object>> ensureIndexes = new ArrayList<Map<String, Object>>();
@@ -544,8 +549,8 @@ public class RuleSetImpl implements RuleSet {
             for (Map<String, Object> indexMap : ensureIndexes){
                 ruleSet.getPersist().ensureIndex(indexMap);
             }
-            ruleSet.setRuleType(ruleType);
-            Class ruleClass = new RuleTypeMap().get(ruleType);
+            ruleSet.setRuleType(localRuleType);
+            Class ruleClass = new RuleTypeMap().get(localRuleType);
             ruleSet.setName(ruleSetName);
             ruleSet.setRuleClass(ruleClass);
             ruleSet.setRuleHost(ruleHost);

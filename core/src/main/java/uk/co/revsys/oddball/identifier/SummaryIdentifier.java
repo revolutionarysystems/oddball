@@ -36,6 +36,7 @@ public class SummaryIdentifier implements CaseIdentifier{
     public Map<String, Object> identify(RuleSet ruleSet, String caseString, Iterable<String> comparisonCases, Map<String, String> options, Oddball ob, ResourceRepository resourceRepository) throws ComparisonException, IOException, IdentificationSchemeNotLoadedException, UnknownBinException, IOException, DaoException, InvalidTimePeriodException, TransformerNotLoadedException, AggregationException{
         SummaryAggregator sa = new SummaryAggregator();
         IdentificationScheme ids = new IdentificationScheme(options.get("identificationScheme"), resourceRepository);
+//        LOGGER.debug(ids.getScheme().toString());
         String identificationPeriod = options.get("identificationPeriod");
         Map<String, Object> identification = new HashMap<String, Object>();
         try {
@@ -44,7 +45,7 @@ public class SummaryIdentifier implements CaseIdentifier{
             if (comparisons.size()==0){
                 throw new InvalidTimePeriodException("No valid time periods for Summary Identifier");
             }
-            Summary comparison = comparisons.get(0); // should be just the 
+            Summary comparison = comparisons.get(0); // should be just the one
             Map<String, Object> comparisonMap = comparison.asMap();
             Double totalInfo = 0.0;
             for (String key : comparisonMap.keySet()){
@@ -83,33 +84,45 @@ public class SummaryIdentifier implements CaseIdentifier{
                         String comparePrimary = "";
                         if ((Integer)outcome.get("count")==1 && (Integer)primaryOutcome.get("count")==1){
                             comparePrimary = "SingleEQPrimary";
-                            combiningQueries.add((String)outcome.get("query"));                        
+                            if (outcome.get("rank").equals("secondary")){
+                                combiningQueries.add((String)outcome.get("query"));                        
+                            }
                         }
                         if ((Integer)outcome.get("count")==1 && (Integer)primaryOutcome.get("count")>1){
                             comparePrimary = "SingleLTPrimary";
-                            combiningQueries.add((String)outcome.get("query"));                        
+                            if (outcome.get("rank").equals("secondary")){
+                                combiningQueries.add((String)outcome.get("query"));                        
+                            }
                         }
                         if ((Integer)outcome.get("count")>1 && (Integer)primaryOutcome.get("count")==1){
                             comparePrimary = "MultipleGTSinglePrimary";
                             if ((Double) outcome.get("power")> 0.6){
-                                combiningQueries.add((String)outcome.get("query"));                        
+                                if (outcome.get("rank").equals("secondary")){
+                                    combiningQueries.add((String)outcome.get("query"));                        
+                                }
                             }
                         }
                         if ((Integer)outcome.get("count")>1 && (Integer)primaryOutcome.get("count")>1){
                             if ((Integer)outcome.get("count") == (Integer)primaryOutcome.get("count")){
                                 comparePrimary = "MultipleEQPrimary";
-                                combiningQueries.add((String)outcome.get("query"));                        
+                                if (outcome.get("rank").equals("secondary")){
+                                    combiningQueries.add((String)outcome.get("query"));                        
+                                }
                             }
                             if ((Integer)outcome.get("count")> (Integer)primaryOutcome.get("count")){
                                 comparePrimary = "MultipleGTPrimary";
                                 if ((Double) outcome.get("power")> 0.6){
-                                    combiningQueries.add((String)outcome.get("query"));                        
+                                    if (outcome.get("rank").equals("secondary")){
+                                        combiningQueries.add((String)outcome.get("query"));                        
+                                    }
                                 }
                             }
                             if ((Integer)outcome.get("count")< (Integer)primaryOutcome.get("count")){
                                 comparePrimary = "MultipleLTPrimary";
                                 if ((Double) outcome.get("power")> 0.6){
-                                    combiningQueries.add((String)outcome.get("query"));                        
+                                    if (outcome.get("rank").equals("secondary")){
+                                        combiningQueries.add((String)outcome.get("query"));                        
+                                    }
                                 }
                             }
                         }
@@ -119,13 +132,22 @@ public class SummaryIdentifier implements CaseIdentifier{
                     }
                 }
                 StringBuilder combinedQuerySB = new StringBuilder("{\"$or\":[");
+                StringBuilder combinedAggQuerySB = new StringBuilder("{\"$or\":[");
                 for (String query : combiningQueries){
                     combinedQuerySB.append(query);
                     combinedQuerySB.append(",");
+                    String aggQuery = query.replace("case.watchValues.", "case.watches.case~watchValues~");
+                    combinedAggQuerySB.append(aggQuery);
+                    combinedAggQuerySB.append(",");
                 }
-                combinedQuerySB.append((String)primaryOutcome.get("query"));
+                String query = (String)primaryOutcome.get("query");
+                combinedQuerySB.append(query);
                 combinedQuerySB.append("]}");
+                String aggQuery = query.replace("case.watchValues.", "case.watches.case~watchValues~");
+                combinedAggQuerySB.append(aggQuery);
+                combinedAggQuerySB.append("]}");
                 combinedOutcome.put("query", combinedQuerySB.toString());
+                combinedOutcome.put("aggregatorQuery", combinedAggQuerySB.toString());
                 outcomes.put("combined", combinedOutcome);
 
             }            
@@ -159,8 +181,8 @@ public class SummaryIdentifier implements CaseIdentifier{
 
     private Map<String, Object> tryIndicator(RuleSet ruleSet, SummaryAggregator sa, Map<String, Object> caseMap, Map<String, Object> indicator, String identificationPeriod, Map<String, Map<String, Object>> assessment, Map<String, String> options,  Oddball ob, ResourceRepository resourceRepository) throws UnknownBinException, IOException, DaoException, InvalidTimePeriodException, TransformerNotLoadedException, AggregationException{
         int candidateCount = assessment.size();
-//        LOGGER.debug("Trying identification:"+indicator.toString());
-//        LOGGER.debug(assessment.toString());
+        LOGGER.debug("Trying identification:"+indicator.toString());
+        LOGGER.debug(assessment.toString());
         ArrayList<String> includeFields = (ArrayList<String>) indicator.get("include-fields");
         ArrayList<String> queryFields = (ArrayList<String>) indicator.get("query-fields");
         int totalPowers = 0;
@@ -203,8 +225,9 @@ public class SummaryIdentifier implements CaseIdentifier{
                     
         }
         if (!applicableField.equals("")){
-            String query = "{\""+queryField+"\":\""+assessment.get(applicableField).get("value")+"\"}";
-
+            String value = (String)assessment.get(applicableField).get("value");
+            String query = "{\""+queryField+"\":\""+value+"\"}";
+            
             //options
             Map<String, String> subOptions = new HashMap<String, String>();
             for (String key : options.keySet()){
@@ -271,6 +294,7 @@ public class SummaryIdentifier implements CaseIdentifier{
                 outcome.put("count", maxCount);
 
                 outcome.put("query", query);
+                outcome.put("value", value);
                 outcome.put("power", 1.0*totalPowers/candidateCount);
                 outcome.put("infoReduction", (totalInfo1/infoFactors1)-(totalInfo2/infoFactors2));
                 outcome.put("strength", relInfo);

@@ -1,0 +1,3 @@
+[
+    {"retriever":"caseRetriever", "ruleSet":"TestMongoEvent", "results":"merge", "selector":"latest 2-2"}
+]
