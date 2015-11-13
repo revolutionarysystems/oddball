@@ -80,7 +80,11 @@ public class SummaryIdentifier implements CaseIdentifier{
                 ArrayList<String> combiningQueries = new ArrayList<String> ();
                 for (Map<String, Object> outcome : (Collection<Map<String, Object>>) outcomes.values()){
                     if (!outcome.get("rank").equals("primary")){
-                        outcome.put("relInfoReduction", ((Double)outcome.get("infoReduction"))/((Double)primaryOutcome.get("infoReduction")));
+                        if ((Double)primaryOutcome.get("infoReduction")<0.0000001){
+                            outcome.put("relInfoReduction", 0.0);
+                        } else {
+                            outcome.put("relInfoReduction", ((Double)outcome.get("infoReduction"))/((Double)primaryOutcome.get("infoReduction")));
+                        }
                         String comparePrimary = "";
                         if ((Integer)outcome.get("count")==1 && (Integer)primaryOutcome.get("count")==1){
                             comparePrimary = "SingleEQPrimary";
@@ -207,13 +211,14 @@ public class SummaryIdentifier implements CaseIdentifier{
                     }
                     
                 }
-                if ((includeFields.contains(field)) && ((Double)fieldAssessment.get("info")>0.0)){
+//                if ((includeFields.contains(field)) && ((Double)fieldAssessment.get("info")>0.0)){
+                if ((includeFields.contains(field))){
                     relInfo = (Double)fieldAssessment.get("relInfo");
                     applicableField = field;
                     queryField = queryFields.get(0);
                 }
-                if (fieldAssessment.containsKey("info")){
-                    totalInfo1+= (Double)fieldAssessment.get("info");
+                if (fieldAssessment.containsKey("info")) {
+                    totalInfo1 += (Double) fieldAssessment.get("info");
                     infoFactors1++;
                 }
             }
