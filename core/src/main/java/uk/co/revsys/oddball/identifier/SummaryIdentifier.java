@@ -186,7 +186,7 @@ public class SummaryIdentifier implements CaseIdentifier{
     private Map<String, Object> tryIndicator(RuleSet ruleSet, SummaryAggregator sa, Map<String, Object> caseMap, Map<String, Object> indicator, String identificationPeriod, Map<String, Map<String, Object>> assessment, Map<String, String> options,  Oddball ob, ResourceRepository resourceRepository) throws UnknownBinException, IOException, DaoException, InvalidTimePeriodException, TransformerNotLoadedException, AggregationException{
         int candidateCount = assessment.size();
         LOGGER.debug("Trying identification:"+indicator.toString());
-        LOGGER.debug(assessment.toString());
+//        LOGGER.debug(assessment.toString());
         ArrayList<String> includeFields = (ArrayList<String>) indicator.get("include-fields");
         ArrayList<String> queryFields = (ArrayList<String>) indicator.get("query-fields");
         int totalPowers = 0;

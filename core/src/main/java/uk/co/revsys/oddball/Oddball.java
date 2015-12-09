@@ -683,7 +683,11 @@ public class Oddball {
         for (String result : results) {
             inputs.add(result);
         }
-        if (!results.iterator().hasNext()) {
+        String source = "any";
+        if (options.containsKey("source")){
+            source = options.get("source");
+        }
+        if ((!source.equals("results"))&&!results.iterator().hasNext()) {
             inputs.add("{}");
         }
         String query = "{ }";
@@ -691,13 +695,11 @@ public class Oddball {
             if (options.containsKey("query")) {
                 query = options.get("query").replace("'", "\"");
                 OddUtil ou = new OddUtil();
-//                if (caseMap == null) {
                 if (!input.equals("{}")) {
                     if (query.indexOf("/") == 0) {
                         caseMap = (Map<String, Object>) JSONUtil.json2map(input);
                         query = query.substring(1);
                     } else {
-                        LOGGER.debug(JSONUtil.json2map(input).get("case").toString());
                         Object caseObj = JSONUtil.json2map(input).get("case");
                         try {
                             caseMap = (Map<String, Object>) caseObj;
