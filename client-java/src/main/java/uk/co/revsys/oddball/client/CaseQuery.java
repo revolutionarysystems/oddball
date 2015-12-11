@@ -5,6 +5,7 @@ public class CaseQuery {
     private String ruleSet;
     private String ownerProperty;
     private String transformer;
+    private String processor;
     private String owner;
     private String series;
     private String selector;
@@ -44,6 +45,19 @@ public class CaseQuery {
         this.query = query;
         this.forEach = forEach;
     }
+    
+    //including "transformer" signature
+    public CaseQuery(String ruleSet, String ownerProperty, String transformer, String owner, String series, String selector, String query, String forEach, String processor) {
+        this.ruleSet = ruleSet;
+        this.ownerProperty = ownerProperty;
+        this.transformer = transformer;
+        this.owner = owner;
+        this.series = series;
+        this.selector = selector;
+        this.query = query;
+        this.forEach = forEach;
+        this.processor = processor;
+    }
 
     public String getRuleSet() {
         return ruleSet;
@@ -55,6 +69,10 @@ public class CaseQuery {
 
     public String getTransformer() {
         return transformer;
+    }
+
+    public String getProcessor() {
+        return processor;
     }
 
     public String getOwner() {

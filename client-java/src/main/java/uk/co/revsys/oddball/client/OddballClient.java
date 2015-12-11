@@ -62,6 +62,7 @@ public class OddballClient {
         httpRequest.setMethod(HttpMethod.GET);
         Map parameters = new HashMap();
         appendParameter(parameters, "transformer", query.getTransformer());
+        appendParameter(parameters, "processor", query.getProcessor());
         appendParameter(parameters, "account", query.getOwner());
         appendParameter(parameters, "series", query.getSeries());
         appendParameter(parameters, "selector", query.getSelector());
